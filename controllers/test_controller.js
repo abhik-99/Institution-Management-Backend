@@ -15,7 +15,7 @@ exports.show_firebase_data = function(req,res,next){
         // if (!doc.exists) {
         //     console.log('No such document!');
         //   } else {
-            console.log('Document data:', doc);
+            console.log('Document data:', doc.data());
             res.send(doc.data());
          // }
     })

@@ -37,9 +37,9 @@ exports.login = function(req, res) {
            exp: Math.floor(Date.now() / 1000) + (60 * 60),
            data: JSON.stringify({ 
               0: type,
-              1: username,
-              2: iCode,
-              3:Date.now()
+              1: iCode,
+              2: username,
+              3: Date.now()
             })},
            secret);
         sessions.push(token);
@@ -54,20 +54,36 @@ exports.login = function(req, res) {
         res.send(err);
       });
   };
-  exports.logout = function(req,res,next){
+  exports.logout = function(req,res){
     token = req.headers['x-access-token'];
-    jwt.verify(token, secret, function(err,decoded){
-      if(err){
-        res.send({"Message": "Token Invalid"});
-      }
-      blackToken = token;
-      db.doc('blacklist/tokens').get()
-      .then(doc =>{
-        tokens=doc.data();
-        tokens = tokens.token_arr;
-        tokens.push(token);
-        db.doc('blacklist/tokens').update({token_arr: tokens});
-        res.send({"Message": "Token Blaclisted!"});
+    if(!token){
+      res.send({"message": "No token received!"});
+      res.end();
+    } else{
+      jwt.verify(token, secret, function(err,decoded){
+        if(err){
+          console.log("Ivalid token", token);
+          res.send({"Message": "Token Invalid"});
+        }else{
+          tokenData = JSON.parse(decoded.data);
+          db.collection('users')
+          .where('session', 'array-contains', token)
+          .get()
+          .then(snap=>{
+            snap.forEach(doc=>{
+              db.collection('users').doc(doc.id).update({session: []});
+            });
+          });
+          console.log(decoded);
+          db.doc('blacklist/tokens').get()
+          .then(doc =>{
+            tokens=doc.data();
+            tokens = tokens.token_arr;
+            tokens.push(token);
+            db.doc('blacklist/tokens').update({token_arr: tokens});
+            res.send({"Message": "Token Blaclisted!"});
+          });
+        }
       });
-    });
+    }
   };
