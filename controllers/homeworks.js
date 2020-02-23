@@ -1,5 +1,5 @@
 const _ = require('lodash');
-var {upload_file} = require('../gcp_buckets/file_handling');
+var {upload_file,download_link} = require('../gcp_buckets/file_handling');
 var {bucketName} = require('../config/secrets');
 let {db} = require('./db');
 exports.assign_homework = function(req,res,next){
@@ -74,22 +74,22 @@ exports.submit_homework = function(req,res){
     sub = body.subject;
     chapter = body.chapter;
     title = body.title;
-    filename = `homeworks/${icode}/${cl}/${sec}/${sub}/${chapter}-${title}-${sub_date}-submissions/${student}`+file.name;
+    filename = `homeworks/${icode}/${cl}/${sec}/${sub}/${chapter}-${title}-${sub_date}-submissions/${student}-`+file.name;
     let now = new Date();
     // console.log(file);
     // console.log(body); 
     upload_file(bucketName,file.path,filename);
     db.collection('homeworks')
     .where('school_code','==',icode)
-    //.where('author','==',author)
+    .where('author','==',author)
     .where('class','==',cl)
     .where('section','==',sec)
     .where('chapter','==',chapter)
-    //.where('title','==',title)
+    .where('title','==',title)
     .get()
     .then(snap =>{ 
         console.log("snapshot received!",snap);
-        ob = {student_code: student, file_path: filename,sub_time: now.getDate() };
+        ob = {student_code: student, file_path: filename,sub_time: now.getTime() };
         snap.forEach(doc =>{
             id = doc.id;
             subs = doc.data().submissions;
@@ -103,5 +103,48 @@ exports.submit_homework = function(req,res){
     .catch(err => res.send(err));  
 };
 exports.check_submissions = function(req,res){
+    body = req.fields;
+    icode = body.icode;
+    author = body.tcode;
+    cl = body.class;
+    sec = body.sec;
+    sub = body.subject;
+    chapter = body.chapter;
+    title = body.title;
+    console.log(icode,author,cl,sec,sub,chapter,title);
+    db.collection('homeworks')
+    .where('school_code','==',icode)
+    .where('author','==',author)
+    .where('class','==',cl)
+    .where('section','==',sec)
+    .where('subject','==',sub)
+    .where('chapter','==',chapter)
+    .where('title','==',title)
+    .get()
+    .then(snap =>{ 
+        subs=[];
+        snap.forEach(doc =>{
+            info = doc.data();
+            subs = {id: doc.id, submissions: info.submissions};
+            
+        });
+        res.json({"submissions": subs});
+    }).catch(err => res.send({'message': err}));
+};
 
+exports.get_homework = function(req,res){
+    body = req.query;
+    docId = body.id;
+    scode = body.student_code;
+
+    db.collection('homeworks').doc(docId)
+    .get()
+    .then(doc => {
+        info = doc.data();
+        subs = info.submissions;
+        file_path = subs.filter(eachSub => eachSub.student_code === scode)[0].file_path;
+        download_link(bucketName,file_path).then((data)=>{
+             res.json({download_link: data[0]});
+        });
+    });
 };
