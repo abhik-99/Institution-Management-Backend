@@ -21,7 +21,7 @@ exports.check_nigga = function(req,res,next){
                     } else {
                         doc = doc.data();
                         token_flag = doc.token_arr.includes(token);
-                        console.log("Token Array contains?",token);
+                       // console.log("Token Array contains?",token);
                         if(token_flag){
                             res.send({'message': 'blacklisted token detected!'});
                         }else{
@@ -35,6 +35,7 @@ exports.check_nigga = function(req,res,next){
 };
 
 exports.check_valid = function(req,res,next){
+    console.log("Fisking!");
     type = req.headers.type;
     token = req.headers['x-access-token'];
     if( !type || !token){
@@ -44,11 +45,12 @@ exports.check_valid = function(req,res,next){
             if(err){
                 res.send({'message':'invalid token!'});
             }else{
-                if(decoded.data[0] != type){
+                if(JSON.parse(decoded.data)[0] != type){
+                    //console.log(type, decoded.data[0]);
                     res.send({'message':'header token mismath!'});
                 }else{
                     db.collection('users')
-                    .where('type','==', type)
+                    .where('username','==', JSON.parse(decoded.data)[2])
                     .where('session','array-contains',token)
                     .get()
                     .then(snap =>{
@@ -57,9 +59,10 @@ exports.check_valid = function(req,res,next){
                         if(list.length == 1){
                             next();
                         }else{
-                            res.send({'message': 'duplicate tokens found!'});
+                            //console.log(list.length);
+                            res.send({'message': 'duplicate or no matching token found!'});
                         }
-                    });
+                    }).catch(err=> res.send({"message":err}));
                 }
             }
         });
