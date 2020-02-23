@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 let {db} = require('./db');
 let {secret} = require('../config/secrets');
-exports.login = function(req, res, next) {
+
+exports.login = function(req, res) {
     type = req.headers.type;
     iCode = req.body.icode;
     username = req.body.uname;
@@ -32,13 +33,20 @@ exports.login = function(req, res, next) {
           res.send({"Error":"Duplicate Users Exists, Signing Halted!"});
         }
         console.log(sessions)
-        let token = jwt.sign({ exp: Math.floor(Date.now() / 1000) + (60 * 60), data: username+iCode+Date.now()},secret);
+        let token = jwt.sign({
+           exp: Math.floor(Date.now() / 1000) + (60 * 60),
+           data: JSON.stringify({ 
+              0: type,
+              1: username,
+              2: iCode,
+              3:Date.now()
+            })},
+           secret);
         sessions.push(token);
-        console.log(sessions);
+        console.log("Session Tokens",sessions);
         db.collection('users').doc(list[0])
         .update({session: sessions});
-
-        res.send({"token": token});
+        res.send({"x-access-token": token});
         
       })
       .catch(err =>{
