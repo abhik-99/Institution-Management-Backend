@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "project-student-management",
+  "private_key_id": "dcb81f59e1d7b02320c60203d36b072aba54fc7d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCatWndyp9EJop3\nSmKe1eQZZhaDWMCrvcGoZjbucL1UxSIaydeXbOV+J6wJszw8zG1u+N2W2B9Kbwh7\nZTcVq4vJjWKkH4F8lG8Gg6uxVcF5L8CGUBbpTwkYWK+0chW0XGjfu1am0T+WQQoz\nhfzo4+zkNpXx979XFDWbBuI2lcaINwOOTp8qBV046t33+6nW5SrR0TnubXNb1Gzn\nMTFfNgV23H9oeg22Pk03RUpFFkU2/ZFzdRuZMTpggnnHG/GCojDx1+LW24dqho0j\nvpTpVK5ts0pjh5XkmWHkmmULRcFoGsSwObPnlXTgBpXOM14RdKBjErqRE+HqTg59\nQ+2KovZhAgMBAAECggEABze2eC/3TTUlGZqhTjq5WQv/ueH+nySLr+EQ5//ffWBz\nDl/jTH+6ly+foZY4lbeN1XML13k+wHi8oxEeSEcIDv+nHfQQVPER2vJypKPVEmPN\nbha3cuwKhxXAIMF/zLnQ9LsnOEIj3s0q/itemLjleOIpDbBav2PEenaQQC6to/Ym\nfFDCI6/Oyv3SHT/sW13zBdPp29DcV/iycWegYIbyJu5zPYiLneJchvzuDqJOWp6n\nbfjC+eHN2B/GpWRwaZqxRwiPeDSH5c/+OkEAkeNyOCGN+t6mJRE54Cj/9QiUg0yZ\nSXShY/poX2uixYFlFuUpCHZSOVcww/+bA9qmVf/p3wKBgQDTexeMluw6o9DEGCP5\nh6r6q5faF5JWileZwrQp2WLa420PG5Ym7FHxc4g7SVK4AnH/A5htqNTldvdUs1tw\nrEBy+l0HFT/t/myA1QCmwA+XPvpkpnaegIiOjsWJ1Uj9mrd7ShbUnvNnx+oMg1Ms\n1YDIGUlH+5DFQHnV8l0Sa78QewKBgQC7RtA3QJaP6CaxgDit5h9SCUJmxQDcXIPy\n6LNNwhUWaFkxwarpY+bhs3T25/k4+wXlMSzamJb27tmo2g5NrPgg34FY3chNPg9p\nRHdHNzWXfXIt6ztU8H1CPkW2aM611GlkRXJ4FEcXs0J9ueLHq4qwFplfL/Tj4S8w\n18rqo8nT0wKBgDRGkSOniu1T4R8X+IyOBK3CDN9URFAwEkdn4bEWk2EYJrU9VHh6\noibVMC+3iEMEF7m54cv5l+bA6ZJ+Y3QOoD/Ls4M0tYDXC2stO+P8Rd5VKwAGRfwY\nOalDkYDowAowXHqVbd9RC0n0GN7O95h1jkfoOD0a6kZYEcXZCziqeahRAoGAWPwY\ny2ghIlfIquamB9skXrKPno1VD1/WQoFXUUc7Bd6nIwFG2IbjmbLPjNJElVKRRonL\nKkL+2G49dgHGchoR/Gy25Sbcmfc3E2m401nkWQr+SdtP4dgzbFpyfW3nanZ3bXGi\nJnRcI2LF4T+GBiH4UBss3RHIZs8EwUyH2l3g9IkCgYEAhnmL6LsKdnjgWIPtK0Ih\nV/Bcvvsafff4nHRCw2ofilh8ooQ0/+yEqyMxieSkzaBqTAbwQVaFILzeDRkbQmiL\nZxZvkuXz+6a5Gz1L1KPibsg52ykpZS0Wq2nal9gA0w1QHeOx4/mOTDJoBYmKdUCC\naGtcG3cLVWY/6eAGMlHKr+s=\n-----END PRIVATE KEY-----\n",
+  "client_email": "studieappserver@project-student-management.iam.gserviceaccount.com",
+  "client_id": "101838539757380804988",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/studieappserver%40project-student-management.iam.gserviceaccount.com"
+}
