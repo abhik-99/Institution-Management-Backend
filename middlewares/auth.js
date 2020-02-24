@@ -7,7 +7,7 @@ exports.check_nigga = function(req,res,next){
     token = req.headers['x-access-token'];
     //console.log("Received Token-",token);
     if(!token){
-        res.send({'message': 'No access token detected. please sign in'});
+        res.send({'message': 'No access token detected. Please sign in!'});
     }else{
         jwt.verify(token,secret,function(err, decoded){
             if (err) res.json({"message": "invalid jwt token!"});
