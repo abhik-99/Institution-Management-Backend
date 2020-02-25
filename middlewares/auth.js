@@ -1,40 +1,44 @@
 let {db} = require('../controllers/db');
 let {secret} = require("../config/secrets");
 const jwt = require('jsonwebtoken');
-exports.check_nigga = function(req,res,next){
-
+exports.check_valid = function(req,res,next){
+    type = req.headers.type;
     console.log("Checking nigga!");
     token = req.headers['x-access-token'];
     //console.log("Received Token-",token);
-    if(!token){
-        res.send({'message': 'No access token detected. Please sign in!'});
-    }else{
+    if(!token) { res.send({'message': 'No access token detected. Please sign in!'});}
+    else if(!type) { res.send({'message': 'Incorrect Headers. Please sign in!'});}
+    else{
         jwt.verify(token,secret,function(err, decoded){
-            if (err) res.json({"message": "invalid jwt token!"});
+            if (err) { res.send({"message": "invalid jwt token!"}); }
             else{
                 data = decoded.data;
-                blacklistRef = db.doc('blacklist/tokens');
-                blacklistRef.get()
-                .then(doc =>{
-                    if (!doc.exists) {
-                        res.json({"message": "empty blacklist!"});
-                    } else {
-                        doc = doc.data();
-                        token_flag = doc.token_arr.includes(token);
-                       // console.log("Token Array contains?",token);
-                        if(token_flag){
-                            res.send({'message': 'blacklisted token detected!'});
-                        }else{
-                            next();
+                if( JSON.parse(data)[0] != type) { res.send({'message': 'Headers mismatch'}); }
+                else{
+                    db.doc('blacklist/tokens').get()
+                    .then(doc =>{
+                        if (!doc.exists) {
+                            res.json({"message": "empty blacklist!"});
+                        } else {
+                            doc = doc.data();
+                            token_flag = doc.token_arr.includes(token);
+                        // console.log("Token Array contains?",token);
+                            if(token_flag){
+                                res.send({'message': 'blacklisted token detected!'});
+                            }else{
+                                next();
+                            }
                         }
-                    }
-                }).catch(err => {console.log(err); next();});
+                    }).catch(err => {
+                        console.log(err); res.send({'message': err});
+                    });
+                }
             }
         });
     }
 };
 
-exports.check_valid = function(req,res,next){
+exports.only_teacher = function(req,res,next){
     console.log("Fisking!");
     type = req.headers.type;
     token = req.headers['x-access-token'];
