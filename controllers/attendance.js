@@ -36,7 +36,7 @@ exports.give_attendance = function(req,res){
         user: process.env.SQL_USER || SQL_USER,
         database: process.env.SQL_DATABASE || SQL_DATABASE,
         password: process.env.SQL_PASSWORD || SQL_PASSWORD,
-        socketPath: `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME || INSTANCE_CONNECTION_NAME}`
+        socketPath: `:/cloudsql/${process.env.INSTANCE_CONNECTION_NAME || INSTANCE_CONNECTION_NAME}`
         //socketPath: "34.93.249.229"
     }
     console.log("Config-",config);
