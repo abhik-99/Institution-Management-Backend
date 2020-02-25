@@ -1,6 +1,7 @@
 let {db} = require('../controllers/db');
 let {secret} = require("../config/secrets");
 const jwt = require('jsonwebtoken');
+
 exports.check_valid = function(req,res,next){
     type = req.headers.type;
     console.log("Checking nigga!");
@@ -39,7 +40,6 @@ exports.check_valid = function(req,res,next){
 };
 
 exports.only_teacher = function(req,res,next){
-    console.log("Fisking!");
     type = req.headers.type;
     token = req.headers['x-access-token'];
     if( !type || !token){
@@ -53,20 +53,74 @@ exports.only_teacher = function(req,res,next){
                     //console.log(type, decoded.data[0]);
                     res.send({'message':'header token mismath!'});
                 }else{
-                    db.collection('users')
-                    .where('username','==', JSON.parse(decoded.data)[2])
-                    .where('session','array-contains',token)
-                    .get()
-                    .then(snap =>{
-                        list=[]
-                        snap.forEach(doc => list.push(doc.id));
-                        if(list.length == 1){
-                            next();
-                        }else{
-                            //console.log(list.length);
-                            res.send({'message': 'duplicate or no matching token found!'});
-                        }
-                    }).catch(err=> res.send({"message":err}));
+                    if(type === 'teacher') { next(); }
+                    else { res.send({'message': 'Only Teachers allowed at this route!'}); }
+                }
+            }
+        });
+    }
+}
+
+exports.only_parent = function(req,res,next){
+    type = req.headers.type;
+    token = req.headers['x-access-token'];
+    if( !type || !token){
+        res.send({'message': 'invalid headers!'});
+    }else{
+        jwt.verify(token, secret, (err,decoded)=>{
+            if(err){
+                res.send({'message':'invalid token!'});
+            }else{
+                if(JSON.parse(decoded.data)[0] != type){
+                    //console.log(type, decoded.data[0]);
+                    res.send({'message':'header token mismath!'});
+                }else{
+                    if(type === 'parent') { next(); }
+                    else { res.send({'message': 'Only Parents allowed at this route!'}); }
+                }
+            }
+        });
+    }
+}
+
+exports.only_student = function(req,res,next){
+    type = req.headers.type;
+    token = req.headers['x-access-token'];
+    if( !type || !token){
+        res.send({'message': 'invalid headers!'});
+    }else{
+        jwt.verify(token, secret, (err,decoded)=>{
+            if(err){
+                res.send({'message':'invalid token!'});
+            }else{
+                if(JSON.parse(decoded.data)[0] != type){
+                    //console.log(type, decoded.data[0]);
+                    res.send({'message':'header token mismath!'});
+                }else{
+                    if(type === 'student') { next(); }
+                    else { res.send({'message': 'Only Students allowed at this route!'}); }
+                }
+            }
+        });
+    }
+}
+
+exports.only_admin = function(req,res,next){
+    type = req.headers.type;
+    token = req.headers['x-access-token'];
+    if( !type || !token){
+        res.send({'message': 'invalid headers!'});
+    }else{
+        jwt.verify(token, secret, (err,decoded)=>{
+            if(err){
+                res.send({'message':'invalid token!'});
+            }else{
+                if(JSON.parse(decoded.data)[0] != type){
+                    //console.log(type, decoded.data[0]);
+                    res.send({'message':'header token mismath!'});
+                }else{
+                    if(type === 'admin') { next(); }
+                    else { res.send({'message': 'Only Admins allowed at this route!'}); }
                 }
             }
         });
