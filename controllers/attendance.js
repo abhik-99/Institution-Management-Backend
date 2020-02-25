@@ -36,13 +36,19 @@ exports.give_attendance = function(req,res){
         user: process.env.SQL_USER || SQL_USER,
         database: process.env.SQL_DATABASE || SQL_DATABASE,
         password: process.env.SQL_PASSWORD || SQL_PASSWORD,
-        socketPath: `:/cloudsql/${process.env.INSTANCE_CONNECTION_NAME || INSTANCE_CONNECTION_NAME}`
-        //socketPath: "34.93.249.229"
+        //replace socketpath with the line below before deploying to app engine.
+        //socketPath: `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME || INSTANCE_CONNECTION_NAME}`
+        socketPath: "34.93.249.229"
     }
     console.log("Config-",config);
     const sequelize = new Sequelize(config.database, config.user, config.password,{
         host: config.socketPath,
-        dialect: 'mysql'
+        dialect: 'mysql',
+        //Uncomment the lines below before deploying onto app engine
+        // timestamps: false,
+        // dialectOptions: {
+        //     socketPath: config.socketPath
+        // },
     });
     sequelize.authenticate()
     .then((obj)=> {console.log("connection successful!",obj); res.send("ALL OK!");})
