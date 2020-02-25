@@ -1,5 +1,6 @@
 let {db} = require('./db');
-let sequelize = require('sequelize');
+let {SQL_USER, SQL_PASSWORD, SQL_DATABASE, INSTANCE_CONNECTION_NAME} = require("../config/db");
+let {Sequelize} = require('sequelize');
 
 exports.get_students = function(req,res){
     body = req.query;
@@ -30,5 +31,21 @@ exports.get_students = function(req,res){
     }    
 };
 exports.give_attendance = function(req,res){
-
+    console.log(SQL_DATABASE,INSTANCE_CONNECTION_NAME);
+    var config = {
+        user: process.env.SQL_USER || SQL_USER,
+        database: process.env.SQL_DATABASE || SQL_DATABASE,
+        password: process.env.SQL_PASSWORD || SQL_PASSWORD,
+        //socketPath: `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME || INSTANCE_CONNECTION_NAME}`
+        socketPath: "34.93.249.229"
+    }
+    console.log("Config-",config);
+    const sequelize = new Sequelize(config.database, config.user, config.password,{
+        host: config.socketPath,
+        dialect: 'mysql'
+    });
+    sequelize.authenticate()
+    .then((obj)=> {console.log("connection successful!",obj); res.send("ALL OK!");})
+    .catch((err)=> {console.log("Error Occured!",err); res.send("SNAFU!");});
+    
 };

@@ -1,1 +1,6 @@
 runtime: nodejs12
+env_variables:
+  SQL_USER: root
+  SQL_PASSWORD: 88qKqL40g91e1Hxy
+  SQL_DATABASE: studie
+  INSTANCE_CONNECTION_NAME: project-student-management:asia-south1:dev-studie-server
