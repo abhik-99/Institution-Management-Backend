@@ -98,9 +98,9 @@ exports.submit_homework = function(req,res){
             console.log("Submissions Now-",subs);
             db.collection('homeworks').doc(id).update({submissions: subs});
         });
-        res.send(body); 
+        res.send({'message': 'Submission Successful!'}); 
     })
-    .catch(err => res.send(err));  
+    .catch(err => res.send({'message':err}));  
 };
 exports.check_submissions = function(req,res){
     body = req.fields;

@@ -10,7 +10,7 @@ var {uploadDir} = require('../config/secrets');
 router.use(check_valid, only_teacher);
 router.post('/homework',formidableMiddleware({uploadDir: uploadDir, multiples: true }),assign_homework);
 router.get('/homework',formidableMiddleware(),check_homeworks);
-router.get('/homework/submissions/check',formidableMiddleware(),check_submissions);
+router.get('/homework/submissions',formidableMiddleware(),check_submissions);
 router.get('/homework/submissions/download',get_homework);
 
 module.exports = router;

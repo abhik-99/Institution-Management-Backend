@@ -7,7 +7,6 @@ var logger = require('morgan');
 var formidable = require('express-formidable');
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
 var teacherRouter = require('./routes/teachers');
 var studentRouter = require('./routes/students');
 
@@ -25,7 +24,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({secret:"DevMode"}));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/teacher', teacherRouter);
 app.use('/student', studentRouter);
 
