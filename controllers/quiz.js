@@ -33,13 +33,27 @@ exports.get_quiz = function(req,res){
 };
 
 //expects a json body in the req.body which conforms to the quiz design.
+// IMP: Add a mechanism for checking valid schools
 exports.set_quiz = function(req,res){
-    body = req.body;
+    console.log("req.body", req.body);
+    body = req.body.quiz;
+    icode = req.body.icode;
     title = body.title || 'none';
-    subject = body.subject || 'none';
-    cl = body.class || '0';
-    author = body.author || 'ad hoc';
-    due = new Date(body.due_date.toString());
-    console.log("Body:", body);
-    console.log("Date",due);
+    subject = body.subject;
+    cl = body.class;
+    author = body.author;
+    due = Date.parse(body.due_date); // send date a string object
+    console.log(body);
+    if( !cl || !author || !subject || !icode) { res.send({'message':"Please fill all the details!"}); }
+    else {
+        db.collection(`quizzes/${icode}/${cl}`)
+        .add(body)
+        .then(ref => res.send({'message': `Document added. Doc Id: ${ref.id}`}))
+        .catch(err => res.send({'error': err.err}));
+    }
 };
+
+//submitting quiz by student
+exports.submit_quiz = function(req,res){
+    // get student details, check score and put it in the student's profile.
+}
