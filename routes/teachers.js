@@ -4,7 +4,7 @@ var formidableMiddleware = require('express-formidable');
 var {check_valid, only_teacher} = require('../middlewares/auth');
 var {get_students, give_attendance} = require('../controllers/attendance');
 var {assign_homework,check_homeworks,check_submissions,get_homework} = require('../controllers/homeworks');
-var {get_quiz, set_quiz} = require('../controllers/quiz');
+var {get_quiz, set_quiz, get_submissions} = require('../controllers/quiz');
 var {uploadDir} = require('../config/secrets');
 
 /* GET users listing. */
@@ -17,5 +17,6 @@ router.get('/homework/submissions/download',get_homework);
 router.get('/attendace',get_students);
 router.get('/quiz',get_quiz);
 router.post('/quiz',set_quiz);
+router.get('/quiz/submissions', get_submissions);
 
 module.exports = router;
