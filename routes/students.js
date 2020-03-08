@@ -4,6 +4,7 @@ var formidableMiddleware = require('express-formidable');
 var {check_valid, only_student} = require('../middlewares/auth');
 var {check_homeworks,submit_homework} = require('../controllers/homeworks');
 var {get_quiz, submit_quiz} = require('../controllers/quiz');
+var {get_announcements} = require('../controllers/announcement');
 
 var {uploadDir} = require('../config/secrets');
 
@@ -16,5 +17,6 @@ router.post('/homework',formidableMiddleware({uploadDir: uploadDir, multiples: t
 router.get('/quiz',get_quiz);
 router.patch('/quiz', submit_quiz);
 
+router.get('/announce', get_announcements);
 
 module.exports = router;

@@ -6,6 +6,7 @@ var {get_students, give_attendance} = require('../controllers/attendance');
 var {assign_homework,check_homeworks,check_submissions,get_homework} = require('../controllers/homeworks');
 var {get_quiz, set_quiz, get_submissions} = require('../controllers/quiz');
 var {set_exam,get_exams, grade_exam} = require('../controllers/exam');
+var {get_announcements, make_announcement} = require('../controllers/announcement');
 
 var {uploadDir} = require('../config/secrets');
 
@@ -27,5 +28,8 @@ router.get('/quiz/submissions', get_submissions);
 router.get('/exam', get_exams);
 router.post('/exam', set_exam);
 router.patch('/exam', grade_exam);
+
+router.get('/announce', get_announcements);
+router.post('/announce', make_announcement);
 
 module.exports = router;
