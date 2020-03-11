@@ -24,3 +24,26 @@ exports.show_firebase_data = function(req,res,next){
         res.send(err);
     });
 };
+
+exports.sql_initialize = function(req,res){
+    sequelize.authenticate()
+    .then((obj)=> {console.log("connection successful!",obj); })
+    .catch((err)=> {console.log("Error Occured!",err); });
+    sequelize
+    .sync({
+        logging: console.log,
+        force: true
+    })
+    .then(()=>{
+        console.log("All done!");
+        sequelize.close()
+        .then(()=>console.log('Connection Closed'))
+        .catch(err => console.log('Error Occured!', err));
+        res.send("All ok!");
+    })
+    .catch(err =>{
+        console.log("Error",err);
+        res.send("SNAFU!!");
+    });
+
+};

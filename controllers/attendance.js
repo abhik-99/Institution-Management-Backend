@@ -22,7 +22,7 @@ exports.get_students = function(req,res){
                 list = [];
                 snap.forEach(doc => {
                     info = doc.data();
-                    list.push({'name': info.name, 'code': info.code});
+                    list.push({'id': doc.id, 'name': info.name, 'code': info.code});
                 });
                 res.send({'status':'success','students': list});
             }
@@ -32,26 +32,13 @@ exports.get_students = function(req,res){
         });
     }    
 };
+
 exports.give_attendance = function(req,res){
-    sequelize.authenticate()
-    .then((obj)=> {console.log("connection successful!",obj); })
-    .catch((err)=> {console.log("Error Occured!",err); });
-    sequelize
-    .sync({
-        logging: console.log,
-        force: true
-    })
-    .then(()=>{
-        console.log("All done!");
-        sequelize.close()
-        .then(()=>console.log('Connection Closed'))
-        .catch(err => console.log('Error Occured!', err));
-        res.send("All ok!");
-    })
-    .catch(err =>{
-        console.log("Error",err);
-        res.send("SNAFU!!");
-    });
-
-
+    /*
+    1. Get the doc ids of the absent students, the teacher's code, subject (subjectCode)
+    in the POST request.
+    2. Fetch the students and add to their profiles the absent data. 
+    3. Add the details of the absent students to the the absence database.
+    4. Increment the numClasses in the Classes database for that specific teacher's period.
+    */
 };
