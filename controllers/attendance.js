@@ -1,13 +1,15 @@
-let {db} = require('./db');
-let {SQL_USER, SQL_PASSWORD, SQL_DATABASE, INSTANCE_CONNECTION_NAME} = require("../config/db");
-let {Sequelize} = require('sequelize');
+let {db, sequelize} = require('./db');
+// let {SQL_USER, SQL_PASSWORD, SQL_DATABASE, INSTANCE_CONNECTION_NAME} = require('../config/db');
+// let {Sequelize} = require('sequelize');
+let {Attendance} = require('../models/attendance');
+let {Classes} = require('../models/class_info');
 
 exports.get_students = function(req,res){
     body = req.query;
     icode = body.icode;
     cl = body.class;
     sec = body.sec;
-    if( !icode || !cl || !sec) { res.send({'message': "Please provide proper parameters"});}
+    if( !icode || !cl || !sec) { res.send({'status':'failure', 'error': "Please provide proper parameters"});}
     else{
         db.collection(`profiles/students/${icode}`)
         .where('class', '==', cl)
@@ -15,43 +17,41 @@ exports.get_students = function(req,res){
         .get()
         .then(snap => {
 
-            if( !snap) { res.send({'message': 'No such School found!'}); }
+            if( !snap) { res.send({'status':'failure', 'error': 'No such School found!'}); }
             else{
                 list = [];
                 snap.forEach(doc => {
                     info = doc.data();
                     list.push({'name': info.name, 'code': info.code});
                 });
-                res.send({'students': list});
+                res.send({'status':'success','students': list});
             }
         })
         .catch(err => {
-            console.log("Error",err); res.send({'message': err});
+            console.log("Error",err); res.send({'status':'failure', 'error': err});
         });
     }    
 };
 exports.give_attendance = function(req,res){
-    console.log(SQL_DATABASE,INSTANCE_CONNECTION_NAME);
-    var config = {
-        user: process.env.SQL_USER || SQL_USER,
-        database: process.env.SQL_DATABASE || SQL_DATABASE,
-        password: process.env.SQL_PASSWORD || SQL_PASSWORD,
-        //replace socketpath with the line below before deploying to app engine.
-        //socketPath: `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME || INSTANCE_CONNECTION_NAME}`
-        socketPath: "34.93.249.229"
-    }
-    console.log("Config-",config);
-    const sequelize = new Sequelize(config.database, config.user, config.password,{
-        host: config.socketPath,
-        dialect: 'mysql',
-        //Uncomment the lines below before deploying onto app engine
-        // timestamps: false,
-        // dialectOptions: {
-        //     socketPath: config.socketPath
-        // },
-    });
     sequelize.authenticate()
-    .then((obj)=> {console.log("connection successful!",obj); res.send("ALL OK!");})
-    .catch((err)=> {console.log("Error Occured!",err); res.send("SNAFU!");});
-    
+    .then((obj)=> {console.log("connection successful!",obj); })
+    .catch((err)=> {console.log("Error Occured!",err); });
+    sequelize
+    .sync({
+        logging: console.log,
+        force: true
+    })
+    .then(()=>{
+        console.log("All done!");
+        sequelize.close()
+        .then(()=>console.log('Connection Closed'))
+        .catch(err => console.log('Error Occured!', err));
+        res.send("All ok!");
+    })
+    .catch(err =>{
+        console.log("Error",err);
+        res.send("SNAFU!!");
+    });
+
+
 };

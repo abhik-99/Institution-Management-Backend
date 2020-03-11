@@ -1,40 +1,41 @@
-const { Sequelize, DataTypes} = require('sequelize');
-const sequelize = new Sequelize();
+const {sequelize, Sequelize} = require('../controllers/db');
 const Attendance = sequelize.define('Attendance',{
-   id:{
-       type: DataTypes.UUIDV4,
+   sid:{
+       type: Sequelize.INTEGER,
        primaryKey: true,
        autoIncrement: true
    }, 
    schoolCode:{
-       type: DataTypes.STRING,
+       type: Sequelize.STRING,
        unique: true,
        allowNull: false
    },
    teacherCode:{
-       type: DataTypes.STRING,
+       type: Sequelize.STRING,
        allowNull: false
    },
    studentCode:{
-       type: DataTypes.STRING,
+       type: Sequelize.STRING,
        allowNull: false
    },
    class:{
-       type: DataTypes.STRING,
+       type: Sequelize.STRING,
        allowNull: false
    },
    section:{
-       type: DataTypes.STRING,
+       type: Sequelize.STRING,
        allowNull: false
    },
    subjectCode:{
-       type: DataTypes.STRING,
+       type: Sequelize.STRING,
        allowNull: false
    },
    date:{
-       type: DataTypes.DATEONLY,
+       type: Sequelize.DATEONLY,
        allowNull: false
    },
 },{
     freezeTableName: true
 });
+
+module.exports = {Attendance};
