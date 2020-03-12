@@ -1,8 +1,8 @@
 let {db, sequelize} = require('./db');
 // let {SQL_USER, SQL_PASSWORD, SQL_DATABASE, INSTANCE_CONNECTION_NAME} = require('../config/db');
 // let {Sequelize} = require('sequelize');
-let {Attendance} = require('../models/attendance');
-let {Classes} = require('../models/class_info');
+// let {Attendance} = require('../models/attendance');
+ let {Classes} = require('../models/class_info');
 
 exports.get_students = function(req,res){
     body = req.query;
@@ -70,7 +70,7 @@ exports.give_attendance = function(req,res){
 
                if( !absentRecord || absentRecord.length === 0 ) absentRecord = [];
 
-               absentRecord.push({'teacher': tcode, 'subject': subject, 'date': Date.now()});
+               absentRecord.push({'teacherCode': tcode, 'subject': subject, 'date': Date.now()});
                student.data.absentRecord = absentRecord;
            });
            var count = 0;
@@ -82,22 +82,24 @@ exports.give_attendance = function(req,res){
                    var docRef = collectionRef.doc(student.id);
                    batches[commitCount].update(docRef, student.data.absentRecord);
                    count += 1;
-                   var attendance = {
-                       schoolCode: icode,
-                       teacherCode: tcode,
-                       studentCode: student.data.code,
-                       class: cl,
-                       section: section,
-                       subjectCode: subject,
-                       date: Date.now()
-                   };
-                   attendanceArray.push(attendance);
+
                } else{
                    count = 0;
                    commitCount += 1;
                    batches[commitCount] = db.batch();
                }
-           }); //batch created for bulk create in SQL and Commit in firestore.
+           });
+
+           //updating number of clases and then committing the changes
+           Classes.findOne({ where: {schoolCode: icode, teacherCode: tcode, class: cl, section: section, subjectCode: subject} })
+           .then(cl =>{
+               return cl.increment('numClasses');
+           }).then(()=>{
+            for (var i = 0; i < batches.length; i++) {
+                batches[i].commit().then(function () {});
+            }
+            res.send({'status': 'success', 'message': `Attendance/Absence added ${absentList.length}.`})
+           });
            
        }
    });

@@ -19,7 +19,9 @@ router.get('/homework',formidableMiddleware(),check_homeworks);
 router.get('/homework/submissions',formidableMiddleware(),check_submissions);
 router.get('/homework/submissions/download',get_homework);
 
-router.get('/attendace',get_students);
+//for attendance
+router.get('/attendance',get_students);
+router.post('/attendance', give_attendance);
 
 router.get('/quiz',get_quiz);
 router.post('/quiz',set_quiz);
@@ -31,5 +33,6 @@ router.patch('/exam', grade_exam);
 
 router.get('/announce', get_announcements);
 router.post('/announce', make_announcement);
+
 
 module.exports = router;

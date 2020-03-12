@@ -26,7 +26,6 @@ const Classes = sequelize.define('Classes',{
         type: Sequelize.INTEGER,
         allowNull: false
     }
-
 },
 { 
     freezeTableName: true
