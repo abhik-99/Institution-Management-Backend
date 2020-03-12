@@ -41,4 +41,64 @@ exports.give_attendance = function(req,res){
     3. Add the details of the absent students to the the absence database.
     4. Increment the numClasses in the Classes database for that specific teacher's period.
     */
+   body = req.body;
+   absentStudents = body.absentStudents;
+   icode = body.icode;
+   tcode = body.tcode;
+   subject = body.subCode;
+   cl = body.class;
+   sec = body.section;
+   if(!scode || !icode || !tcode || !subject || !cl || !sec) { res.send({'status': 'failure','message': 'Please send proper arguments!'}); }
+   attendanceArray = [];
+   db.collection(`profiles/students/${icode}`)
+   .where('class', '==', cl)
+   .where('sec', '==', sec)
+   .get()
+   .then(snap =>{
+       var collectionRef = db.collection(`profiles/students/${icode}`);
+       if( !snap) { res.send({'status':'failure', 'error': 'No such School found!'}); }
+       absentList = [];
+       snap.forEach(doc=>{
+           if( doc.id in absentStudents) { absentList.push({'id': doc.id, 'data': doc.data()}); }
+       });
+       
+       if(absentList.length === 0) { res.send({'status': 'success', 'message': 'full attendance detected!'}); }
+       else {
+           absentList.forEach((student) =>{
+               // get absentRecord and append the new absent data
+               absentRecord = student.data.absentRecord;
+
+               if( !absentRecord || absentRecord.length === 0 ) absentRecord = [];
+
+               absentRecord.push({'teacher': tcode, 'subject': subject, 'date': Date.now()});
+               student.data.absentRecord = absentRecord;
+           });
+           var count = 0;
+           var commitCount = 0;
+           var batches = [];
+           batches[commitCount] = db.batch();
+           absentList.forEach( student =>{
+               if(count <= 498){
+                   var docRef = collectionRef.doc(student.id);
+                   batches[commitCount].update(docRef, student.data.absentRecord);
+                   count += 1;
+                   var attendance = {
+                       schoolCode: icode,
+                       teacherCode: tcode,
+                       studentCode: student.data.code,
+                       class: cl,
+                       section: section,
+                       subjectCode: subject,
+                       date: Date.now()
+                   };
+                   attendanceArray.push(attendance);
+               } else{
+                   count = 0;
+                   commitCount += 1;
+                   batches[commitCount] = db.batch();
+               }
+           }); //batch created for bulk create in SQL and Commit in firestore.
+           
+       }
+   });
 };
