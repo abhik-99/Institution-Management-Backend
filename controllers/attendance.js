@@ -104,3 +104,47 @@ exports.give_attendance = function(req,res){
        }
    });
 };
+
+exports.get_attendance = function(req,res){
+    body = req.query;
+    icode = body.icode;
+    id = body.docId; //document ID of the student whose attendance is needed.
+    subject = body.subCode;
+    tcode = body.tcode;
+    if( !id || !icode ) { res.send({'status': 'failure', 'error': 'Please send proper information!'}); }
+
+    db.collection(`profiles/students/${icode}`).doc(id)
+    .get()
+    .then(doc =>{
+        if(!doc) { res.send({'status':'failure', 'error': 'No such student found!'}); }
+        student = doc.data();
+        absentRecord = student.absentRecord;
+        if(tcode) { absentRecord = absentRecord.filter( record => record.teacherCode === tcode); }
+        if(subject) { absentRecord = absentRecord.filter( record => record.subject === subject); }
+        if(absentRecord.length === 0) { res.send({'status': 'success', 'message': 'Student has not been absent yet!'}); }
+        else{
+            tMap = {};
+            absentRecord.forEach(record =>{
+                if(!tMap[record.teacherCode]) { tMap[record.teacherCode] = [];}
+                else{ 
+                    if((!record.subject in tMap[record.teacherCode])){
+                        tMap[record.teacherCode].push(record.subject);
+                    }
+                }
+            });
+            //implement the attendance accquiring logic from Classes.
+            numClasses = [];
+            
+            res.send({
+                'status': 'success', 
+                'data':{
+                    'scode': student.code,
+                    'sname': student.name,
+                    'absentRecord': absentRecord,
+                    'numClassesRecord': numClasses
+                }
+            });
+
+        }
+    });
+}
