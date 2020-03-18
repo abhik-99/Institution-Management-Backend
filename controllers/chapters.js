@@ -1,3 +1,7 @@
+/*
+Controller for handling of doubts needs to be made.
+*/
+
 const {db} = require('./db');
 
 //POST request

@@ -9,6 +9,7 @@ var {get_quiz, submit_quiz} = require('../controllers/quiz');
 var {get_announcements} = require('../controllers/announcement');
 var {get_exams} = require('../controllers/exam');
 var {get_chapters} = require('../controllers/chapters');
+var {get_merit} = require('../controllers/merits');
 
 var {uploadDir} = require('../config/secrets');
 
@@ -26,5 +27,7 @@ router.get('/announce/:icode', get_announcements);
 router.get('/exam/:icode/:class/:examType', get_exams);
 
 router.get('/chapters/:icode/:class/:sec', get_chapters);
+
+router.get('/merits/:icode/:class/:sec', get_merit);
 
 module.exports = router;

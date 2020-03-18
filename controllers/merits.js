@@ -1,18 +1,58 @@
 const {db} = require('./db');
 
-//multipart formdata
+//POST request
 exports.edit_merit = function(req,res){
-
-};
-
-exports.get_merit = function(req, res){
     params = req.params;
-    query = req.query;
-
+    body = req.body;
+    //URL Parameters
     icode = params.icode;
     cl = params.class;
     sec = params.sec;
+    //URL Query
+    scode = body.scode;
+    reason = body.reason;
+    merit = body.merit; //incase of demerit, value is false.
+    icode = body.tcode;
+    if( !scode || !reason || ( merit !== 'true' && merit !== 'false') || !tcode) { res.send({'status': 'failure', 'message': 'Please provide proper data!'}); }
+    else{
+        db.collection(`profiles/students/${icode}`)
+        .where('class', '==', cl)
+        .where('sec', '==', sec)
+        .where('code', '==', scode)
+        .get()
+        .then( snap =>{
+            if(!snap) { res.send({'status': 'failure', 'message': 'No Students found!'}); }
+            merit = merit === 'true';
+            info = {};
+            snap.forEach( doc => info = { 'id':doc.id, 'data':doc.data()});
+            merits = info.data.merits;
 
+            if( !merits) merits = { points:0, meritHistory: []};
+
+            if(merit) merits.points += 1;
+            else merits.points -= 1;
+            merits.meritHistory.push({'date': Date.now(), 'reason': reason, 'teacherCode': tcode});
+            db.collection(`profiles/students/${icode}`).doc(info.id)
+            .update({
+                merits: merits
+            })
+            .then(() => res.send({'status': 'success', 'message': `Merit of ${info.name} changed!`}))
+            .catch(err => res.send({ 'status': 'failure', 'error':err}));
+        })
+        .catch(err => res.send({ 'status': 'failure', 'error':err}));
+    }
+
+};
+
+//GET Request
+exports.get_merit = function(req, res){
+    params = req.params;
+    query = req.query;
+    //URL parameters
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+    //URL query
     scode = query.scode;
 
     if(req.headers.type === 'student' && !scode) { req.send({'status': 'failure', 'message': 'Please send proper data!'}); }
@@ -38,13 +78,13 @@ exports.get_merit = function(req, res){
 exports.reset_merit = function(req, res){
     params = req.params;
     body = req.body;
-
+    //URL parameters
     icode = params.icode;
-
+    //URL Request Body
     id = body.id;
     tcode = body.tcode;
 
-    if(!id) { res.send({'status':'failure', 'message': 'Please send proper data!'}); }
+    if(!id || !tcode) { res.send({'status':'failure', 'message': 'Please send proper data!'}); }
     else{
         db.collection(`profiles/students/${icode}`).doc(id)
         .get()
