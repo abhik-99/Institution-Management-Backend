@@ -68,19 +68,29 @@ exports.add_chapter = function(req, res){
     }
 };
 
+//PATCH request.
 exports.edit_chapter_status = function(req, res){
+    params = req.params;
+    body = req.body; 
+    //following obtained from URL parameter
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
 
+    //following obtained form URL request body.
+
+    console.log("body:", body);
 };
 
 //GET Request
 exports.get_chapters = function(req, res){
     params = req.params;
     query = req.query; 
-
+    //following are obtained from the URL parameter
     icode = params.icode;
     cl = params.class;
     sec = params.sec;
-
+    //following are obtained from the URL query
     sub = query.sub;
     if( !icode || !cl || !sec) { res.send({'status':'failure','message':'Please give proper paramters!'}); }
     else{
