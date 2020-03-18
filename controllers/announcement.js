@@ -5,13 +5,14 @@ exports.get_announcements = function(req,res){
     //following needs to be sent in url params
     params = req.params;
     icode = params.icode;
-    section = params.section;
-    cl = params.class;
+
 
     //following needs to be sent in the query
-    body = req.query;
-    author = body.author;
-    gen_announce = body.gen_announce;
+    query = req.query;
+    section = query.sec;
+    cl = query.class;
+    author = query.author;
+    gen_announce = query.gen_announce;
 
     if( gen_announce){
         if( gen_announce != 'true' && gen_announce != 'false') { res.send({'status':'failure', 'error':'Please enter proper query parameters!'}); }        
@@ -87,7 +88,7 @@ exports.make_announcement = function(req,res){
     .catch(err => res.send({'status': 'failure', 'error':'Error in Teacher\'s Profile!'}));
 }
 
-//DELETE Request
+//DELETE Request. Not Given in the UI
 exports.recede_announcement = function(req,res){
     
 };

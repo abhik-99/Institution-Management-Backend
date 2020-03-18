@@ -7,15 +7,20 @@ Exam Types:
 let {exam} = require('../config/exam_map');
 let {db} = require('./db');
 
+//GET Request
 exports.get_exams = function(req, res){
-    body = req.query;
-    icode = body.icode;
-    cl = body.class;
-    examType = body.examType;
-    section = body.section;
-    subject = body.subject;
-    author = body.tcode;
-    // console.log(body);
+    query = req.query;
+    params = req.params;
+    //following via URL parameters
+    icode = params.icode;
+    cl = params.class;
+    examType = params.examType;
+
+    //following via URL query
+    section = query.section;
+    subject = query.subject;
+    author = query.tcode;
+
     db.collection('exam')
     .get()
     .then(snap =>{
@@ -49,7 +54,7 @@ exports.get_exams = function(req, res){
     });
 };
 
-//expects a json body which conforms to the exam schema (somewhat) (application/json)
+//POST request. expects a json body which conforms to the exam schema (somewhat) (application/json)
 exports.set_exam = function(req,res){
     body = req.body;
     chapters = body.chapters;
@@ -89,13 +94,14 @@ exports.set_exam = function(req,res){
     })
     .catch( err => res.send({'status': 'failure', 'error': err.message}));
 };
-//aMxNQqWIsE1PDJ5TGJtY
+
+//PATCH request
 //grades the exam. receives the exam's docID and scores from the frontend (assigned by teacher).
 // the exam's docId is sent by get_exams handler
 exports.grade_exam = function(req,res){
     body = req.body;
     docId = body.examId; //document Id of the exam in firestore
-    marksList = body.marksList;
+    marksList = body.marksList; // marks of each student
     db.collection('exam').doc(docId)
     .get()
     .then(doc => {

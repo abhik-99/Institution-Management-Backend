@@ -10,7 +10,7 @@ var {assign_homework,check_homeworks,check_submissions,get_homework} = require('
 var {get_quiz, set_quiz, get_submissions} = require('../controllers/quiz');
 var {set_exam,get_exams, grade_exam} = require('../controllers/exam');
 var {get_announcements, make_announcement} = require('../controllers/announcement');
-
+var {get_chapters, edit_chapter_status, add_chapter, remove_chapter} = require('../controllers/chapters');
 var {uploadDir} = require('../config/secrets');
 
 router.use(check_valid, only_teacher);
@@ -31,13 +31,18 @@ router.post('/quiz',set_quiz);
 router.get('/quiz/submissions', get_submissions);
 
 //for exam
-router.get('/exam', get_exams);
+router.get('/exam/:icode/:class/:examType', get_exams);
 router.post('/exam', set_exam);
 router.patch('/exam', grade_exam);
 
 //for announcements
-router.get('/announce', get_announcements);
+router.get('/announce/:icode', get_announcements);
 router.post('/announce', make_announcement);
 
+//for chapters
+router.get('/chapters/:icode/:class/:sec', get_chapters);
+router.post('/chapters/', add_chapter);
+router.patch('/chapters/:icode/:class/:sec', edit_chapter_status);
+router.delete('/chapters/:icode/:class/:sec', remove_chapter);
 
 module.exports = router;
