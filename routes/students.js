@@ -1,3 +1,5 @@
+/*Need to Edit the endpoints to accomodate parameters*/
+
 var express = require('express');
 var router = express.Router();
 var formidableMiddleware = require('express-formidable');
@@ -8,10 +10,9 @@ var {get_announcements} = require('../controllers/announcement');
 
 var {uploadDir} = require('../config/secrets');
 
-/* GET users listing. */
-//router.get('/:type', controller.show_type);
 router.use(check_valid, only_student);
-router.get('/homework',formidableMiddleware(),check_homeworks);
+
+router.get('/homework',check_homeworks);
 router.post('/homework',formidableMiddleware({uploadDir: uploadDir, multiples: true}),submit_homework);
 
 router.get('/quiz',get_quiz);

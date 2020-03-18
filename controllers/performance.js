@@ -9,7 +9,7 @@ Endpoints to be accessible to students, teachers, and parents.
 const {db} = require('./db');
 
 exports.get_student_profile = function(req,res){
-    body = req.query;
+    body = req.params;
     scode = body.scode;
     icode = body.icode;
     if( !scode || !icode) { res.send({'status': 'failure', 'error': 'Please provide proper information!'}); }

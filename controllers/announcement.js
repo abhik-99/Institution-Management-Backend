@@ -1,13 +1,18 @@
 let {db} = require('./db');
 
+//GET request
 exports.get_announcements = function(req,res){
+    //following needs to be sent in url params
+    params = req.params;
+    icode = params.icode;
+    section = params.section;
+    cl = params.class;
+
+    //following needs to be sent in the query
     body = req.query;
-    
-    icode = body.icode;
-    section = body.section;
-    cl = body.class;
     author = body.author;
     gen_announce = body.gen_announce;
+
     if( gen_announce){
         if( gen_announce != 'true' && gen_announce != 'false') { res.send({'status':'failure', 'error':'Please enter proper query parameters!'}); }        
     }
@@ -33,6 +38,7 @@ exports.get_announcements = function(req,res){
     .catch( err => res.send({'status': 'failure', 'error': err.Error}));
 };
 
+//POST request
 exports.make_announcement = function(req,res){
     body = req.body;
     gen_announce = body.gen_announce;
@@ -42,6 +48,7 @@ exports.make_announcement = function(req,res){
     title = body.announcement.title;
     desc = body.announcement.desc;
     tcode = body.tcode;
+    date = Date.now();
     
     announcement = {};
 
@@ -72,10 +79,15 @@ exports.make_announcement = function(req,res){
         });
         if(teacher.length != 1) { res.send({'status':'failure', 'error': 'Duplicate or no profile found!'}); }
         announcement.author = teacher[0];
-        
+        announcement.date = date;
         db.collection('annoucement').add(announcement)
         .then(()=> res.send({'status':'success', 'message': 'Announcement added successfully!'}))
         .catch( err => res.send({'status': 'failure', 'error': err}));
     })
     .catch(err => res.send({'status': 'failure', 'error':'Error in Teacher\'s Profile!'}));
 }
+
+//DELETE Request
+exports.recede_announcement = function(req,res){
+    
+};

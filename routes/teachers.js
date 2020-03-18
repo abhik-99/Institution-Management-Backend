@@ -1,3 +1,6 @@
+/*Need to Edit the endpoints to accomodate parameters*/
+
+
 var express = require('express');
 var router = express.Router();
 var formidableMiddleware = require('express-formidable');
@@ -10,27 +13,29 @@ var {get_announcements, make_announcement} = require('../controllers/announcemen
 
 var {uploadDir} = require('../config/secrets');
 
-/* GET users listing. */
-//router.get('/:type', controller.show_type);
 router.use(check_valid, only_teacher);
 
+//for homework
 router.post('/homework',formidableMiddleware({uploadDir: uploadDir, multiples: true }),assign_homework);
-router.get('/homework',formidableMiddleware(),check_homeworks);
-router.get('/homework/submissions',formidableMiddleware(),check_submissions);
+router.get('/homework',check_homeworks);
+router.get('/homework/submissions',check_submissions);
 router.get('/homework/submissions/download',get_homework);
 
 //for attendance
 router.get('/attendance',get_students);
 router.post('/attendance', give_attendance);
 
+//for quiz
 router.get('/quiz',get_quiz);
 router.post('/quiz',set_quiz);
 router.get('/quiz/submissions', get_submissions);
 
+//for exam
 router.get('/exam', get_exams);
 router.post('/exam', set_exam);
 router.patch('/exam', grade_exam);
 
+//for announcements
 router.get('/announce', get_announcements);
 router.post('/announce', make_announcement);
 
