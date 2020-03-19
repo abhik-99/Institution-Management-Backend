@@ -4,6 +4,8 @@
 var express = require('express');
 var router = express.Router();
 var formidableMiddleware = require('express-formidable');
+var {uploadDir} = require('../config/secrets');
+
 var {check_valid, only_teacher} = require('../middlewares/auth');
 var {get_students, give_attendance} = require('../controllers/attendance');
 var {assign_homework,check_homeworks,check_submissions,get_homework} = require('../controllers/homeworks');
@@ -12,7 +14,6 @@ var {set_exam,get_exams, grade_exam} = require('../controllers/exam');
 var {get_announcements, make_announcement} = require('../controllers/announcement');
 var {get_chapters, edit_chapter_status, add_chapter, remove_chapter} = require('../controllers/chapters');
 var {get_merit, edit_merit, reset_merit} = require('../controllers/merits');
-var {uploadDir} = require('../config/secrets');
 
 router.use(check_valid, only_teacher);
 

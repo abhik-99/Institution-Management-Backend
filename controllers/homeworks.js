@@ -35,9 +35,10 @@ exports.assign_homework = function(req,res){
                 title: title,
                 submissions:[]
             }).then(ref=>{
-                res.send({"body":body,"filename":filename}); 
+                res.send({'status': 'success', 'message': `${filename} uploaded!`}); 
             });        
-        }).catch(err => res.send({'message':err}));
+        })
+        .catch( err => res.send({'status': 'failure', 'error': err}));
     } 
 };
 
@@ -63,15 +64,16 @@ exports.check_homeworks = function(req,res){
         .where('subject','==',sub)
         .get()
         .then(snap=>{
+            if(!snap) res.send({'status': 'failure', 'message': 'No Match Found!'})
             list = [];
             snap.forEach(doc => {
                 info = _.pick(doc.data(),['author','title','subject','class','section','chapter','due_date','school_code'])
                 list.push(info);
             });
             //console.log(list);
-            res.json({'homeworks':list});
+            res.json({'status': 'success','homeworks':list});
         })
-        .catch(err => res.send({'message': err}));
+        .catch(err => res.send({'status': 'failure', 'error': err}));
     }
 };
 
@@ -104,7 +106,8 @@ exports.submit_homework = function(req,res){
         .where('title','==',title)
         .get()
         .then(snap =>{ 
-            console.log("snapshot received!",snap);
+            //console.log("snapshot received!",snap);
+            if(!snap) res.send({'status': 'failure', 'message': 'No Match Found!'})
             ob = {student_code: student, file_path: filename,sub_time: now.getTime() };
             snap.forEach(doc =>{
                 id = doc.id;
@@ -116,7 +119,7 @@ exports.submit_homework = function(req,res){
             });
             res.send({'status': 'success','message': 'Submission Successful!'}); 
         })
-        .catch(err => res.send({'status':'failure','message':err}));  
+        .catch(err => res.send({'status':'failure','error':err}));  
     }
 };
 
@@ -155,7 +158,7 @@ exports.check_submissions = function(req,res){
             });
 
             res.json({'status': 'success','submissions': subs});
-        }).catch(err => res.send({'status': 'failure','message': err}));
+        }).catch(err => res.send({'status': 'failure','error': err}));
     }      
 };
 
@@ -174,7 +177,7 @@ exports.get_homework = function(req,res){
             subs = info.submissions;
             file_path = subs.filter(eachSub => eachSub.student_code === scode)[0].file_path;
             download_link(bucketName,file_path).then((data)=>{
-                res.json({download_link: data[0]});
+                res.json({'status': 'success', 'download_link': data[0]});
             });
         });
     }    
