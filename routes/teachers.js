@@ -14,6 +14,7 @@ var {set_exam,get_exams, grade_exam} = require('../controllers/exam');
 var {get_announcements, make_announcement} = require('../controllers/announcement');
 var {get_chapters, edit_chapter_status, add_chapter, remove_chapter} = require('../controllers/chapters');
 var {get_merit, edit_merit, reset_merit} = require('../controllers/merits');
+var {publish_doc, get_doc, doc_download} = require('../controllers/documents');
 
 router.use(check_valid, only_teacher);
 
@@ -51,5 +52,10 @@ router.delete('/chapters/:icode/:class/:sec', remove_chapter);
 router.get('/merits/:icode/:class/:sec', get_merit);
 router.post('/merits/:icode/:class/:sec', edit_merit);
 router.post('/merits/reset/:icode', reset_merit);
+
+//for Documents
+router.get('/docs/:icode/:class/:sec', get_doc);
+router.get('/docs/download/:icode/', doc_download);
+router.post('/docs/:icode/:class/:sec', publish_doc);
 
 module.exports = router;

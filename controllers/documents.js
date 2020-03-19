@@ -3,7 +3,7 @@ var {upload_file,download_link} = require('../gcp_buckets/file_handling');
 var {bucketName} = require('../config/secrets');
 var _ = require('lodash')
 
-//multipart formdata
+//POST Request. Uses formidablemiddleware
 exports.publish_doc = function(req,res){
     console.log("Request Received!");
     body = req.fields;
@@ -39,7 +39,7 @@ exports.publish_doc = function(req,res){
     }
 };
 
-
+//GET request
 exports.get_doc = function(req,res){
     params = req.params;
     query = req.query;
@@ -74,8 +74,6 @@ exports.doc_download = function(req,res){
     query = req.query;
     //URL parameters
     icode = params.icode;
-    cl = params.class;
-    sec = params.sec;
 
     //URL Query
     docId = query.docId;
