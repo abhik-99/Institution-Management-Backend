@@ -12,7 +12,7 @@ var {assign_homework,check_homeworks,check_submissions,get_homework} = require('
 var {get_quiz, set_quiz, get_submissions} = require('../controllers/quiz');
 var {set_exam,get_exams, grade_exam} = require('../controllers/exam');
 var {get_announcements, make_announcement} = require('../controllers/announcement');
-var {get_chapters, edit_chapter_status, add_chapter, remove_chapter} = require('../controllers/chapters');
+var {get_chapters, edit_chapter_status, add_chapter, remove_chapter, get_doubts, resolve_doubt} = require('../controllers/chapters');
 var {get_merit, edit_merit, reset_merit} = require('../controllers/merits');
 var {publish_doc, get_doc, doc_download} = require('../controllers/documents');
 
@@ -47,6 +47,10 @@ router.get('/chapters/:icode/:class/:sec', get_chapters);
 router.post('/chapters/', add_chapter);
 router.patch('/chapters/:icode/:class/:sec', edit_chapter_status);
 router.delete('/chapters/:icode/:class/:sec', remove_chapter);
+
+//for chapter doubts and resolution
+router.get('/chapters/doubts/:icode/:class/:sec', get_doubt)
+router.post('/chapters/doubts/resolve/:icode/:class/:sec', resolve_doubt)
 
 //for Reports/Merits
 router.get('/merits/:icode/:class/:sec', get_merit);

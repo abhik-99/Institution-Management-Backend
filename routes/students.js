@@ -11,24 +11,35 @@ var {get_exams} = require('../controllers/exam');
 var {get_chapters} = require('../controllers/chapters');
 var {get_merit} = require('../controllers/merits');
 var {get_doc, doc_download} = require('../controllers/documents');
+var {raise_doubt, get_doubts} = require('../controllers/chapters');
 
 var {uploadDir} = require('../config/secrets');
 
 router.use(check_valid, only_student);
 
+//for homework
 router.get('/homework',check_homeworks);
 router.post('/homework',formidableMiddleware({uploadDir: uploadDir, multiples: true}),submit_homework);
 
+//for quiz
 router.get('/quiz',get_quiz);
 router.patch('/quiz', submit_quiz);
 
+//for fetching announcements
 router.get('/announce/:icode', get_announcements);
 
-
+//for getting exams and their scores
 router.get('/exam/:icode/:class/:examType', get_exams);
 
+//for getting chapters and chapter details. Returns doubts asked as well.
+//Doubts may be filtered for each student.
 router.get('/chapters/:icode/:class/:sec', get_chapters);
 
+//for raising doubts and fetching chapter doubts in a refined manned.
+router.get('/chapters/doubts/:icode/:class/:sec', get_doubts);
+router.post('/chapters/doubts/:icode/:class/:sec', raise_doubt);
+
+//for fetching the merit points and history of a student.
 router.get('/merits/:icode/:class/:sec', get_merit);
 
 //for Documents

@@ -74,6 +74,7 @@ exports.get_merit = function(req, res){
     })
     .catch( err => res.send({'status':'failure', 'error':err}));
 };
+
 //POST Request.
 exports.reset_merit = function(req, res){
     params = req.params;

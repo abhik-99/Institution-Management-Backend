@@ -1,7 +1,3 @@
-/*
-Controller for handling of doubts needs to be made.
-*/
-
 const {db} = require('./db');
 
 //POST request
@@ -41,7 +37,7 @@ exports.add_chapter = function(req, res){
                     doc.chapters[0].started_on = Date.now();
                 }
                 db.collection('chapters').add(doc)
-                .then( id => res.send({'status':'success', 'message': `docID:${id}`}))
+                .then( id => res.send({'status':'success', 'message': `docId:${id}`}))
                 .catch( err => res.send({'status':'failure', 'error': err}));
             }else{
                 //such a subject document exists. chapter needs to be searched and added.
@@ -186,7 +182,7 @@ exports.raise_doubt = function(req,res){
     scode = body.scode; //student code
     sname = body.sname; //student name
     if( !docId || !chapterName || !doubtText || !scode) { res.send({'status': 'failure', 'message': 'Please send proper data!'}); }
-    db.collection('chapters').doc(docID)
+    db.collection('chapters').doc(docId)
     .get()
     .then( doc =>{
         if(!doc) res.send({'status': 'failure', 'message': 'No Match Found!'})
@@ -212,8 +208,37 @@ exports.raise_doubt = function(req,res){
     .catch( err => res.send({ 'status': 'failure', 'error': err}));
 };
 
+//GET request
+exports.get_doubts = function(req,res){
+    params = req.params;
+    query = req.query;
+    //URL parameters
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+    //URL query
+    docId = body.docId;
+    chapterName = body.chapterName;
+    scode = body.scode; //student code
+    db.collection('chapters').doc(docId)
+    .get()
+    .then(doc =>{
+        if(!doc) res.send({'status': 'failure', 'message': 'No Match Found!'})
+        info = doc.data();
+        chapter = info.chapters.filter( each => each.name === chapterName);
+        if( chapter.length !== 1) res.send({'status':'failure', 'message': 'Duplicate or No chapters found!'})
+        doubts = chapter[0].doubts;
+        if(scode) doubts = doubts.filter(doubt => doubt.scode === scode);
+        res.send({'status': 'success', 'doubts': doubts});
+    })
+    .catch( err => res.send({ 'status': 'failure', 'error': err}));
+};
+
 //POST request
 exports.resolve_doubt = function(req,res){
+    params = req.params;
+    body = req.body;
+    //URL parameters
     icode = params.icode;
     cl = params.class;
     sec = params.sec;
