@@ -162,8 +162,57 @@ exports.remove_chapter = function(req, res){
 
     //following parameters are to be obtained from URL query
     id = query.id;
+    chapterName = query.chapterName
     if(!id) { res.send({'status': 'failure', 'message': 'Please send proper data!'}); }
-    db.collection('chapters').doc(id).delete()
-    .then(() => res.send({'status': 'success', 'message': `Successfully deleted ${id}`}))
+    db.collection('chapters').doc(id)
+    .get()
+    .then(doc => {
+        //needs to be implemented!
+    })
     .catch( err => res.send({ 'status': 'failure', 'error': err}));
+};
+
+//POST request
+exports.raise_doubt = function(req,res){
+    body = req.body; 
+    //following are obtained from the URL parameter
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+    //following are obtained from the URL Body
+    docId = body.docId;
+    chapterName = body.chapterName;
+    doubtText = body.dText; //main text of the Doubt
+    scode = body.scode; //student code
+    sname = body.sname; //student name
+    if( !docId || !chapterName || !doubtText || !scode) { res.send({'status': 'failure', 'message': 'Please send proper data!'}); }
+    db.collection('chapters').doc(docID)
+    .get()
+    .then( doc =>{
+        if(!doc) res.send({'status': 'failure', 'message': 'No Match Found!'})
+        info = doc.data();
+        index = -1;
+        chapters = info.chapters
+        for( i=0; i<info.chapters.length ; i++){
+            if( chapterName === chapters[i].name){
+                index = i;
+                break;
+            }
+        }
+        if( index === -1) res.send({'status': 'failure', 'message': 'Duplicate or No Chapters Found!'})
+        
+        if(!chapters[index].doubts) chapters[index].doubts = [];
+        chapters[index].doubts.push({ 'scode': scode, 'sname': sname, 'doubtText': doubtText});
+        db.collection('chapters').doc(docId).update({
+            chapters: chapters
+        })
+        .then(()=> res.send({'status': 'success', 'message': 'Doubt Added!'}))
+        .catch( err => res.send({ 'status': 'failure', 'error': err}));
+    })
+    .catch( err => res.send({ 'status': 'failure', 'error': err}));
+};
+
+//POST request
+exports.resolve_doubt = function(req,res){
+
 };
