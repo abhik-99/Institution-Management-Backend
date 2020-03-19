@@ -193,7 +193,7 @@ exports.raise_doubt = function(req,res){
         info = doc.data();
         index = -1;
         chapters = info.chapters
-        for( i=0; i<info.chapters.length ; i++){
+        for( i=0; i<chapters.length ; i++){
             if( chapterName === chapters[i].name){
                 index = i;
                 break;
@@ -202,7 +202,7 @@ exports.raise_doubt = function(req,res){
         if( index === -1) res.send({'status': 'failure', 'message': 'Duplicate or No Chapters Found!'})
         
         if(!chapters[index].doubts) chapters[index].doubts = [];
-        chapters[index].doubts.push({ 'scode': scode, 'sname': sname, 'doubtText': doubtText});
+        chapters[index].doubts.push({ 'scode': scode, 'sname': sname, 'doubtText': doubtText, 'asked': Date.now()});
         db.collection('chapters').doc(docId).update({
             chapters: chapters
         })
@@ -214,5 +214,49 @@ exports.raise_doubt = function(req,res){
 
 //POST request
 exports.resolve_doubt = function(req,res){
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+    //following are obtained from the URL Body
+    docId = body.docId;
+    chapterName = body.chapterName;
+    answer = body.answer; //main text of the Doubt
+    scode = body.scode; //student code
+    asked = body.asked; //student name
+    if( !docId || !chapterName || !answer || !scode || !asked) { res.send({'status': 'failure', 'message': 'Please send proper data!'}); }
 
+    db.collection('chapters').doc(docId)
+    .get()
+    .then( doc =>{
+        if(!doc) res.send({'status': 'failure', 'message': 'No Match Found!'})
+        info = doc.data();
+        index = -1;
+        chapters = info.chapters
+        for( i=0; i<chapters.length ; i++){
+            if( chapterName === chapters[i].name){
+                index = i;
+                break;
+            }
+        }
+        if( index === -1) res.send({'status': 'failure', 'message': 'Duplicate or No Chapters Found!'})
+
+        doubts = chapter[index].doubts;
+        if(!doubts || doubts.length === 0) res.send({'status':'failure', 'message': 'No doubts in this Chapter!'})
+        dI = -1;
+        for( i=0; i<doubts.length; i++){
+            if( doubts[i].scode === scode && doubts[i].asked === asked){
+                dI = i;
+                break;
+            }
+        }
+        if( dI === -1) res.send({'status': 'failure', 'message': 'No such Doubts asked by the Student in this Chapter!'})
+        chapters[index].doubts[dI].answer = answer;
+        db.collection('chapters').doc(docId).update({
+            chapters: chapters
+        })
+        .then(()=> res.send({'status': 'success', 'message': 'Answer Added!'}))
+        .catch( err => res.send({ 'status': 'failure', 'error': err}));
+
+    })
+    .catch( err => res.send({ 'status': 'failure', 'error': err}));
 };
