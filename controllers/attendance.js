@@ -1,8 +1,8 @@
-let {db, sequelize} = require('./db');
+let {db} = require('./db');
 // let {SQL_USER, SQL_PASSWORD, SQL_DATABASE, INSTANCE_CONNECTION_NAME} = require('../config/db');
 // let {Sequelize} = require('sequelize');
 // let {Attendance} = require('../models/attendance');
- let {Classes} = require('../models/class_info');
+let {Classes} = require('../models');
 
 exports.get_students = function(req,res){
     params = req.params;
@@ -51,7 +51,7 @@ exports.give_attendance = function(req,res){
    tcode = body.tcode;
    subject = body.subCode;
    absentStudents = body.absentStudents;
-   console.log(absentStudents);
+
    if(!icode || !tcode || !subject || !cl || !sec ) { res.send({'status': 'failure','message': 'Please send proper arguments!'}); }
    else{
         db.collection(`profiles/students/${icode}`)
@@ -70,48 +70,31 @@ exports.give_attendance = function(req,res){
             
             if(absentList.length === 0) { res.send({'status': 'success', 'message': 'full attendance detected!'}); }
             else {
-                absentList.forEach((student) =>{
-                    // get absentRecord and append the new absent data
-                    absentRecord = student.data.absentRecord;
 
-                    if( !absentRecord || absentRecord.length === 0 ) absentRecord = [];
-
-                    absentRecord.push({'teacherCode': tcode, 'subject': subject, 'date': Date.now()});
-                    student.data.absentRecord = absentRecord;
-                });
-                
-                var count = 0;
-                var commitCount = 0;
-                var batches = {};
-                batches[commitCount] = db.batch();
-                absentList.forEach( student =>{
-                    if(count <= 498){
-                        var docRef = collectionRef.doc(student.id);
-                        batches[commitCount].update(docRef, {'absentRecord':student.data.absentRecord});
-                        count += 1;
-
-                    } else{
-                        count = 0;
-                        commitCount += 1;
-                        batches[commitCount] = db.batch();
-                    }
-                });
-                
                 //updating number of clases and then committing the changes
                 Classes.findOne({ where: {schoolCode: icode, teacherCode: tcode, class: cl, section: sec, subjectCode: subject} })
                 .then(row =>{
-                    console.log(row);
-                    if(row){
-                        
-                        return row.increment('numClasses');
-                    }
-                    else return Promise.reject(Error('No Match Found in DB!'));
+                    absentList.forEach((student) =>{
+                        // get absentRecord and append the new absent data
+                        absentRecord = student.data.absentRecord;
+    
+                        if( !absentRecord || absentRecord.length === 0 ) absentRecord = [];
+    
+                        absentRecord.push({'id': row.dataValues.id,'teacherCode': tcode, 'subject': subject, 'date': Date.now()});
+                        student.data.absentRecord = absentRecord;
+                    });                   
+    
+                    batch = db.batch();
+                    absentList.forEach( student =>{
+                        var docRef = collectionRef.doc(student.id);
+                        batch.update(docRef,{ 'absentRecord': student.data.absentRecord});
+                    });
+
+                    if(row) return row.increment('numClasses')
+                    else return Promise.reject(Error('No Match Found in DB!'))
                    }).then(()=>{
-                    for (var i = 0; i < batches.length; i++) {
-                        batches[i].commit().then(function () {});
-                    }
+                       batch.commit().then(() => res.send({'status': 'success','message': `Attendance/Absence added ${absentList.length}.`}) )                    
                     
-                    res.send({'status': 'success','message': `Attendance/Absence added ${absentList.length}.`})
                 })
                 .catch( err => res.send({'status': 'failure', 'error in SQL': err.message}));
                 

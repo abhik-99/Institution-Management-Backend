@@ -1,7 +1,6 @@
+let {Classes} = require('../models');
 
- let {Classes} = require('../models/class_info');
-
- exports.seed_SQL_db = function(req,res){
+exports.seed_SQL_db = function(req,res){
      //URL body
      body = req.body;
      ob = {
