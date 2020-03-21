@@ -1,3 +1,7 @@
+/*
+Adding the capability of storing images for questions
+*/
+
 const {db} = require('./db');
 
 exports.get_quiz = function(req,res){

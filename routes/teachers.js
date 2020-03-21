@@ -49,7 +49,7 @@ router.patch('/chapters/:icode/:class/:sec', edit_chapter_status);
 router.delete('/chapters/:icode/:class/:sec', remove_chapter);
 
 //for chapter doubts and resolution
-router.get('/chapters/doubts/:icode/:class/:sec', get_doubt)
+router.get('/chapters/doubts/:icode/:class/:sec', get_doubts)
 router.post('/chapters/doubts/resolve/:icode/:class/:sec', resolve_doubt)
 
 //for Reports/Merits

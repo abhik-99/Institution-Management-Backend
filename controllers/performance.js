@@ -9,19 +9,22 @@ Endpoints to be accessible to students, teachers, and parents.
 const {db} = require('./db');
 
 exports.get_student_profile = function(req,res){
-    body = req.params;
-    scode = body.scode;
-    icode = body.icode;
-    if( !scode || !icode) { res.send({'status': 'failure', 'error': 'Please provide proper information!'}); }
+    params = req.params;
+    query = req.query;
+    //URL parameters
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+    //URL Query
+    scode = query.scode;
+    if( !scode ) { res.send({'status': 'failure', 'error': 'Please provide proper information!'}); }
     db.collection(`profiles/students/${icode}`)
+    .where('class', '==', cl)
     .where('code', '==', scode)
     .get()
     .then(snap =>{
-        student = [];
-        snap.forEach( doc => student.push({'id': doc.id, 'data': doc.data()}));
-        if(student.length != 1) { res.send({'status': 'failure', 'error': 'Duplicate or No student found!'}); }
-        else{
-            res.send({'status': 'success', 'profile': student[0]});
-        }
+        if(!snap) res.send({'status':'failure', 'message':'No match Found!'})
+
+        // Assess performance based on the  
     });
 };

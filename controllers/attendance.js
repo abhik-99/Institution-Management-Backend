@@ -5,10 +5,11 @@ let {db, sequelize} = require('./db');
  let {Classes} = require('../models/class_info');
 
 exports.get_students = function(req,res){
-    body = req.query;
-    icode = body.icode;
-    cl = body.class;
-    sec = body.sec;
+    params = req.params;
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+    console.log(params);
     if( !icode || !cl || !sec) { res.send({'status':'failure', 'error': "Please provide proper parameters"});}
     else{
         db.collection(`profiles/students/${icode}`)
@@ -27,9 +28,7 @@ exports.get_students = function(req,res){
                 res.send({'status':'success','students': list});
             }
         })
-        .catch(err => {
-            console.log("Error",err); res.send({'status':'failure', 'error': err});
-        });
+        .catch(err => res.send({'status':'failure', 'error': err.message}));
     }    
 };
 
@@ -41,68 +40,85 @@ exports.give_attendance = function(req,res){
     3. Add the details of the absent students to the the absence database.
     4. Increment the numClasses in the Classes database for that specific teacher's period.
     */
+   params = req.params;
    body = req.body;
-   absentStudents = body.absentStudents;
-   icode = body.icode;
+   //URL Parameters   
+   icode = params.icode;  
+   cl = params.class;   
+   sec = params.sec;
+
+   //URL Body
    tcode = body.tcode;
    subject = body.subCode;
-   cl = body.class;
-   sec = body.section;
-   if(!scode || !icode || !tcode || !subject || !cl || !sec) { res.send({'status': 'failure','message': 'Please send proper arguments!'}); }
-   attendanceArray = [];
-   db.collection(`profiles/students/${icode}`)
-   .where('class', '==', cl)
-   .where('sec', '==', sec)
-   .get()
-   .then(snap =>{
-       var collectionRef = db.collection(`profiles/students/${icode}`);
-       if( !snap) { res.send({'status':'failure', 'error': 'No such School found!'}); }
-       absentList = [];
-       snap.forEach(doc=>{
-           if( doc.id in absentStudents) { absentList.push({'id': doc.id, 'data': doc.data()}); }
-       });
-       
-       if(absentList.length === 0) { res.send({'status': 'success', 'message': 'full attendance detected!'}); }
-       else {
-           absentList.forEach((student) =>{
-               // get absentRecord and append the new absent data
-               absentRecord = student.data.absentRecord;
+   absentStudents = body.absentStudents;
+   console.log(absentStudents);
+   if(!icode || !tcode || !subject || !cl || !sec ) { res.send({'status': 'failure','message': 'Please send proper arguments!'}); }
+   else{
+        db.collection(`profiles/students/${icode}`)
+        .where('class', '==', cl)
+        .where('sec', '==', sec)
+        .get()
+        .then(snap =>{
+            
+            if( !snap) { res.send({'status':'failure', 'error': 'No such School found!'}); }
 
-               if( !absentRecord || absentRecord.length === 0 ) absentRecord = [];
+            var collectionRef = db.collection(`profiles/students/${icode}`);
+            absentList = [];
+            snap.forEach(doc=>{
+                if( absentStudents.includes(doc.id)) {  absentList.push({'id': doc.id, 'data': doc.data()}); }
+            });
+            
+            if(absentList.length === 0) { res.send({'status': 'success', 'message': 'full attendance detected!'}); }
+            else {
+                absentList.forEach((student) =>{
+                    // get absentRecord and append the new absent data
+                    absentRecord = student.data.absentRecord;
 
-               absentRecord.push({'teacherCode': tcode, 'subject': subject, 'date': Date.now()});
-               student.data.absentRecord = absentRecord;
-           });
-           var count = 0;
-           var commitCount = 0;
-           var batches = [];
-           batches[commitCount] = db.batch();
-           absentList.forEach( student =>{
-               if(count <= 498){
-                   var docRef = collectionRef.doc(student.id);
-                   batches[commitCount].update(docRef, student.data.absentRecord);
-                   count += 1;
+                    if( !absentRecord || absentRecord.length === 0 ) absentRecord = [];
 
-               } else{
-                   count = 0;
-                   commitCount += 1;
-                   batches[commitCount] = db.batch();
-               }
-           });
+                    absentRecord.push({'teacherCode': tcode, 'subject': subject, 'date': Date.now()});
+                    student.data.absentRecord = absentRecord;
+                });
+                
+                var count = 0;
+                var commitCount = 0;
+                var batches = {};
+                batches[commitCount] = db.batch();
+                absentList.forEach( student =>{
+                    if(count <= 498){
+                        var docRef = collectionRef.doc(student.id);
+                        batches[commitCount].update(docRef, {'absentRecord':student.data.absentRecord});
+                        count += 1;
 
-           //updating number of clases and then committing the changes
-           Classes.findOne({ where: {schoolCode: icode, teacherCode: tcode, class: cl, section: section, subjectCode: subject} })
-           .then(cl =>{
-               return cl.increment('numClasses');
-           }).then(()=>{
-            for (var i = 0; i < batches.length; i++) {
-                batches[i].commit().then(function () {});
+                    } else{
+                        count = 0;
+                        commitCount += 1;
+                        batches[commitCount] = db.batch();
+                    }
+                });
+                
+                //updating number of clases and then committing the changes
+                Classes.findOne({ where: {schoolCode: icode, teacherCode: tcode, class: cl, section: sec, subjectCode: subject} })
+                .then(row =>{
+                    console.log(row);
+                    if(row){
+                        
+                        return row.increment('numClasses');
+                    }
+                    else return Promise.reject(Error('No Match Found in DB!'));
+                   }).then(()=>{
+                    for (var i = 0; i < batches.length; i++) {
+                        batches[i].commit().then(function () {});
+                    }
+                    
+                    res.send({'status': 'success','message': `Attendance/Absence added ${absentList.length}.`})
+                })
+                .catch( err => res.send({'status': 'failure', 'error in SQL': err.message}));
+                
             }
-            res.send({'status': 'success', 'message': `Attendance/Absence added ${absentList.length}.`})
-           });
-           
-       }
-   });
+        })
+        .catch( err => res.send({'status': 'failure', 'error in db': err.message}));
+    }
 };
 
 exports.get_attendance = function(req,res){

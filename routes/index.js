@@ -4,19 +4,14 @@ var {uploadDir} = require('../config/secrets');
 var formidableMiddleware = require('express-formidable');
 
 var {login,logout} = require('../controllers/login_out');
-var {give_attendance} = require('../controllers/attendance');
-var {get_announcements} = require('../controllers/announcement');
-const { get_chapters, add_chapter, edit_chapter_status} = require('../controllers/chapters');
-const {publish_doc, get_doc, del_doc} = require('../controllers/documents');
+var {give_attendance, get_students, get_attendance} = require('../controllers/attendance');
+var {seed_SQL_db} = require('../controllers/seed_db');
 
 router.get('/',(req,res) => res.redirect('http://www.thestudieapp.com/'));
 router.post('/login',login);
 router.get('/logout',logout);
-router.get('/attendance', give_attendance);//still to be complete
-router.get('/announce', get_announcements);
-router.get('/chapters/:icode/:class/:sec', get_chapters);
-router.post('/chapters', add_chapter);
-router.patch('/chapters/:icode/:class/:sec', edit_chapter_status);
+router.get('/attendance/:icode/:class/:sec', get_students);
+router.post('/attendance/:icode/:class/:sec', give_attendance);//still to be complete
+router.post('/seed_classes', seed_SQL_db);
 
-router.post('/docs/:icode/:class/:sec', formidableMiddleware({ uploadDir: './files', multiples: true }),publish_doc);
 module.exports = router;

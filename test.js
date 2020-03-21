@@ -3,7 +3,6 @@ const {sequelize, Sequelize} = require('../controllers/db');
 const Classes = sequelize.define('Classes',{
     schoolCode:{
         type: Sequelize.STRING,
-        unique: true,
         allowNull: false
     },
     teacherCode:{
@@ -24,7 +23,8 @@ const Classes = sequelize.define('Classes',{
     },
     numClasses:{
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
+        defaultValue: 0
     }
 },
 { 

@@ -22,21 +22,17 @@ exports.get_exams = function(req, res){
     author = query.tcode;
 
     db.collection('exam')
+    .where('icode', '==', icode)
+    .where('class', '==', cl)
     .get()
     .then(snap =>{
         docs= [];
         snap.docs.forEach( doc => docs.push({id: doc.id, data: doc.data()}));
-        if(icode){
-            docs = docs.filter( doc => doc.data.icode === icode);
-        }
-        if(cl){
-            docs = docs.filter( doc => doc.data.class === cl);
-        }
         if(section){
             console.log(section);
             docs = docs.filter( doc => doc.data.section === section);
         }
-        if(examType){
+        if(examType && examType !== 'all'){
             t = exam[examType];
             if(t){
                 docs = docs.filter( doc => doc.data.exam_type === t);
