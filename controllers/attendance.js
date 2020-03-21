@@ -2,8 +2,9 @@ let {db} = require('./db');
 // let {SQL_USER, SQL_PASSWORD, SQL_DATABASE, INSTANCE_CONNECTION_NAME} = require('../config/db');
 // let {Sequelize} = require('sequelize');
 // let {Attendance} = require('../models/attendance');
-let {Classes} = require('../models');
+let {Classes, Attendance} = require('../models');
 
+//GET request to get the details of the students of a class
 exports.get_students = function(req,res){
     params = req.params;
     icode = params.icode;
@@ -32,6 +33,7 @@ exports.get_students = function(req,res){
     }    
 };
 
+//POST request to give the attendace.
 exports.give_attendance = function(req,res){
     /*
     1. Get the doc ids of the absent students, the teacher's code, subject (subjectCode)
@@ -93,7 +95,10 @@ exports.give_attendance = function(req,res){
                     if(row) return row.increment('numClasses')
                     else return Promise.reject(Error('No Match Found in DB!'))
                    }).then(()=>{
-                       batch.commit().then(() => res.send({'status': 'success','message': `Attendance/Absence added ${absentList.length}.`}) )                    
+                       batch.commit().then(() =>{
+
+                       }) 
+                       res.send({'status': 'success','message': `Attendance/Absence added ${absentList.length}.`})                   
                     
                 })
                 .catch( err => res.send({'status': 'failure', 'error in SQL': err.message}));
@@ -103,21 +108,30 @@ exports.give_attendance = function(req,res){
         .catch( err => res.send({'status': 'failure', 'error in db': err.message}));
     }
 };
+//GET request for student attendance.
+exports.get_student_attendance = function(req,res){
+    params = req.params;
+    query = req.query;
+    //URL parameters
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
 
-exports.get_attendance = function(req,res){
-    body = req.query;
-    icode = body.icode;
-    id = body.docId; //document ID of the student whose attendance is needed.
-    subject = body.subCode;
-    tcode = body.tcode;
-    if( !id || !icode ) { res.send({'status': 'failure', 'error': 'Please send proper information!'}); }
+    //URL Query;
+    docId = query.id;
+    tcode = query.tcode;
+    subject = query.subCode;
 
-    db.collection(`profiles/students/${icode}`).doc(id)
+    if( !id ) { res.send({'status': 'failure', 'error': 'Please send proper information!'}); }
+
+    db.collection(`profiles/students/${icode}`).doc(docId)
     .get()
     .then(doc =>{
         if(!doc) { res.send({'status':'failure', 'error': 'No such student found!'}); }
+        
         student = doc.data();
         absentRecord = student.absentRecord;
+
         if(tcode) { absentRecord = absentRecord.filter( record => record.teacherCode === tcode); }
         if(subject) { absentRecord = absentRecord.filter( record => record.subject === subject); }
         if(absentRecord.length === 0) { res.send({'status': 'success', 'message': 'Student has not been absent yet!'}); }

@@ -1,4 +1,4 @@
-let {Classes} = require('../models');
+let {Attendance} = require('../models');
 
 exports.seed_SQL_db = function(req,res){
      //URL body
@@ -9,10 +9,9 @@ exports.seed_SQL_db = function(req,res){
         class : body.class,
         section : body.sec,
         subjectCode : body.subCode,
-        numClasses : 0
      }
      
-     Classes.build(ob)
+     Attendance.build(ob)
      .save()
      .then((ref)=>{
          console.log(ref);

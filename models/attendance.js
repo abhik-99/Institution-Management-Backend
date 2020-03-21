@@ -1,9 +1,9 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-  const Classes = sequelize.define('Classes', {
+  const Attendance = sequelize.define('Attendance', {
     schoolCode:{
-        type: DataTypes.STRING,
-        allowNull: false
+      type: DataTypes.STRING,
+      allowNull: false
     },
     teacherCode:{
         type: DataTypes.STRING,
@@ -21,14 +21,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false
     },
-    numClasses:{
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 0
+    numAbsent:{
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
     }
   }, {});
-  Classes.associate = function(models) {
+  Attendance.associate = function(models) {
     // associations can be defined here
   };
-  return Classes;
+  return Attendance;
 };
