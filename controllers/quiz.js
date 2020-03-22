@@ -4,14 +4,18 @@ Adding the capability of storing images for questions
 
 const {db} = require('./db');
 
+//GET Request
 exports.get_quiz = function(req,res){
-    body = req.query;
-    icode = body.icode;
-    cl = body.class;
-    section = body.section;
-    author = body.author;
-    subject = body.subject; 
-    due = body.due_date;
+    query = req.query;
+    params = req.params;
+    //URL parameter
+    icode = params.icode;
+    cl = params.class;
+    section = params.sec;
+    //URL Query
+    author = query.author;
+    subject = query.subject; 
+    due = query.due_date;
 
     db.collection(`quizzes/${icode}/${cl}`)
     .get()
@@ -36,8 +40,9 @@ exports.get_quiz = function(req,res){
     .catch(err => res.send({'message': err}));    
 };
 
+//POST request (Edit this handler)
 //expects a json body in the req.body which conforms to the quiz design.
-// IMP: Add a mechanism for checking valid schools
+// IMP: Add a mechanism for checking valid schools and adding pictures
 exports.set_quiz = function(req,res){
     console.log("req.body", req.body);
     body = req.body.quiz;
@@ -60,6 +65,7 @@ exports.set_quiz = function(req,res){
     }
 };
 
+//POST request
 //submitting quiz by student
 exports.submit_quiz = function(req,res){
     // get student details, check score and put it in the student's profile.
@@ -108,15 +114,22 @@ exports.submit_quiz = function(req,res){
     }
 };
 
+//GET request
 //checking submissions by teacher
 exports.get_submissions = function(req,res){
-    body = req.body;
-    icode = body.icode;
-    cl = body.class;
-    quizId = body.quizId;
+    query = req.query;
+    params = req.params;
+    //URL parameters
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+
+    //URL query
+    quizId = query.quizId;
     db.doc(`quizzes/${icode}/${cl}/${quizId}`)
     .get()
     .then( doc =>{
+        if(!doc) res.send({'status':'failure','message':'Please send proper details!'})
         info = doc.data();
         submissions = info.submissions;
         res.send({'status': 'success', 'submissions': submissions});

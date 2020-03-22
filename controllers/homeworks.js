@@ -18,9 +18,6 @@ exports.assign_homework = function(req,res){
     else{
         sub_date = Date.parse(body.sub_date);
         filename =`homeworks/${icode}/${cl}/${sec}/${sub}/${chapter}-${title}-${sub_date}-`+file.name;
-        // console.log(cl,sec,sub,chapter,sub_date);
-        // console.log("Files-\n",file);
-        // console.log(file.name,filename);
         upload_file(bucketName,file.path,filename).then(()=>{
             db.collection('homeworks')
             .add({
@@ -42,7 +39,7 @@ exports.assign_homework = function(req,res){
     } 
 };
 
-//GET Request
+//GET Request from students and students
 exports.check_homeworks = function(req,res){
     query = req.query;
     params = req.params;
@@ -175,7 +172,7 @@ exports.get_homework = function(req,res){
         .then(doc => {
             info = doc.data();
             subs = info.submissions;
-            file_path = subs.filter(eachSub => eachSub.student_code === scode)[0].file_path;
+            file_path = subs.filter(eachSub => scode.includes(eachSub.student_code) || eachSub.student_code === scode )[0].file_path;
             download_link(bucketName,file_path).then((data)=>{
                 res.json({'status': 'success', 'download_link': data[0]});
             });

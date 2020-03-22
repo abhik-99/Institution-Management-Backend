@@ -12,18 +12,23 @@ var {get_chapters} = require('../controllers/chapters');
 var {get_merit} = require('../controllers/merits');
 var {get_doc, doc_download} = require('../controllers/documents');
 var {raise_doubt, get_doubts} = require('../controllers/chapters');
+var {get_students, get_student_attendance} = require('../controllers/attendance');
 
 var {uploadDir} = require('../config/secrets');
 
 router.use(check_valid, only_student);
 
 //for homework
-router.get('/homework',check_homeworks);
+router.get('/homework/:icode/:class/:sec',check_homeworks);
 router.post('/homework',formidableMiddleware({uploadDir: uploadDir, multiples: true}),submit_homework);
 
+//for attendance
+router.get('/attendance/:icode/:class/:sec',get_students);
+router.get('/attendance/student/:icode/:class/:sec', get_student_attendance);
+
 //for quiz
-router.get('/quiz',get_quiz);
-router.patch('/quiz', submit_quiz);
+router.get('/quiz/:icode/:class/:sec',get_quiz);
+router.post('/quiz', submit_quiz);
 
 //for fetching announcements
 router.get('/announce/:icode', get_announcements);

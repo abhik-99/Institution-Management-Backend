@@ -1,7 +1,4 @@
 let {db} = require('./db');
-// let {SQL_USER, SQL_PASSWORD, SQL_DATABASE, INSTANCE_CONNECTION_NAME} = require('../config/db');
-// let {Sequelize} = require('sequelize');
-// let {Attendance} = require('../models/attendance');
 let {Classes, Attendance} = require('../models');
 
 //GET request to get the details of the students of a class
@@ -10,7 +7,7 @@ exports.get_students = function(req,res){
     icode = params.icode;
     cl = params.class;
     sec = params.sec;
-    console.log(params);
+
     if( !icode || !cl || !sec) { res.send({'status':'failure', 'error': "Please provide proper parameters"});}
     else{
         db.collection(`profiles/students/${icode}`)
@@ -19,7 +16,7 @@ exports.get_students = function(req,res){
         .get()
         .then(snap => {
 
-            if( !snap) { res.send({'status':'failure', 'error': 'No such School found!'}); }
+            if( !snap) { res.send({'status':'failure', 'error': 'No such School/Class/Section found!'}); }
             else{
                 list = [];
                 snap.forEach(doc => {
@@ -115,6 +112,7 @@ exports.give_attendance = function(req,res){
         .catch( err => res.send({'status': 'failure', 'error': err.message}));
     }
 };
+
 //GET request for student attendance.
 exports.get_student_attendance = function(req,res){
     params = req.params;

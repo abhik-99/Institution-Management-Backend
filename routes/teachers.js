@@ -7,7 +7,7 @@ var formidableMiddleware = require('express-formidable');
 var {uploadDir} = require('../config/secrets');
 
 var {check_valid, only_teacher} = require('../middlewares/auth');
-var {get_students, give_attendance} = require('../controllers/attendance');
+var {get_students, give_attendance, get_student_attendance, get_class_attendance} = require('../controllers/attendance');
 var {assign_homework,check_homeworks,check_submissions,get_homework} = require('../controllers/homeworks');
 var {get_quiz, set_quiz, get_submissions} = require('../controllers/quiz');
 var {set_exam,get_exams, grade_exam} = require('../controllers/exam');
@@ -20,18 +20,21 @@ router.use(check_valid, only_teacher);
 
 //for homework
 router.post('/homework',formidableMiddleware({uploadDir: uploadDir, multiples: true }),assign_homework);
-router.get('/homework',check_homeworks);
-router.get('/homework/submissions',check_submissions);
+router.get('/homework/:icode/:class/:sec',check_homeworks);
+router.get('/homework/submissions/:icode/:class/:sec',check_submissions);
 router.get('/homework/submissions/download',get_homework);
 
 //for attendance
-router.get('/attendance',get_students);
-router.post('/attendance', give_attendance);
+router.get('/attendance/:icode/:class/:sec',get_students);
+router.post('/attendance/:icode/:class/:sec', give_attendance);
+router.get('/attendance/student/:icode/:class/:sec', get_student_attendance);
+router.get('/attendance/class/:icode/:class/:sec', get_class_attendance);
+
 
 //for quiz
-router.get('/quiz',get_quiz);
+router.get('/quiz/:icode/:class/:sec',get_quiz);
 router.post('/quiz',set_quiz);
-router.get('/quiz/submissions', get_submissions);
+router.get('/quiz/submissions/:icode/:class/:sec', get_submissions);
 
 //for exam
 router.get('/exam/:icode/:class/:examType', get_exams);
