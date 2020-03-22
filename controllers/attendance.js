@@ -178,8 +178,23 @@ exports.get_student_attendance = function(req,res){
                             studentAttendance.push({'tcode': data.teacherCode, 'subject': subject, 'attendance': a});
                         });
                 }
+            }else{
+                studentAttendance = studentAttendance.filter( each=> each.subject === subject);
             }
              
+        }
+        if( !subject && !tcode){
+            const rows = await Classes.findAll({
+                where: {schoolCode: icode, class: cl, section: sec},
+                attributes: ['subjectCode','numClasses'],
+                group: ['subjectCode']
+            });
+            rows.forEach( row =>{
+                data = row.dataValues;
+                absences = absentRecord.filter( each => each.subject === data.subjectCode).length;
+                a = (data.numClasses - absences) / data.numClasses;
+                studentAttendance.push({'subject': data.subjectCode,'attendance':a});
+            });
         }
         if(studentAttendance.length === 0) res.send({'status': 'success','message': 'The Student has not been absent yet!'})  
         else res.send({'status': 'success', 'attendance': studentAttendance})     
@@ -205,10 +220,60 @@ exports.get_class_attendance = function(req,res){
     .then(async (snap)=>{
         docs = [];
         snap.forEach(doc => docs.push({'id':doc.id, 'data': doc.data()}));
-        l = docs.length;
-        if(!snap || l === 0) res.send({'status': 'failure','message': 'No Students in the class'})
-        var rows = await Classes.findAll({ where:{schoolCode: icode, class: cl, section: sec}});
-        rows.forEach();        
+        strength = docs.length;
+
+        if(!snap || strength === 0) res.send({'status': 'failure','message': 'No Students in the class'})
+
+        var classRows = await Classes.findAll({ where:{schoolCode: icode, class: cl, section: sec}});
+        var attendanceRows = await Attendance.findAll({ where:{schoolCode: icode, class: cl, section: sec}});
+
+        if( !classRows || !attendanceRows) res.send({'status': 'failure', 'message': 'Please send proper data!'});
+
+        var classAttendance = [];
+        if(tcode){
+            classRows = classRows.filter( row => row.dataValues.teacherCode === tcode);
+            classRows.forEach( row=>{
+                data = row.dataValues;
+                var absence = 0;
+                absence = attendanceRows
+                .filter( row => row.dataValues.teacherCode === tcode && row.dataValues.subjectCode === data.subjectCode)
+                .forEach( row => absence += row.numAbsent);
+                absence /= data.numClasses;
+                avgAttendance = (strength - absence) / strength;
+                classAttendance.push({'tcode': tcode, 'subjectCode': data.subjectCode, 'attendance': avgAttendance});
+            })
+        }
+        if(subject){
+            if(classAttendance.length === 0){
+                classRows = classRows.filter( row => row.dataValues.subjectCode === subject);
+                classRows.forEach( row=>{
+                    data = row.dataValues;
+                    var absence = 0;
+                    absence = attendanceRows
+                    .filter( row => row.dataValues.subjectCode === subject && row.dataValues.teacherCode === data.teacherCode)
+                    .forEach( row => absence += row.numAbsent);
+                    absence = absence/data.numClasses | 0;
+                    avgAttendance = (strength - absence) / strength;
+                    classAttendance.push({'tcode': tcode, 'subjectCode': data.subjectCode, 'attendance': avgAttendance});
+                })
+            }else{
+                classAttendance = classAttendance.filter( each => each.subjectCode === subject);
+            }
+        }
+        if( !tcode && !subject){
+            classRows.forEach( row=>{
+                data = row.dataValues;
+                var absence = 0;
+                absence = attendanceRows
+                .filter( row => row.dataValues.subjectCode === subject && row.dataValues.teacherCode === data.teacherCode)
+                .forEach( row => absence += row.numAbsent);
+                absence = absence / data.numClasses | 0;
+                avgAttendance = (strength - absence) / strength;
+                classAttendance.push({'tcode': tcode, 'subjectCode': data.subjectCode, 'attendance': avgAttendance});
+            })
+        }
+        if(classAttendance.length === 0) res.send({'status':'success', 'message':'Class hasn\'t been added!'})
+        else res.send({'status': 'success', 'attendance': classAttendance});
     })
-    .catch( err => res.send({'status': 'failure', 'error in db': err.message}));
+    .catch( err => res.send({'status': 'failure', 'error': err.message}));
 };
