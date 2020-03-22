@@ -96,13 +96,20 @@ exports.give_attendance = function(req,res){
                     else return Promise.reject(Error('No Match Found in DB!'))
                    }).then(()=>{
                        batch.commit().then(() =>{
-
-                       }) 
-                       res.send({'status': 'success','message': `Attendance/Absence added ${absentList.length}.`})                   
-                    
+                           Attendance.build({
+                               schoolCode: icode,
+                               teacherCode: tcode,
+                               class: cl,
+                               section: sec,
+                               subjectCode: subject,
+                               numAbsent: absentList.length,
+                           })
+                           .save()
+                           .then(()=>res.send({'status': 'success','message': `Attendance/Absence added ${absentList.length}.`}))
+                           .catch( err => res.send({'status': 'failure', 'error in SQL': err.message}));
+                       })                    
                 })
                 .catch( err => res.send({'status': 'failure', 'error in SQL': err.message}));
-                
             }
         })
         .catch( err => res.send({'status': 'failure', 'error in db': err.message}));
@@ -120,44 +127,61 @@ exports.get_student_attendance = function(req,res){
     //URL Query;
     docId = query.id;
     tcode = query.tcode;
-    subject = query.subCode;
+    subject = query.subject;
 
-    if( !id ) { res.send({'status': 'failure', 'error': 'Please send proper information!'}); }
+    if( !docId ) { res.send({'status': 'failure', 'error': 'Please send proper information!'}); }
 
     db.collection(`profiles/students/${icode}`).doc(docId)
     .get()
-    .then(doc =>{
+    .then(async (doc) =>{
         if(!doc) { res.send({'status':'failure', 'error': 'No such student found!'}); }
         
         student = doc.data();
         absentRecord = student.absentRecord;
 
-        if(tcode) { absentRecord = absentRecord.filter( record => record.teacherCode === tcode); }
-        if(subject) { absentRecord = absentRecord.filter( record => record.subject === subject); }
-        if(absentRecord.length === 0) { res.send({'status': 'success', 'message': 'Student has not been absent yet!'}); }
-        else{
-            tMap = {};
-            absentRecord.forEach(record =>{
-                if(!tMap[record.teacherCode]) { tMap[record.teacherCode] = [];}
-                else{ 
-                    if((!record.subject in tMap[record.teacherCode])){
-                        tMap[record.teacherCode].push(record.subject);
-                    }
-                }
+        //start implementation from here
+        //If tcode present then give attendance for that teacher.
+        //if subCode is present then give attendance for that specific subject.
+        //otherwise give overall attendance.
+        studentAttendance = [];
+        if(tcode) { 
+            absentRecord = absentRecord.filter( record => record.teacherCode === tcode); 
+            const rows = await Classes.findAll({
+                where: {schoolCode: icode, teacherCode: tcode, class: cl, section: sec},
+                attributes: ['subjectCode','numClasses']
             });
-            //implement the attendance accquiring logic from Classes.
-            numClasses = [];
+            if(!rows) res.send({'status': 'failure', 'message': 'No such Teacher Found!'})
+            else{              
+                    rows.forEach(row =>{
+                        data = row.dataValues;
+                        absences = absentRecord.filter( each => each.subject === data.subjectCode).length;
+                        //console.log(data,absences);
+                        a = (data.numClasses - absences) / data.numClasses; //total number of classes present
+                        studentAttendance.push({'tcode': tcode, 'subject': data.subjectCode, 'attendance': a});
+                    });
+                    console.log(studentAttendance);
+            }
             
-            res.send({
-                'status': 'success', 
-                'data':{
-                    'scode': student.code,
-                    'sname': student.name,
-                    'absentRecord': absentRecord,
-                    'numClassesRecord': numClasses
-                }
-            });
-
         }
+        if(subject) { 
+            if(studentAttendance.length === 0){
+                const rows = await Classes.findAll({
+                    where: {schoolCode: icode, subjectCode: subject, class: cl, section: sec},
+                    attributes: ['teacherCode','numClasses']
+                });
+                if(!rows) res.send({'status': 'failure', 'message': 'No such Teacher Found!'})
+                else{                              
+                        rows.forEach(row =>{
+                            data = row.dataValues;
+                            absences = absentRecord.filter( each => each.teacherCode === data.teacherCode).length;
+                            a = (data.numClasses - absences) / data.numClasses | 0; //total number of classes present
+                            studentAttendance.push({'tcode': data.teacherCode, 'subject': subject, 'attendance': a});
+                        });
+                }
+            }
+             
+        }
+        if(studentAttendance.length === 0) res.send({'status': 'success','message': 'The Student has not been absent yet!'})  
+        else res.send({'status': 'success', 'attendance': studentAttendance})     
     });
 }
