@@ -109,10 +109,10 @@ exports.give_attendance = function(req,res){
                            .catch( err => res.send({'status': 'failure', 'error in SQL': err.message}));
                        })                    
                 })
-                .catch( err => res.send({'status': 'failure', 'error in SQL': err.message}));
+                .catch( err => res.send({'status': 'failure', 'error': err.message}));
             }
         })
-        .catch( err => res.send({'status': 'failure', 'error in db': err.message}));
+        .catch( err => res.send({'status': 'failure', 'error': err.message}));
     }
 };
 //GET request for student attendance.
@@ -185,3 +185,30 @@ exports.get_student_attendance = function(req,res){
         else res.send({'status': 'success', 'attendance': studentAttendance})     
     });
 }
+
+//GET Request
+exports.get_class_attendance = function(req,res){
+    params = req.params;
+    query = req.query;
+    //URL parameters
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+
+    //URL Query;
+    tcode = query.tcode;
+    subject = query.subject;
+    db.collection(`profiles/students/${icode}`)
+    .where('class', '==', cl)
+    .where('sec', '==', sec)
+    .get()
+    .then(async (snap)=>{
+        docs = [];
+        snap.forEach(doc => docs.push({'id':doc.id, 'data': doc.data()}));
+        l = docs.length;
+        if(!snap || l === 0) res.send({'status': 'failure','message': 'No Students in the class'})
+        var rows = await Classes.findAll({ where:{schoolCode: icode, class: cl, section: sec}});
+        rows.forEach();        
+    })
+    .catch( err => res.send({'status': 'failure', 'error in db': err.message}));
+};
