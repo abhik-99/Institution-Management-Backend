@@ -48,7 +48,7 @@ exports.give_attendance = function(req,res){
 
    //URL Body
    tcode = body.tcode;
-   subject = body.subCode;
+   subject = body.subject;
    absentStudents = body.absentStudents;
 
    if(!icode || !tcode || !subject || !cl || !sec ) { res.send({'status': 'failure','message': 'Please send proper arguments!'}); }
@@ -211,6 +211,7 @@ exports.get_class_attendance = function(req,res){
     //URL Query;
     tcode = query.tcode;
     subject = query.subject;
+    
     db.collection(`profiles/students/${icode}`)
     .where('class', '==', cl)
     .where('sec', '==', sec)

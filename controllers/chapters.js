@@ -4,9 +4,9 @@ const {db} = require('./db');
 exports.add_chapter = function(req, res){
     body = req.body;
     icode = body.icode;
-    cl = body.cl;
+    cl = body.class;
     sec = body.sec;
-    sub = body.sub;
+    sub = body.subject;
     chapter = body.chapter;
     tcode = body.tcode;
     ongoing = body.ongoing;
@@ -85,6 +85,7 @@ exports.edit_chapter_status = function(req, res){
     id = body.id;
     ongoing = body.ongoing;
     chapterName = body.chapterName;
+
     if( (ongoing !== 'true' && ongoing !== 'false') || !id) { res.send({'status': 'failure', 'message': 'Please send proper data!'})}
     else{
         db.collection('chapters').doc(id)
@@ -128,7 +129,8 @@ exports.get_chapters = function(req, res){
     cl = params.class;
     sec = params.sec;
     //following are obtained from the URL query
-    sub = query.sub;
+    sub = query.subject;
+
     if( !icode || !cl || !sec) { res.send({'status':'failure','message':'Please give proper paramters!'}); }
     else{
         db.collection('chapters')
@@ -148,6 +150,7 @@ exports.get_chapters = function(req, res){
         .catch( err => res.send({'status':'failure', 'error': err}));
     }
 };
+//Not Given in the UI
 exports.remove_chapter = function(req, res){
     params = req.params;
     query = req.query; 
@@ -176,9 +179,9 @@ exports.raise_doubt = function(req,res){
     cl = params.class;
     sec = params.sec;
     //following are obtained from the URL Body
-    docId = body.docId;
+    docId = body.id;
     chapterName = body.chapterName;
-    doubtText = body.dText; //main text of the Doubt
+    doubtText = body.doubtText; //main text of the Doubt
     scode = body.scode; //student code
     sname = body.sname; //student name
     if( !docId || !chapterName || !doubtText || !scode) { res.send({'status': 'failure', 'message': 'Please send proper data!'}); }
@@ -217,9 +220,10 @@ exports.get_doubts = function(req,res){
     cl = params.class;
     sec = params.sec;
     //URL query
-    docId = body.docId;
-    chapterName = body.chapterName;
-    scode = body.scode; //student code
+    docId = query.id;
+    chapterName = query.chapterName;
+    scode = query.scode; //student code
+
     db.collection('chapters').doc(docId)
     .get()
     .then(doc =>{
@@ -243,11 +247,11 @@ exports.resolve_doubt = function(req,res){
     cl = params.class;
     sec = params.sec;
     //following are obtained from the URL Body
-    docId = body.docId;
+    docId = body.id;
     chapterName = body.chapterName;
     answer = body.answer; //main text of the Doubt
     scode = body.scode; //student code
-    asked = body.asked; //student name
+    asked = body.sname; //student who asked the doubt
     if( !docId || !chapterName || !answer || !scode || !asked) { res.send({'status': 'failure', 'message': 'Please send proper data!'}); }
 
     db.collection('chapters').doc(docId)
