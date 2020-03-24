@@ -17,7 +17,7 @@ exports.get_exams = function(req, res){
     examType = params.examType;
 
     //following via URL query
-    section = query.section;
+    section = query.sec;
     subject = query.subject;
     author = query.tcode;
 
@@ -50,25 +50,28 @@ exports.get_exams = function(req, res){
     });
 };
 
-//POST request. expects a json body which conforms to the exam schema (somewhat) (application/json)
+//POST request from teacher
 exports.set_exam = function(req,res){
+
     body = req.body;
     chapters = body.chapters;
-    section = body.section;
+    section = body.sec;
     date = body.date;
     cl = body.class;
     icode = body.icode;
-    exam_type = body.exam_type;
-    if(!section || typeof date != 'string' || !icode || !cl || !exam_type) {res.send({'status': 'failure', 'error': 'Please provide all the proper details!'}); }
+    exam_type = body.examType;
+    fm = body.FullMarks;
+    if(!section || typeof date != 'string' || !icode || !cl || !exam_type) res.send({'status': 'failure', 'error': 'Please provide all the proper details!'})
     if(exam_type){
         t = exam[exam_type];
         if(!t){ res.send({'status': 'failure', 'error': 'Please provide all the proper details!'});}
-        else { body.exam_type = t; }
+        else { exam_type = t; }
     }
     db.collection(`profiles/students/${icode}`)
     .where('class', '==',cl)
     .get()
     .then(snap =>{
+        //Pushing in eligible student for the exam
         studentList = [];
         if(section === 'all'){
             snap.forEach(doc => {
@@ -78,13 +81,14 @@ exports.set_exam = function(req,res){
         }else{
             snap.forEach(doc => {
                 info = doc.data();
-                if(section === sec) { studentList.push({'docId': doc.id, 'scode':info.code, 'sname': info.name}); }
+                if(section === info.sec) { studentList.push({'docId': doc.id, 'scode':info.code, 'sname': info.name}); }
             });
         }
         if(studentList.length === 0) { res.send({'status': 'failure','error': 'No students Found for given school/class/section!'}); }
-        body.student_list = studentList;
+
+        //adding exam to the collection
         db.collection('exam')
-        .add(body)
+        .add({'full_marks':fm, 'chapters':chapters, 'section':section, 'date':date, 'class':cl, 'icode':icode, 'exam_type':exam_type, 'student_list': studentList})
         .then(()=> res.send({'status': 'success','message': 'Exam Added!'}))
         .catch(err => res.send({'status': 'failure', 'error': err.message}));
     })

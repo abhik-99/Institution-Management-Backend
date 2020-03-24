@@ -47,9 +47,9 @@ router.post('/announce', make_announcement);
 
 //for chapters
 router.get('/chapters/:icode/:class/:sec', get_chapters);
-router.post('/chapters/', add_chapter);
+router.post('/chapters', add_chapter);
 router.patch('/chapters/:icode/:class/:sec', edit_chapter_status);
-router.delete('/chapters/:icode/:class/:sec', remove_chapter);
+//router.delete('/chapters/:icode/:class/:sec', remove_chapter);
 
 //for chapter doubts and resolution
 router.get('/chapters/doubts/:icode/:class/:sec', get_doubts)

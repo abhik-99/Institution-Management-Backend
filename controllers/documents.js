@@ -76,7 +76,7 @@ exports.doc_download = function(req,res){
     icode = params.icode;
 
     //URL Query
-    docId = query.docId;
+    docId = query.id;
     if( !docId ) { res.send({'status':failure, 'message': 'Please send proper data!'}); }
     db.collection('documents').doc(docId)
     .get()
