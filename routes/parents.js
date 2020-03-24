@@ -10,7 +10,7 @@ var {get_students, get_student_attendance} = require('../controllers/attendance'
 router.use(check_valid, only_parent);
 
 //for announcements
-router.get('/announce', get_announcements);
+router.get('/announce/:icode', get_announcements);
 
 //for attendance
 router.get('/attendance/:icode/:class/:sec',get_students);

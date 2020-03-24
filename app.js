@@ -9,6 +9,7 @@ var formidable = require('express-formidable');
 var indexRouter = require('./routes/index');
 var teacherRouter = require('./routes/teachers');
 var studentRouter = require('./routes/students');
+var parentRouter = require('./routes/parents');
 
 var app = express();
 
@@ -26,6 +27,7 @@ app.use(session({secret:"DevMode"}));
 app.use('/', indexRouter);
 app.use('/teacher', teacherRouter);
 app.use('/student', studentRouter);
+app.use('/parent', parentRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
