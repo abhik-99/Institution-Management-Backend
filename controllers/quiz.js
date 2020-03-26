@@ -6,8 +6,6 @@ const {db} = require('./db');
 const {uploadDir} = require('../config/secrets');
 var {upload_file,download_link} = require('../gcp_buckets/file_handling');
 var {bucketName} = require('../config/secrets');
-var formidable = require('formidable');
-const form = formidable({uploadDir: uploadDir})
 
 //GET Request
 exports.get_quiz = function(req,res){
@@ -49,83 +47,90 @@ exports.get_quiz = function(req,res){
 exports.set_quiz = function(req,res){
     params = req.params;
 
-    form.parse(req, (err, fields, files)=>{
-        if(err) {
-            res.send({'status':'failure','message':err.Message})
-            return;
-        }
+    body = req.fields;
+    files = req.files;
 
-        body = fields;
-        images = files;
-        keys = Object.keys(images);
-        keys.forEach( key => {
-            if(images[key].type !== 'application/pdf' && images[key].type !== 'img/png')
-            {
-                flag = true;
-            }
-        })
-        if(flag){
-            res.send({'status':'failure','message':'Only Images(<20kB) and PDFs(<50kB) allowed'})
-            return;
-        }
-        //URL parameters
-        icode = params.icode;
-        cl = params.class;
+    //URL parameters
+    icode = params.icode;
+    cl = params.class;
 
-        //URL body
-        var {title, subject, tcode, dueDate, questions, section, syllabus} = body;
-        //console.log("Images",images)
-        try {
-            date = Date.parse(dueDate) || undefined
-            questions = JSON.parse(questions);
-            syllabus = JSON.parse(syllabus);
-            if(!section) section = 'all';
-        } catch (error) {
-            console.log(err)
-            res.send({'status':'failure', 'message':'Please send proper data!'})
+    keys = Object.keys(files);
+    flag = false;
+
+    for( i = 0; i<keys.length; i++){
+        if(files[keys[i]].type !== 'application/pdf' && files[keys[i]].type !== 'image/png')
+        {  
+            flag = keys[i];
+            break;
         }
-        if( !title || !tcode || !subject || !questions || !date || keys>questions.length) res.send({'status':'failure', 'message':"1.Please send proper data!"})
-        else {
-            //checking qhich questions contain images
-            imgPathMap = [];
-            questions.forEach( question =>{
-                if(question.image === "true"){
-                    const i = questions.indexOf(question)
-                    img = images[`imgq${i}`];
-                    if(!img){
-                        res.send({'status':'failure','message':`Image for Question ${i} not found!`})
-                        return;
-                    }
-                    filename = `quizzies/images/${icode}/${cl}/${tcode}/${section}/${title}-${dueDate}-q${i}-${Date.now()}-${img.name}`
-                    questions.imgPath = filename;
-                    imgPathMap.push({'filename': img.path, 'uploadName': filename})
+    }
+
+    //URL body
+    var {title, subject, tcode, dueDate, questions, section, syllabus} = body;
+    //console.log("Images",images)
+    try {
+        date = Date.parse(dueDate) || undefined
+        questions = JSON.parse(questions); //an array of stringified JSON of questions being parsed
+        syllabus = JSON.parse(syllabus);
+        if(!section) section = 'all';
+    } catch (error) {
+        console.log(err)
+        res.send({'status':'failure', 'message':'Please send proper data!'})
+    }
+
+    if( !title || !tcode || !subject || !questions || !date || keys>questions.length || flag) {
+        // res.setHeader('Connection','close')/
+        res.send({'status':'failure', 'message':"1.Please send proper data!"})
+    }
+    else {
+        //checking qhich questions contain images
+        imgPathMap = [];
+        flag = false;
+        for( index = 0; i<questions.length; i++){
+            if(questions[index].image === "true"){
+                // const i = questions.indexOf(question)
+                file = files[`imgq${index}`];
+                if(!file){
+                    flag = true;
+                    break;
                 }
-            }) //added file path in GCP bucket to the respective questions and imagemap created
-
-            //adding quiz doc to collection.
-            db.collection(`quizzes/${icode}/${cl}`).add({
-                'title': title,
-                'author': tcode,
-                'subject': subject,
-                'questions': questions,
-                'due_date': dueDate,
-            })
-            .then(async (ref)=>{
-                //uploading images to bucket.
-                await Promise
-                .all(imgPathMap.map( each => {
-                    return upload_file(bucketName, each.filename, each.uploadName)
-                }))
-                .then(() => res.send({'status':'success','message':`Quiz ${ref.id} added!`}))
-                .catch(err => res.send({'error': err.message}));
-            })
-            .catch(err => res.send({'error': err.message}));
+                filename = `quizzies/images/${icode}/${cl}/${tcode}/${section}/${title}-${dueDate}-q${index}-${Date.now()}-${file.name}`
+                questions[index].filePath = filename;
+                imgPathMap.push({'filename': file.path, 'uploadName': filename})
+            }
         }
-    })
+        if(flag){
+            res.send({'status':'failure','message':`Image for Question ${index} not found!`})
+            return;
+        }
+        //added file path in GCP bucket to the respective questions and imagemap created
+        //adding quiz doc to collection.
+        db.collection(`quizzes/${icode}/${cl}`).add({
+            'title': title,
+            'author': tcode,
+            'subject': subject,
+            'questions': questions,
+            'due_date': dueDate,
+        })
+        .then(async (ref)=>{
+            //uploading images to bucket.
+            await Promise
+            .all(imgPathMap.map( each => {
+                return upload_file(bucketName, each.filename, each.uploadName)
+            }))
+            .then(() => res.send({'status':'success','message':`Quiz ${ref.id} added!`}))
+            .catch(err => res.send({'error': err.message}));
+        })
+        .catch(err => res.send({'error': err.message}));
+    }
+
+};
+
+//GET Request
+exports.get_quiz_pic = function(req,res){
 };
 
 //POST request
-//submitting quiz by student
 exports.submit_quiz = function(req,res){
     // get student details, check score and put it in the student's profile.
     body = req.body;

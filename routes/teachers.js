@@ -33,7 +33,7 @@ router.get('/attendance/class/:icode/:class/:sec', get_class_attendance);
 
 //for quiz
 router.get('/quiz/:icode/:class/:sec',get_quiz);
-router.post('/quiz',set_quiz);
+router.post('/quiz/:icode/:class',set_quiz);
 router.get('/quiz/submissions/:icode/:class/:sec', get_submissions);
 
 //for exam
