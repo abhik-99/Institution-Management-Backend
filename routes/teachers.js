@@ -9,7 +9,7 @@ var {uploadDir} = require('../config/secrets');
 var {check_valid, only_teacher} = require('../middlewares/auth');
 var {get_students, give_attendance, get_student_attendance, get_class_attendance} = require('../controllers/attendance');
 var {assign_homework,check_homeworks,check_submissions,get_homework} = require('../controllers/homeworks');
-var {get_quiz, set_quiz, get_submissions} = require('../controllers/quiz');
+var {get_quiz, get_quiz_file,set_quiz, get_submissions} = require('../controllers/quiz');
 var {set_exam,get_exams, grade_exam} = require('../controllers/exam');
 var {get_announcements, make_announcement} = require('../controllers/announcement');
 var {get_chapters, edit_chapter_status, add_chapter, remove_chapter, get_doubts, resolve_doubt} = require('../controllers/chapters');
@@ -33,7 +33,8 @@ router.get('/attendance/class/:icode/:class/:sec', get_class_attendance);
 
 //for quiz
 router.get('/quiz/:icode/:class/:sec',get_quiz);
-router.post('/quiz/:icode/:class',set_quiz);
+router.get('/quiz/q/:icode/:class', get_quiz_file);
+router.post('/quiz/:icode/:class',formidableMiddleware({uploadDir:uploadDir}),set_quiz);
 router.get('/quiz/submissions/:icode/:class/:sec', get_submissions);
 
 //for exam

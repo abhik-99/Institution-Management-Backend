@@ -128,7 +128,7 @@ exports.set_quiz = function(req,res){
 };
 
 //GET Request
-exports.get_quiz_pic = function(req,res){
+exports.get_quiz_file = function(req,res){
     params = req.params;
     query = req.query;
 
@@ -225,7 +225,7 @@ exports.get_submissions = function(req,res){
     sec = params.sec;
 
     //URL query
-    quizId = query.quizId;
+    quizId = query.id;
     db.doc(`quizzes/${icode}/${cl}/${quizId}`)
     .get()
     .then( doc =>{
