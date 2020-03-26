@@ -7,6 +7,7 @@ exports.login = function(req, res) {
     iCode = req.body.icode;
     username = req.body.uname;
     password = req.body.pass;
+    if(!iCode || !type || !username || !password) res.send({'status':'failure','message':'Please provide proper data!'})
     // console.log(req.body);
     // console.log(iCode, username, password);
     userCollecRef = db.collection('users')
@@ -32,7 +33,6 @@ exports.login = function(req, res) {
         if(list.length > 1){
           res.send({"Error":"Duplicate Users Exists, Signing Halted!"});
         }
-        console.log(sessions)
         let token = jwt.sign({
            exp: Math.floor(Date.now() / 1000) + (60 * 60),
            data: JSON.stringify({ 
@@ -43,7 +43,6 @@ exports.login = function(req, res) {
             })},
            secret);
         sessions.push(token);
-        console.log("Session Tokens",sessions);
         db.collection('users').doc(list[0])
         .update({session: sessions});
         res.send({"x-access-token": token});
@@ -81,7 +80,7 @@ exports.login = function(req, res) {
             tokens = tokens.token_arr;
             tokens.push(token);
             db.doc('blacklist/tokens').update({token_arr: tokens});
-            res.send({"Message": "Token Blaclisted!"});
+            res.send({"Message": "Logged out!"});
           });
         }
       });
