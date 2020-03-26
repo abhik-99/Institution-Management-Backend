@@ -5,6 +5,7 @@ var {get_announcements} = require('../controllers/announcement');
 var {get_students, get_student_attendance} = require('../controllers/attendance');
 var {get_exams} = require('../controllers/exam');
 var {get_students, get_student_attendance} = require('../controllers/attendance');
+var {get_student_profile} = require('../controllers/performance');
 
 /* GET users listing. */
 router.use(check_valid, only_parent);
@@ -23,4 +24,6 @@ router.get('/exam/:icode/:class/:examType', get_exams);
 router.get('/attendance/:icode/:class/:sec',get_students); //would help a parent see who else is in his/her child's class.
 router.get('/attendance/student/:icode/:class/:sec', get_student_attendance);//send the student's docID
 
+//for Performance
+router.get('/performance/student/:icode/:class/:sec', get_student_profile);
 module.exports = router;
