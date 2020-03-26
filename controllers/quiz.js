@@ -3,6 +3,9 @@ Adding the capability of storing images for questions
 */
 
 const {db} = require('./db');
+const {uploadDir} = require('../config/secrets');
+var formidable = require('formidable');
+const form = formidable({uploadDir: uploadDir})
 
 //GET Request
 exports.get_quiz = function(req,res){
@@ -15,7 +18,7 @@ exports.get_quiz = function(req,res){
     //URL Query
     author = query.author;
     subject = query.subject; 
-    due = query.due_date;
+    due = query.dueDate;
 
     db.collection(`quizzes/${icode}/${cl}`)
     .get()
@@ -41,28 +44,58 @@ exports.get_quiz = function(req,res){
 };
 
 //POST request (Edit this handler)
-//expects a json body in the req.body which conforms to the quiz design.
-// IMP: Add a mechanism for checking valid schools and adding pictures
 exports.set_quiz = function(req,res){
-    console.log("req.body", req.body);
-    body = req.body.quiz;
-    icode = req.body.icode;
-    title = body.title || 'none';
-    subject = body.subject;
-    cl = body.class;
-    author = body.author;
-    section = body.section;
-    body.quizId = icode + cl + subject + section + author + Date.now().toString();
-    console.log(body.quizId);
-    due = Date.parse(body.due_date); // send date a string object
-    console.log(body);
-    if( !cl || !author || !subject || !icode) { res.send({'message':"Please fill all the details!"}); }
-    else {
-        db.collection(`quizzes/${icode}/${cl}`)
-        .add(body)
-        .then(ref => res.send({'status': "success", 'quizId': ref.id}))
-        .catch(err => res.send({'error': err.err}));
-    }
+    params = req.params;
+
+    form.parse(req, (err, fields, files)=>{
+        if(err) {
+            res.send({'status':'failure','message':err.Message})
+            return;
+        }
+        body = fields;
+        images = files;
+        keys = Object.keys(images);
+        keys.forEach( key => {
+            if(images[key].type !== 'application/pdf' && images[key].type !== 'img/png')
+            {
+                flag = true;
+            }
+        })
+        if(flag){
+            res.send({'status':'failure','message':'Only Images(<20kB) and PDFs(<50kB) allowed'})
+            return;
+        }
+        //URL parameters
+        icode = params.icode;
+        cl = params.class;
+
+        //URL body
+        var {title, subject, tcode, dueDate, questions, section, syllabus} = body;
+        //console.log("Images",images)
+        try {
+            date = Date.parse(dueDate) || undefined
+            questions = JSON.parse(questions);
+            syllabus = JSON.parse(syllabus);
+
+        } catch (error) {
+            console.log(err)
+            res.send({'status':'failure', 'message':'Please send proper data!'})
+        }
+        if( !title || !tcode || !subject || !questions || !date || keys>questions.length) res.send({'status':'failure', 'message':"1.Please send proper data!"})
+        else {
+            questions.forEach( question =>{
+                if(question.image === "true"){
+                    const i = questions.indexOf(question)
+                    img = images[`imgq${i}`];
+                    if(!img){
+                        res.send({'status':'failure','message':`Image for Question ${i} not found!`})
+                        return;
+                    }
+                    
+                }
+            })
+        }
+    })
 };
 
 //POST request

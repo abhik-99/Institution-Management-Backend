@@ -163,7 +163,7 @@ exports.check_submissions = function(req,res){
 exports.get_homework = function(req,res){
     query = req.query;
     docId = query.id;
-    scode = query.student_code;//if any specific submission is needed otherwise the value is 'undefined'
+    scode = query.scode;//if any specific submission is needed otherwise the value is 'undefined'
 
     if( !docID) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
     else{
