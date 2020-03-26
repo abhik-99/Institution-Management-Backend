@@ -36,4 +36,7 @@ function download_link(bucketName,filename){
   //console.log(config);
   return storage.bucket(bucketName).file(filename).getSignedUrl(config);
 }
-module.exports = {upload_file,download_file,download_link};
+function get_file_ref(bucketName,filename){
+  return storage.bucket(bucketName).file(filename);
+}
+module.exports = {upload_file,download_file,download_link, get_file_ref};

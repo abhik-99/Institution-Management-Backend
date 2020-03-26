@@ -3,8 +3,7 @@ Adding the capability of storing images for questions
 */
 
 const {db} = require('./db');
-const {uploadDir} = require('../config/secrets');
-var {upload_file,download_link} = require('../gcp_buckets/file_handling');
+var {upload_file,get_file_ref} = require('../gcp_buckets/file_handling');
 var {bucketName} = require('../config/secrets');
 
 //GET Request
@@ -24,19 +23,19 @@ exports.get_quiz = function(req,res){
     .get()
     .then(snap =>{
         list = [];
-        snap.forEach( doc => list.push(doc.data()));
+        snap.forEach( doc => list.push({'id': doc.id, 'data':doc.data()}));
         if(section){
             console.log(section);
-            list = list.filter(each => each.section === section);
+            list = list.filter(each => each.data.section === section);
         }
         if(author){
-            list = list.filter(each => each.author === author);
+            list = list.filter(each => each.data.author === author);
         }
         if(subject){
-            list = list.filter(each => each.subject == subject);
+            list = list.filter(each => each.data.subject == subject);
         }
         if(due){
-            list.forEach(each => Date.parse(each.due_date) > Date.parse(due));
+            list.forEach(each => Date.parse(each.data.due_date) > Date.parse(due));
         }
         res.send({'quiz': list});
     })
@@ -53,8 +52,7 @@ exports.set_quiz = function(req,res){
     //URL parameters
     icode = params.icode;
     cl = params.class;
-
-    keys = Object.keys(files);
+    if(files) keys = Object.keys(files);
     flag = false;
 
     for( i = 0; i<keys.length; i++){
@@ -84,19 +82,22 @@ exports.set_quiz = function(req,res){
     }
     else {
         //checking qhich questions contain images
-        imgPathMap = [];
+        filePathMap = [];
         flag = false;
-        for( index = 0; i<questions.length; i++){
-            if(questions[index].image === "true"){
+        var index = 0
+        for( ; index<questions.length; index++){
+            if(questions[index].file === "true"){
                 // const i = questions.indexOf(question)
-                file = files[`imgq${index}`];
+                file = files[`fileq${index}`];
                 if(!file){
                     flag = true;
                     break;
                 }
                 filename = `quizzies/images/${icode}/${cl}/${tcode}/${section}/${title}-${dueDate}-q${index}-${Date.now()}-${file.name}`
                 questions[index].filePath = filename;
-                imgPathMap.push({'filename': file.path, 'uploadName': filename})
+                questions[index].fileType = file.type;
+                filePathMap.push({'filename': file.path, 'uploadName': filename})
+                console.log("True for", index,"Question", questions[index])
             }
         }
         if(flag){
@@ -115,7 +116,7 @@ exports.set_quiz = function(req,res){
         .then(async (ref)=>{
             //uploading images to bucket.
             await Promise
-            .all(imgPathMap.map( each => {
+            .all(filePathMap.map( each => {
                 return upload_file(bucketName, each.filename, each.uploadName)
             }))
             .then(() => res.send({'status':'success','message':`Quiz ${ref.id} added!`}))
@@ -128,6 +129,41 @@ exports.set_quiz = function(req,res){
 
 //GET Request
 exports.get_quiz_pic = function(req,res){
+    params = req.params;
+    query = req.query;
+
+    //URL parameters
+    icode = params.icode;
+    cl = params.class;
+
+    //URL query
+    docId = query.id;
+    q = query.q;
+    db.doc(`quizzes/${icode}/${cl}/${docId}`)
+    .get()
+    .then( doc =>{
+        if(!doc) res.send({'status':'failure', 'message':'Please send proper data!'})
+        data = doc.data();
+        question = data.questions[q];
+        if(!question.file || !question.fileType) res.send({'status':'failure','message':'Question has no image!'})
+        var ref = get_file_ref(bucketName,question.filePath);
+        
+        var stream = ref.createReadStream();
+        res.writeHead(200, {'Content-Type': question.fileType });
+        stream.on('data', function (data) {
+            res.write(data);
+            });
+        
+            stream.on('error', function (err) {
+            console.log('error reading stream', err);
+            });
+        
+            stream.on('end', function () {
+            res.end();
+            });
+        
+    })
+    .catch(err => res.send({'status':'failure','error': err.message}));
 };
 
 //POST request
