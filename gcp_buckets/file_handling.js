@@ -3,6 +3,8 @@ const {Storage} = require('@google-cloud/storage');
 const storage = new Storage({keyFilename: './service/service_key.json'});
 
 async function upload_file(bucketName,filename,uploadName) {
+  //filename is the path to the local dir upload, uploadname is the name on
+  //the GCP bucket
   // Uploads a local file to the bucket
   await storage.bucket(bucketName).upload(filename,{destination:uploadName});
 

@@ -1,3 +1,4 @@
+service: studie-server
 runtime: nodejs12
 env_variables:
   SQL_USER: root
