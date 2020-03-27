@@ -25,7 +25,7 @@ exports.login = function(req, res) {
         sessions = [];    
         snapshot.forEach(doc => {
           aboutDoc = doc.data();
-          list.push(doc.id);
+          list.push({'id':doc.id,'data':aboutDoc});
           if(aboutDoc.session){
             sessions = aboutDoc.session;
           }
@@ -33,6 +33,8 @@ exports.login = function(req, res) {
         if(list.length > 1){
           res.send({"Error":"Duplicate Users Exists, Signing Halted!"});
         }
+        if(list[0].lastSignin + (60*60) > Date.now() ) res.send({'status':'failure','message':'Timeout!'})
+
         let token = jwt.sign({
            exp: Math.floor(Date.now() / 1000) + (60 * 60),
            data: JSON.stringify({ 
@@ -43,8 +45,11 @@ exports.login = function(req, res) {
             })},
            secret);
         sessions.push(token);
+
+        lastSignin = Date.now();
+        
         db.collection('users').doc(list[0])
-        .update({session: sessions});
+        .update({'lastSignin':lastSignin,'session': sessions});
         res.send({"x-access-token": token});
         
       })

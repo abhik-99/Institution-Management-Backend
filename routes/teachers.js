@@ -43,8 +43,8 @@ router.post('/exam', set_exam);
 router.patch('/exam', grade_exam);
 
 //for announcements
-router.get('/announce/:icode', get_announcements);
-router.post('/announce', make_announcement);
+// router.get('/announce/:icode', get_announcements);
+router.post('/announce',formidableMiddleware({uploadDir:uploadDir}), make_announcement);
 
 //for chapters
 router.get('/chapters/:icode/:class/:sec', get_chapters);
@@ -62,8 +62,8 @@ router.post('/merits/:icode/:class/:sec', edit_merit);
 router.post('/merits/reset/:icode', reset_merit);
 
 //for Documents
-router.get('/docs/:icode/:class/:sec', get_doc);
-router.get('/docs/download/:icode', doc_download);
+// router.get('/docs/:icode/:class/:sec', get_doc);
+// router.get('/docs/download/:icode', doc_download);
 router.post('/docs/:icode/:class/:sec', publish_doc);
 
 //for Performance
