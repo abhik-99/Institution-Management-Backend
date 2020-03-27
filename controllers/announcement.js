@@ -1,4 +1,6 @@
 let {db} = require('./db');
+const {upload_file,get_file_ref} = require('../gcp_buckets/file_handling');
+var {bucketName} = require('../config/secrets');
 
 //GET request
 exports.get_announcements = function(req,res){
@@ -26,7 +28,7 @@ exports.get_announcements = function(req,res){
     .then(snap =>{
         docs = [];
         snap.docs.forEach(doc => {
-            docs.push({'aId': doc.id, 'data':doc.data()});
+            docs.push({'id': doc.id, 'data':doc.data()});
         });
         if( docs.length == 0) { res.send({'status':'failure', 'error':'No school found!'}); }
         if(!gen_announce){
@@ -36,39 +38,89 @@ exports.get_announcements = function(req,res){
         }
         res.send({'status': 'success', 'announcements': docs});
     })
-    .catch( err => res.send({'status': 'failure', 'error': err.Error}));
+    .catch( err => res.send({'status': 'failure', 'error': err.message}));
 };
+exports.get_announce_pic = function(req,res){
+    query = req.query;
+    id = query.id; //Doc Id of the Announcement;
+    if(!id) res.send({'status': 'failure', 'message': 'Please send proper data!'})
+    db.doc(`annoucement/${id}`)
+    .get()
+    .then( doc =>{
+        if(!doc.data()) {
+            res.send({'status': 'failure', 'message':'No such Announcement!'})
+            return;
+        }
+        data = doc.data()
+        if(data.hasFile){
+            var ref = get_file_ref(bucketName,data.file.filePath);
+        
+            var stream = ref.createReadStream();
+            res.writeHead(200, {'Content-Type': data.file.fileType });
+            stream.on('data', function (data) {
+                res.write(data);
+                });
+            
+                stream.on('error', function (err) {
+                console.log('error reading stream', err);
+                });
+            
+                stream.on('end', function () {
+                res.end();
+                });
+        }else res.send({'status': 'failure', 'message':'No such Announcement!'})
+    })
+    .catch( err => res.send({'status': 'failure', 'error': err.message}));
+}
 
 //POST request
 exports.make_announcement = function(req,res){
-    body = req.body;
-    gen_announce = body.gen_announce;
-    cl = body.class;
-    sec = body.sec;
-    icode = body.icode;
-    title = body.announcement.title;
-    desc = body.announcement.desc;
+    body = req.fields;
+    params = req.params;
+    file = req.files.file;
+    //URL params
+    cl = params.class;
+    sec = params.sec;
+    icode = params.icode;
+    //URL Body
+    gen_announce = body.genAnnounce;
+    // title = body.announcement.title;
+    // desc = body.announcement.desc;
+    try {
+        announce = JSON.parse(body.announce)
+        title = announce.title;
+        desc = announce.desc;
+    } catch (error) {
+        console.log(error)
+        res.send({'status':'failure', 'message': 'Please send proper data!'})
+        return;
+    }
     tcode = body.tcode;
     date = Date.now();
     
     announcement = {};
 
-    if(!icode || !tcode || !title || !desc) { res.send({'status':'failure', 'error': 'Please send proper data!'}); }
+    if(!icode || !tcode || !title || !desc) res.send({'status':'failure', 'message': '2.Please send proper data!'})
 
-    if(!gen_announce){
-        if(!cl || !sec) { res.send({'status':'failure', 'error': 'If not a general announcement, then include specifics!'}); }
-        else{
-            announcement.class = cl;
-            announcement.section = sec;
-        }
-    }else{
-        if( gen_announce != 'true' && gen_announce != 'false') { res.send({'status':'failure', 'error':'Please enter proper query parameters!'}); }
-        else {
-            announcement.gen_announce = (gen_announce === 'true');
-        }
+
+    if( gen_announce != 'true' && gen_announce != 'false') { res.send({'status':'failure', 'error':'Please enter proper query parameters!'}); }
+    else {
+        announcement.gen_announce = (gen_announce === 'true');
     }
+    
     announcement.school = icode;
+    announcement.class = cl;
+    announcement.section = sec;
     announcement.announcement = { 'title': title, 'desc': desc};
+    filePath = '';
+
+    if(file){
+        fileType = file.type;
+        filePath = `announce/${icode}/${cl}/${sec}/${Date.now()}-${file.name}`
+        announcement.hasFile = true;
+        announcement.file = {'filePath':filePath,'fileType':fileType}
+    }
+    //Commiting to DB
     db.collection(`profiles/teachers/${icode}`)
     .where('code', '==', tcode)
     .get()
@@ -78,11 +130,17 @@ exports.make_announcement = function(req,res){
             info = doc.data();
             teacher.push({'name': info.name, 'tcode': info.code});
         });
-        if(teacher.length != 1) { res.send({'status':'failure', 'error': 'Duplicate or no profile found!'}); }
+        if(teacher.length != 1) res.send({'status':'failure', 'error': 'Duplicate or no profile found!'})
+
         announcement.author = teacher[0];
         announcement.date = date;
         db.collection('annoucement').add(announcement)
-        .then(()=> res.send({'status':'success', 'message': 'Announcement added successfully!'}))
+        .then(()=> {
+            if(file){
+                upload_file(bucketName, file.path, filePath)
+                .then(()=> res.send({'status':'success', 'message': 'Announcement added successfully!'}));
+            }else res.send({'status':'success', 'message': 'Announcement added successfully!'})
+        })
         .catch( err => res.send({'status': 'failure', 'error': err}));
     })
     .catch(err => res.send({'status': 'failure', 'error':'Error in Teacher\'s Profile!'}));

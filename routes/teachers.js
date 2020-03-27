@@ -44,7 +44,7 @@ router.patch('/exam', grade_exam);
 
 //for announcements
 // router.get('/announce/:icode', get_announcements);
-router.post('/announce',formidableMiddleware({uploadDir:uploadDir}), make_announcement);
+router.post('/announce/:icode/:class/:sec',formidableMiddleware({uploadDir:uploadDir, multiples:true}), make_announcement)
 
 //for chapters
 router.get('/chapters/:icode/:class/:sec', get_chapters);
