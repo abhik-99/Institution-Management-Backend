@@ -32,8 +32,12 @@ exports.login = function(req, res) {
         });
         if(list.length > 1){
           res.send({"Error":"Duplicate Users Exists, Signing Halted!"});
+          return;
+        } 
+        if(list[0].data.lastSignin + (60*60*1000) > Date.now() ) {
+          res.send({'status':'failure','message':'Timeout!'})
+          return;
         }
-        if(list[0].lastSignin + (60*60) > Date.now() ) res.send({'status':'failure','message':'Timeout!'})
 
         let token = jwt.sign({
            exp: Math.floor(Date.now() / 1000) + (60 * 60),
@@ -47,10 +51,11 @@ exports.login = function(req, res) {
         sessions.push(token);
 
         lastSignin = Date.now();
-        
-        db.collection('users').doc(list[0])
-        .update({'lastSignin':lastSignin,'session': sessions});
-        res.send({"x-access-token": token});
+
+        db.collection('users').doc(list[0].id)
+        .update({'lastSignin':lastSignin,'session': sessions})
+        .then(()=> res.send({"x-access-token": token}))
+        .catch(err=> res.send({'status':'failure','message':err.message}));
         
       })
       .catch(err =>{
