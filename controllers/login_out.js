@@ -64,36 +64,37 @@ exports.login = function(req, res) {
         res.send(err);
       });
   };
-  exports.logout = function(req,res){
-    token = req.headers['x-access-token'];
-    if(!token){
-      res.send({"message": "No token received!"});
-      res.end();
-    } else{
-      jwt.verify(token, secret, function(err,decoded){
-        if(err){
-          console.log("Ivalid token", token);
-          res.send({"Message": "Token Invalid"});
-        }else{
-          tokenData = JSON.parse(decoded.data);
-          db.collection('users')
-          .where('session', 'array-contains', token)
-          .get()
-          .then(snap=>{
-            snap.forEach(doc=>{
-              db.collection('users').doc(doc.id).update({session: FieldValue.delete(), lastSignin: FieldValue.delete()});
-            });
+
+exports.logout = function(req,res){
+  token = req.headers['x-access-token'];
+  if(!token){
+    res.send({"message": "No token received!"});
+    res.end();
+  } else{
+    jwt.verify(token, secret, function(err,decoded){
+      if(err){
+        console.log("Ivalid token", token);
+        res.send({"Message": "Token Invalid"});
+      }else{
+        tokenData = JSON.parse(decoded.data);
+        db.collection('users')
+        .where('session', 'array-contains', token)
+        .get()
+        .then(snap=>{
+          snap.forEach(doc=>{
+            db.collection('users').doc(doc.id).update({session: FieldValue.delete(), lastSignin: FieldValue.delete()});
           });
-          console.log(decoded);
-          db.doc('blacklist/tokens').get()
-          .then(doc =>{
-            tokens=doc.data();
-            tokens = tokens.token_arr;
-            tokens.push(token);
-            db.doc('blacklist/tokens').update({token_arr: tokens});
-            res.send({"Message": "Logged out!"});
-          });
-        }
-      });
-    }
-  };
+        });
+        
+        db.doc('blacklist/tokens').get()
+        .then(doc =>{
+          tokens=doc.data();
+          tokens = tokens.token_arr;
+          tokens.push(token);
+          db.doc('blacklist/tokens').update({token_arr: tokens});
+          res.send({"Message": "Logged out!"});
+        });
+      }
+    });
+  }
+};

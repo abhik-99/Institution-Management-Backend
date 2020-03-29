@@ -6,7 +6,7 @@ exports.multer = Multer({
       fileSize: 2 * 1024 * 1024, // no larger than 2mb.
     },
     fileFilter: (req,file,cb)=>{
-        const filetypes = /jpeg|jpg|png|pdf|rtf|docx/;
+        const filetypes = /jpeg|jpg|png|pdf|rtf|docx|txt|plain/;
         // Check ext
         const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
         // Check mime

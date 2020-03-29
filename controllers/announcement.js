@@ -75,17 +75,17 @@ exports.get_announce_file = function(req,res){
 
 //POST request
 exports.make_announcement = function(req,res){
-    body = req.fields;
+    body = req.body;
     params = req.params;
-    file = req.files.file;
+    file = req.file;
+
     //URL params
     cl = params.class;
     sec = params.sec;
     icode = params.icode;
+
     //URL Body
     gen_announce = body.genAnnounce;
-    // title = body.announcement.title;
-    // desc = body.announcement.desc;
     try {
         announce = JSON.parse(body.announce)
         title = announce.title;
@@ -100,7 +100,7 @@ exports.make_announcement = function(req,res){
     
     announcement = {};
 
-    if(!icode || !tcode || !title || !desc) res.send({'status':'failure', 'message': '2.Please send proper data!'})
+    if(!icode || !tcode || !title || !desc) res.send({'status':'failure', 'message': 'Please send proper data!'})
 
 
     if( gen_announce != 'true' && gen_announce != 'false') { res.send({'status':'failure', 'error':'Please enter proper query parameters!'}); }
@@ -111,12 +111,13 @@ exports.make_announcement = function(req,res){
     announcement.school = icode;
     announcement.class = cl;
     announcement.section = sec;
+    announcement.tcode = tcode;
     announcement.announcement = { 'title': title, 'desc': desc};
     filePath = '';
 
     if(file){
-        fileType = file.type;
-        filePath = `announce/${icode}/${cl}/${sec}/${Date.now()}-${file.name}`
+        fileType = file.mimetype;
+        filePath = `announce/${icode}/${cl}/${sec}/${Date.now()}-${file.originalname}`
         announcement.hasFile = true;
         announcement.file = {'filePath':filePath,'fileType':fileType}
     }
@@ -137,13 +138,21 @@ exports.make_announcement = function(req,res){
         db.collection('annoucement').add(announcement)
         .then(()=> {
             if(file){
-                upload_file(bucketName, file.path, filePath)
-                .then(()=> res.send({'status':'success', 'message': 'Announcement added successfully!'}));
-            }else res.send({'status':'success', 'message': 'Announcement added successfully!'})
+                var blob = get_file_ref(bucketName, filePath);
+                
+                const blobStream = blob.createWriteStream({
+                    metadata: {
+                      contentType: file.mimetype
+                    }
+                  });
+                blobStream.on("error", err => res.send({'status': 'failure', 'error': err.message}));
+                blobStream.on("finish", () => res.send({'status': 'success','message': 'Announcement Added!'}));
+                blobStream.end(file.buffer);
+            } else  res.send({'status':'success', 'message': 'Announcement added successfully!'})
         })
-        .catch( err => res.send({'status': 'failure', 'error': err}));
+        .catch( err => res.send({'status': 'failure', 'error': err.message}));
     })
-    .catch(err => res.send({'status': 'failure', 'error':'Error in Teacher\'s Profile!'}));
+    .catch(err => res.send({'status': 'failure', 'error':err.message}));
 }
 
 //DELETE Request. Not Given in the UI
