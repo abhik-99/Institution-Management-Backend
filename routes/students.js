@@ -6,7 +6,7 @@ var formidableMiddleware = require('express-formidable');
 var {check_valid, only_student} = require('../middlewares/auth');
 var {check_homeworks,submit_homework} = require('../controllers/homeworks');
 var {get_quiz, get_quiz_file, submit_quiz} = require('../controllers/quiz');
-var {get_announcements, get_announce_pic} = require('../controllers/announcement');
+var {get_announcements, get_announce_file} = require('../controllers/announcement');
 var {get_exams} = require('../controllers/exam');
 var {get_chapters} = require('../controllers/chapters');
 var {get_merit} = require('../controllers/merits');
@@ -33,7 +33,7 @@ router.post('/quiz', submit_quiz);
 
 //for fetching announcements
 router.get('/announce/:icode', get_announcements);
-router.get('/announce/pic', get_announce_pic);
+router.get('/announce/pic', get_announce_file);
 
 //for getting exams and their scores
 router.get('/exam/:icode/:class/:examType', get_exams);

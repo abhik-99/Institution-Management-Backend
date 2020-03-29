@@ -8,8 +8,8 @@ exports.publish_doc = function(req,res){
     console.log("Request Received!");
     body = req.fields;
     file = req.files.doc; //the file sent to the server must be with a key 'doc'
-    params = req.params
-
+    params = req.params;
+ 
     //URL parameters
     icode = params.icode;
     cl = params.class;
@@ -18,6 +18,7 @@ exports.publish_doc = function(req,res){
     //URL Req Body
     des = body.description;
     tcode = body.tcode;
+    console.log('params collection', params, des,tcode)
     // console.log(file.name);
     if( !des || !tcode || !file) { res.send({'status': 'failure', 'message': 'Please send proper data!'}); }
     else{
@@ -32,7 +33,7 @@ exports.publish_doc = function(req,res){
                 'tcode': tcode,
                 'filePath': filename
             })
-            .then(ref => res.send({'status': 'success', 'message': 'Document Published!'}))
+            .then(ref => res.send({'status': 'success', 'message': `Document Published!${ref.id}`}))
             .catch(err => res.send({'status': 'failure', 'error': err}));
         })
         .catch( err => res.send({'status': 'failure', 'error': err}));

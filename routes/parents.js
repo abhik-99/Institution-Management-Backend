@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var {check_valid, only_parent} = require('../middlewares/auth');
-var {get_announcements, get_announce_pic} = require('../controllers/announcement');
+var {get_announcements, get_announce_file} = require('../controllers/announcement');
 var {get_students, get_student_attendance} = require('../controllers/attendance');
 var {get_exams} = require('../controllers/exam');
 var {get_students, get_student_attendance} = require('../controllers/attendance');
@@ -12,7 +12,7 @@ router.use(check_valid, only_parent);
 
 //for announcements
 router.get('/announce/:icode', get_announcements);
-router.get('/announce/pic', get_announce_pic);
+router.get('/announce/pic', get_announce_file);
 
 //for attendance
 router.get('/attendance/:icode/:class/:sec',get_students);

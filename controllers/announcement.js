@@ -40,7 +40,7 @@ exports.get_announcements = function(req,res){
     })
     .catch( err => res.send({'status': 'failure', 'error': err.message}));
 };
-exports.get_announce_pic = function(req,res){
+exports.get_announce_file = function(req,res){
     query = req.query;
     id = query.id; //Doc Id of the Announcement;
     if(!id) res.send({'status': 'failure', 'message': 'Please send proper data!'})
