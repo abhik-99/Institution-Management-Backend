@@ -18,9 +18,9 @@ var {get_merit, edit_merit, reset_merit} = require('../controllers/merits');
 var {publish_doc, get_doc, doc_download} = require('../controllers/documents');
 var {get_student_profile} = require('../controllers/performance');
 router.use(check_valid, only_teacher);
-
+//replace formidable with multer
 //for homework
-router.post('/homework',formidableMiddleware({uploadDir: uploadDir, multiples: true }),assign_homework);
+router.post('/homework',multer.single('assignment'),assign_homework);
 router.get('/homework/:icode/:class/:sec',check_homeworks);
 router.get('/homework/submissions/:icode/:class/:sec',check_submissions);
 router.get('/homework/submissions/download',get_homework);

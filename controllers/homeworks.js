@@ -5,8 +5,9 @@ let {db} = require('./db');
 
 //POST requests to assign homework. Uses FormidablemMiddleware
 exports.assign_homework = function(req,res){
-    file = req.files.assignment;
-    body = req.fields;
+    file = req.file;
+    body = req.body;
+    //URL Body
     icode = body.icode;
     author = body.tcode;
     cl = body.class;
@@ -14,11 +15,20 @@ exports.assign_homework = function(req,res){
     sub = body.subject;
     chapter = body.chapter;
     title = body.title;
+
     if( !icode || !cl || !sec || !sub || !chapter || !title || !file.name ) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
     else{
         sub_date = Date.parse(body.sub_date);
-        filename =`homeworks/${icode}/${cl}/${sec}/${sub}/${chapter}-${title}-${sub_date}-`+file.name;
-        upload_file(bucketName,file.path,filename).then(()=>{
+        filename =`homeworks/${icode}/${cl}/${sec}/${sub}/${chapter}-${title}-${sub_date}-`+file.originalname;
+        var blob = get_file_ref(bucketName, filename);
+            
+        const blobStream = blob.createWriteStream({
+            metadata: {
+                contentType: file.mimetype
+            }
+            });
+        blobStream.on("error", err => res.send({'status': 'failure', 'error': err.message}));
+        blobStream.on("finish", () => {
             db.collection('homeworks')
             .add({
                 author: author,
@@ -29,14 +39,15 @@ exports.assign_homework = function(req,res){
                 chapter: chapter,
                 due_date: sub_date,
                 file_path: filename,
+                file_type: file.mimetype,
                 title: title,
                 submissions:[]
             }).then(ref=>{
                 res.send({'status': 'success', 'message': `${filename} uploaded!`}); 
-            });        
-        })
-        .catch( err => res.send({'status': 'failure', 'error': err}));
-    } 
+            });
+        });
+        blobStream.end(file.buffer);
+    }                        
 };
 
 //GET Request from students and students
