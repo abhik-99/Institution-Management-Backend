@@ -1,5 +1,5 @@
 const _ = require('lodash');
-var {upload_file,download_link} = require('../gcp_buckets/file_handling');
+var {upload_file,download_link, get_file_ref} = require('../gcp_buckets/file_handling');
 var {bucketName} = require('../config/secrets');
 let {db} = require('./db');
 
@@ -14,12 +14,24 @@ exports.assign_homework = function(req,res){
     sec = body.sec;
     sub = body.subject;
     chapter = body.chapter;
-    title = body.title;
-
-    if( !icode || !cl || !sec || !sub || !chapter || !title || !file.originalname ) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
+    try {
+        homework = JSON.parse(body.homework)
+        title = homework.title;
+        desc = homework.desc;
+    } catch (error) {
+        res.send({'status':'failure', 'error': err.message})
+    }
+     
+    try {
+        date = Date.parse(body.sub_date);
+        sub_date = body.sub_date;
+    } catch (error) {
+        res.send({'status': 'failure', 'message':'Please enter a proper Date!'})
+        return;
+    }
+    if( !icode || !cl || !sec || !sub || !chapter || !title || !sub_date || !file.originalname) res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'})
     else{
-        sub_date = Date.parse(body.sub_date);
-        filename =`homeworks/${icode}/${cl}/${sec}/${sub}/${chapter}-${title}-${sub_date}-`+file.originalname;
+        filename =`homeworks/${icode}/${cl}/${sec}/${sub}/${chapter}-${title}-${Date.now()}-`+file.originalname;
         var blob = get_file_ref(bucketName, filename);
             
         const blobStream = blob.createWriteStream({
@@ -28,6 +40,7 @@ exports.assign_homework = function(req,res){
             }
             });
         blobStream.on("error", err => res.send({'status': 'failure', 'error': err.message}));
+
         blobStream.on("finish", () => {
             db.collection('homeworks')
             .add({
@@ -41,9 +54,10 @@ exports.assign_homework = function(req,res){
                 file_path: filename,
                 file_type: file.mimetype,
                 title: title,
+                desc: desc,
                 submissions:[]
             }).then(ref=>{
-                res.send({'status': 'success', 'message': `${filename} uploaded!`}); 
+                res.send({'status': 'success', 'message': `Homewwork ${ref.id} uploaded!`}); 
             });
         });
         blobStream.end(file.buffer);
@@ -58,10 +72,10 @@ exports.check_homeworks = function(req,res){
     //following are obtained via URL parameter
     icode = params.icode;
     cl = params.class;
-    sec = query.sec;
+    sec = params.sec;
 
     //following are obtianed via URL Query
-    sub = query.subject;
+    sub = query.sub;
 
     if( !icode || !cl || !sec || !sub ) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
     else {
@@ -72,7 +86,10 @@ exports.check_homeworks = function(req,res){
         .where('subject','==',sub)
         .get()
         .then(snap=>{
-            if(!snap) res.send({'status': 'failure', 'message': 'No Match Found!'})
+            if(snap.empty) {
+                res.send({'status': 'failure', 'message': 'No Match Found!'})
+                return;
+            }
             list = [];
             snap.forEach(doc => {
                 info = _.pick(doc.data(),['author','title','subject','class','section','chapter','due_date','school_code'])
@@ -115,7 +132,10 @@ exports.submit_homework = function(req,res){
         .get()
         .then(snap =>{ 
             //console.log("snapshot received!",snap);
-            if(!snap) res.send({'status': 'failure', 'message': 'No Match Found!'})
+            if(snap.empty) {
+                res.send({'status': 'failure', 'message': 'No Match Found!'})
+                return;
+            }
             ob = {student_code: student, file_path: filename,sub_time: now.getTime() };
             snap.forEach(doc =>{
                 id = doc.id;
@@ -143,25 +163,30 @@ exports.check_submissions = function(req,res){
 
     //following are to be obtained via URL query
     author = query.tcode;
-    sub = query.subject;
+    sub = query.sub;
     chapter = query.chapter;
     title = query.title;
-    
+    console.log(icode, author, sub, chapter, title, cl, sec)
     if( !icode || !author || !cl || !sec || !sub || !chapter || !title) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
     else {
         db.collection('homeworks')
         .where('school_code','==',icode)
-        .where('author','==',author)
         .where('class','==',cl)
         .where('section','==',sec)
+        .where('author','==',author)
         .where('subject','==',sub)
         .where('chapter','==',chapter)
         .where('title','==',title)
         .get()
         .then(snap =>{ 
             subs=[];
+            if(snap.empty) {
+                res.send({'status':'success', 'message': 'No Such document found!'})
+                return;
+            }
             snap.forEach(doc =>{
                 info = doc.data();
+                console.log("TEst");
                 subs = {id: doc.id, submissions: info.submissions};                
             });
 
