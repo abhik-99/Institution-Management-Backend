@@ -1,15 +1,15 @@
 const {db} = require('./db');
-var {upload_file,download_link} = require('../gcp_buckets/file_handling');
+var {upload_file,download_link, get_file_ref} = require('../gcp_buckets/file_handling');
 var {bucketName} = require('../config/secrets');
 var _ = require('lodash')
 
 //POST Request. Uses formidablemiddleware
 exports.publish_doc = function(req,res){
     console.log("Request Received!");
-    body = req.fields;
-    file = req.files.doc; //the file sent to the server must be with a key 'doc'
+    body = req.body;
+    file = req.file; //the file sent to the server must be with a key 'doc'
     params = req.params;
- 
+
     //URL parameters
     icode = params.icode;
     cl = params.class;
@@ -18,23 +18,34 @@ exports.publish_doc = function(req,res){
     //URL Req Body
     des = body.description;
     tcode = body.tcode;
-    if( !des || !tcode || !file) { res.send({'status': 'failure', 'message': 'Please send proper data!'}); }
+    console.log(file);
+    if( !des || !tcode || !file) res.send({'status': 'failure', 'message': 'Please send proper data!'}); 
     else{
         pub_date = Date.now()
-        filename = `documents/${icode}/${cl}/${sec}/${tcode}-${pub_date}-`+file.name;
-        upload_file(bucketName,file.path, filename)
-        .then(() =>{
+        filename = `documents/${icode}/${cl}/${sec}/${tcode}-${pub_date}-`+file.originalname;
+        var blob = get_file_ref(bucketName, filename);
+        console.log("Starting upload!")
+        const blobStream = blob.createWriteStream({
+            metadata: {
+              contentType: file.mimetype
+            }
+          });
+          blobStream.on("error", err => res.send({'status': 'failure', 'error': err.message}));
+          blobStream.on("finish", () => {
+
             db.collection('documents').add({
-                'icode': icode,
-                'class': cl,
-                'section': sec,
-                'tcode': tcode,
-                'filePath': filename
-            })
-            .then(ref => res.send({'status': 'success', 'message': `Document Published!${ref.id}`}))
-            .catch(err => res.send({'status': 'failure', 'error': err}));
-        })
-        .catch( err => res.send({'status': 'failure', 'error': err}));
+                        'icode': icode,
+                        'class': cl,
+                        'section': sec,
+                        'tcode': tcode,
+                        'filePath': filename,
+                        'fileType': file.mimetype
+                    })
+                    .then(ref => res.send({'status': 'success', 'message': `Document Published! ${ref.id}`}))
+                    .catch(err => res.send({'status': 'failure', 'error': err.message}));
+          });
+          blobStream.end(file.buffer);
+
     }
 };
 

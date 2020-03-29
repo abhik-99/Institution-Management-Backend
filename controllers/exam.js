@@ -36,6 +36,9 @@ exports.get_exams = function(req, res){
             t = exam[examType];
             if(t){
                 docs = docs.filter( doc => doc.data.exam_type === t);
+            } else {
+                res.send({'status':'failure', 'message': 'Exam Type Invalid!'})
+                return;
             }
         }
         if(author){
@@ -61,7 +64,8 @@ exports.set_exam = function(req,res){
     icode = body.icode;
     exam_type = body.examType;
     fm = body.FullMarks;
-    if(!section || typeof date != 'string' || !icode || !cl || !exam_type) res.send({'status': 'failure', 'error': 'Please provide all the proper details!'})
+    if(!section || typeof date != 'string' || !icode || !cl || (!exam_type || ( examType !== '1' && examType !== '2' && examType !== '3'))) 
+    res.send({'status': 'failure', 'error': 'Please provide all the proper details!'})
     if(exam_type){
         t = exam[exam_type];
         if(!t){ res.send({'status': 'failure', 'error': 'Please provide all the proper details!'});}

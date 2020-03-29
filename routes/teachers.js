@@ -6,6 +6,7 @@ var router = express.Router();
 var formidableMiddleware = require('express-formidable');
 var {uploadDir} = require('../config/secrets');
 
+const {multer} = require('../controllers/file_handler');
 var {check_valid, only_teacher} = require('../middlewares/auth');
 var {get_students, give_attendance, get_student_attendance, get_class_attendance} = require('../controllers/attendance');
 var {assign_homework,check_homeworks,check_submissions,get_homework} = require('../controllers/homeworks');
@@ -64,7 +65,7 @@ router.post('/merits/reset/:icode', reset_merit);
 //for Documents
 // router.get('/docs/:icode/:class/:sec', get_doc);
 // router.get('/docs/download/:icode', doc_download);
-router.post('/docs/:icode/:class/:sec', formidableMiddleware({uploadDir:uploadDir, multiples:true}),publish_doc);
+router.post('/docs/:icode/:class/:sec', multer.single('doc'),publish_doc);
 
 //for Performance
 router.get('/performance/student/:icode/:class/:sec', get_student_profile);

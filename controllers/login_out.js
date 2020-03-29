@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+let FieldValue = require('firebase-admin').firestore.FieldValue;
 let {db} = require('./db');
 let {secret} = require('../config/secrets');
 
@@ -34,7 +35,7 @@ exports.login = function(req, res) {
           res.send({"Error":"Duplicate Users Exists, Signing Halted!"});
           return;
         } 
-        if(list[0].data.lastSignin + (60*60*1000) > Date.now() ) {
+        if(list[0].data.lastSignin  && (list[0].data.lastSignin + (60*60*1000) > Date.now() ) ){
           res.send({'status':'failure','message':'Timeout!'})
           return;
         }
@@ -80,7 +81,7 @@ exports.login = function(req, res) {
           .get()
           .then(snap=>{
             snap.forEach(doc=>{
-              db.collection('users').doc(doc.id).update({session: []});
+              db.collection('users').doc(doc.id).update({session: FieldValue.delete(), lastSignin: FieldValue.delete()});
             });
           });
           console.log(decoded);

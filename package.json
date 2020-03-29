@@ -206,6 +206,7 @@
     "moment-timezone": "^0.5.28",
     "morgan": "^1.9.1",
     "ms": "^2.1.2",
+    "multer": "^1.4.2",
     "mysql": "^2.18.1",
     "mysql2": "^2.1.0",
     "negotiator": "^0.6.2",
