@@ -16,7 +16,7 @@ exports.assign_homework = function(req,res){
     chapter = body.chapter;
     title = body.title;
 
-    if( !icode || !cl || !sec || !sub || !chapter || !title || !file.name ) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
+    if( !icode || !cl || !sec || !sub || !chapter || !title || !file.originalname ) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
     else{
         sub_date = Date.parse(body.sub_date);
         filename =`homeworks/${icode}/${cl}/${sec}/${sub}/${chapter}-${title}-${sub_date}-`+file.originalname;
