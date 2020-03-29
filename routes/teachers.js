@@ -64,7 +64,7 @@ router.post('/merits/reset/:icode', reset_merit);
 //for Documents
 // router.get('/docs/:icode/:class/:sec', get_doc);
 // router.get('/docs/download/:icode', doc_download);
-router.post('/docs/:icode/:class/:sec', publish_doc);
+router.post('/docs/:icode/:class/:sec', formidableMiddleware({uploadDir:uploadDir, multiples:true}),publish_doc);
 
 //for Performance
 router.get('/performance/student/:icode/:class/:sec', get_student_profile);
