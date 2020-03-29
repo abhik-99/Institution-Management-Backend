@@ -18,8 +18,6 @@ exports.publish_doc = function(req,res){
     //URL Req Body
     des = body.description;
     tcode = body.tcode;
-    console.log('params collection', params, des,tcode)
-    // console.log(file.name);
     if( !des || !tcode || !file) { res.send({'status': 'failure', 'message': 'Please send proper data!'}); }
     else{
         pub_date = Date.now()
