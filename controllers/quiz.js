@@ -46,23 +46,16 @@ exports.get_quiz = function(req,res){
 exports.set_quiz = function(req,res){
     params = req.params;
 
-    body = req.fields;
-    files = req.files;
+    body = req.body;
+    files = req.file;
 
     //URL parameters
     icode = params.icode;
     cl = params.class;
+
     if(files) keys = Object.keys(files);
     flag = false;
-
-    for( i = 0; i<keys.length; i++){
-        if(files[keys[i]].type !== 'application/pdf' && files[keys[i]].type !== 'image/png')
-        {  
-            flag = keys[i];
-            break;
-        }
-    }
-
+    
     //URL body
     var {title, subject, tcode, dueDate, questions, section, syllabus} = body;
     //console.log("Images",images)

@@ -86,21 +86,16 @@ exports.make_announcement = function(req,res){
 
     //URL Body
     gen_announce = body.genAnnounce;
-    try {
-        announce = JSON.parse(body.announce)
-        title = announce.title;
-        desc = announce.desc;
-    } catch (error) {
-        console.log(error)
-        res.send({'status':'failure', 'message': 'Please send proper data!'})
-        return;
-    }
+    announce = body.announce;
     tcode = body.tcode;
     date = Date.now();
     
     announcement = {};
-
-    if(!icode || !tcode || !title || !desc) res.send({'status':'failure', 'message': 'Please send proper data!'})
+    
+    if(!icode || !tcode || (!announce || typeof announce !== 'string')) {
+    res.send({'status':'failure', 'message': '1Please send proper data!'})
+    return;
+    }
 
 
     if( gen_announce != 'true' && gen_announce != 'false') { res.send({'status':'failure', 'error':'Please enter proper query parameters!'}); }
@@ -112,7 +107,7 @@ exports.make_announcement = function(req,res){
     announcement.class = cl;
     announcement.section = sec;
     announcement.tcode = tcode;
-    announcement.announcement = { 'title': title, 'desc': desc};
+    announcement.announcement = announce;
     filePath = '';
 
     if(file){

@@ -41,7 +41,7 @@ exports.login = function(req, res) {
         }
 
         let token = jwt.sign({
-           exp: Math.floor(Date.now() / 1000) + (60 * 60*2),
+           exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24), //24 hrs
            data: JSON.stringify({ 
               0: type,
               1: iCode,

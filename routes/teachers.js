@@ -35,7 +35,7 @@ router.get('/attendance/class/:icode/:class/:sec', get_class_attendance);
 //for quiz
 router.get('/quiz/:icode/:class/:sec',get_quiz);
 router.get('/quiz/q/:icode/:class', get_quiz_file);
-router.post('/quiz/:icode/:class',formidableMiddleware({uploadDir:uploadDir}),set_quiz);
+router.post('/quiz/:icode/:class',multer.single('file'),set_quiz);
 router.get('/quiz/submissions/:icode/:class/:sec', get_submissions);
 
 //for exam
