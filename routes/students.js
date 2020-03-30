@@ -2,7 +2,7 @@
 
 var express = require('express');
 var router = express.Router();
-var formidableMiddleware = require('express-formidable');
+var {multer} = require('../middlewares/file_handler')
 var {check_valid, only_student} = require('../middlewares/auth');
 var {check_homeworks,submit_homework} = require('../controllers/homeworks');
 var {get_quiz, get_quiz_file, submit_quiz} = require('../controllers/quiz');
@@ -14,13 +14,12 @@ var {get_doc, doc_download} = require('../controllers/documents');
 var {raise_doubt, get_doubts} = require('../controllers/chapters');
 var {get_students, get_student_attendance} = require('../controllers/attendance');
 
-var {uploadDir} = require('../config/secrets');
 
 router.use(check_valid, only_student);
 
 //for homework
 router.get('/homework/:icode/:class/:sec',check_homeworks);
-router.post('/homework',formidableMiddleware({uploadDir: uploadDir, multiples: true}),submit_homework);
+router.post('/homework',multer.single('assignment'),submit_homework);
 
 //for attendance
 router.get('/attendance/:icode/:class/:sec',get_students);

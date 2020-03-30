@@ -125,10 +125,12 @@ exports.check_homeworks = function(req,res){
 
 //POST Request from Students
 exports.submit_homework = function(req,res){
-    body = req.fields;
-    file = req.files.assignment;
+    body = req.body;
+    file = req.file;
+
+    //URL body
     icode = body.icode;
-    author = body.author;
+    author = body.tcode;
     student = body.scode;
     sub_date = body.due_date;
     cl = body.class;
@@ -136,39 +138,91 @@ exports.submit_homework = function(req,res){
     sub = body.subject;
     chapter = body.chapter;
     title = body.title;
+
     if( !icode || !cl || !sec || !sub || !chapter || !title || !student || !file.name ) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
     else{
-        filename = `homeworks/${icode}/${cl}/${sec}/${sub}/${chapter}-${title}-${sub_date}-submissions/${student}-`+file.name;
+        filename = `homeworks/${icode}/${cl}/${sec}/${sub}/${chapter}-${title}-${sub_date}-submissions/${student}-`+file.originalname;
         let now = new Date();
         // console.log(file);
         // console.log(body); 
-        upload_file(bucketName,file.path,filename);
-        db.collection('homeworks')
-        .where('school_code','==',icode)
-        .where('author','==',author)
-        .where('class','==',cl)
-        .where('section','==',sec)
-        .where('chapter','==',chapter)
-        .where('title','==',title)
-        .get()
-        .then(snap =>{ 
-            //console.log("snapshot received!",snap);
-            if(snap.empty) {
-                res.send({'status': 'failure', 'message': 'No Match Found!'})
-                return;
+        var blob = get_file_ref(bucketName, filename);
+                
+        const blobStream = blob.createWriteStream({
+            metadata: {
+                contentType: file.mimetype
             }
-            ob = {student_code: student, file_path: filename,sub_time: now.getTime() };
-            snap.forEach(doc =>{
-                id = doc.id;
-                subs = doc.data().submissions;
-                subs.push(ob);
-                console.log("Doc Data-",doc.data());
-                console.log("Submissions Now-",subs);
-                db.collection('homeworks').doc(id).update({submissions: subs});
             });
-            res.send({'status': 'success','message': 'Submission Successful!'}); 
-        })
-        .catch(err => res.send({'status':'failure','error':err}));  
+        blobStream.on("error", err => res.send({'status': 'failure', 'error': err.message}));
+
+        blobStream.on("finish", () => {
+            db.collection('homeworks')
+            .where('school_code','==',icode)
+            .where('author','==',author)
+            .where('class','==',cl)
+            .where('section','==',sec)
+            .where('chapter','==',chapter)
+            .where('title','==',title)
+            .get()
+            .then(snap =>{ 
+                //console.log("snapshot received!",snap);
+                if(snap.empty) {
+                    res.send({'status': 'failure', 'message': 'No Matching Homework Found!'})
+                    return;
+                }
+                ob = {student_code: student, file_path: filename,sub_time: now.getTime() };
+                homeInfo = [];
+                snap.forEach(doc =>{
+                    homeInfo.push({'id': doc.id, 'data': doc.data()})
+                });
+                if(homeInfo.length !== 1){
+                    res.send({'status': 'failure','message': 'Duplicate Homework Found!'})
+                    return;
+                }
+                homeInfo = homeInfo[0];
+                subs = homeInfo.submissions;
+                subs.push(ob);
+
+                //updaint submissions record in homework document
+                db.collection('homeworks').doc(id)
+                .update({submissions: subs})
+                .then(()=>{
+                    //checking student profile and updating it.
+                    db.collection(`profiles/students/${icode}`)
+                    .where('code', '==', scode)
+                    .get()
+                    .then(snap =>{
+                        if(snap.empty){
+                            res.send({'status': 'failure', 'message': 'No Student Found!'})
+                            return;
+                        }
+                        studentInfo = [];
+                        snap.forEach(doc =>{
+                            studentInfo.push({'id': doc.id, 'data': doc.data()})
+                        });
+                        if(studentInfo.length !== 1){
+                            res.send({'status': 'failure','message': 'Duplicate Student Found!'})
+                            return;
+                        }
+                        studentInfo = studentInfo[0];
+                        subs = [];
+                        if(studentInfo.submissions) subs = studentInfo.submissions;
+                        subs.push({'author':author, 'id': homeInfo.id, 'subject': sub})
+
+                        //Updating homework record in student profile.
+                        db.collection(`profiles/students/${icode}`).doc(studentInfo.id)
+                        .update({submissions: subs})
+                        .then(()=> res.send({'status':'success', 'message': 'Homework Submitted!'}))
+                        .catch(err => res.send({'status':'failure','error in students profile':err.message}));
+        
+                    })
+                    .catch(err => res.send({'status':'failure','error in students profile':err.message}));
+                })
+                .catch(err => res.send({'status':'failure','error in homeworks':err.message}));
+            })
+            .catch(err => res.send({'status':'failure','error':err.message})); 
+        });
+        blobStream.end(file.buffer);
+        
     }
 };
 

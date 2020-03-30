@@ -3,8 +3,6 @@
 
 var express = require('express');
 var router = express.Router();
-var formidableMiddleware = require('express-formidable');
-var {uploadDir} = require('../config/secrets');
 
 const {multer} = require('../middlewares/file_handler');
 var {check_valid, only_teacher} = require('../middlewares/auth');

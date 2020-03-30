@@ -139,6 +139,10 @@ exports.get_chapters = function(req, res){
         .where('section', '==', sec)
         .get()
         .then( snap =>{
+            if(snap.empty){
+                res.send({'status':'failure','message': 'No Chapters Found!'})
+                return;
+            }
             chapters = [];
             snap.forEach(doc =>{
                 info = doc.data();
