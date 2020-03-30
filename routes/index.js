@@ -8,5 +8,5 @@ var {set_quiz} = require('../controllers/quiz')
 router.get('/',(req,res) => res.redirect('http://www.thestudieapp.com/'));
 router.post('/login',login);
 router.get('/logout',logout);
-router.post('/quiz/:icode/:class', multer.any(),set_quiz)
+router.post('/quiz/:icode/:class/:sec', multer.any(),set_quiz)
 module.exports = router;
