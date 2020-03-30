@@ -47,37 +47,34 @@ exports.set_quiz = function(req,res){
     params = req.params;
 
     body = req.body;
-    files = req.file;
+    files = req.files;
 
     //URL parameters
     icode = params.icode;
     cl = params.class;
 
-    if(files) keys = Object.keys(files);
-    flag = false;
-    
     //URL body
     var {title, subject, tcode, dueDate, questions, section, syllabus} = body;
-    //console.log("Images",images)
+    
     try {
         date = Date.parse(dueDate) || undefined
         questions = JSON.parse(questions); //an array of stringified JSON of questions being parsed
-        syllabus = JSON.parse(syllabus);
+        syllabus = JSON.parse(syllabus); //String Array (Stringified)
         if(!section) section = 'all';
     } catch (error) {
-        console.log(err)
+        console.log(error)
         res.send({'status':'failure', 'message':'Please send proper data!'})
+        return;
     }
 
-    if( !title || !tcode || !subject || !questions || !date || keys>questions.length || flag) {
-        // res.setHeader('Connection','close')/
-        res.send({'status':'failure', 'message':"1.Please send proper data!"})
-    }
-    else {
+    if( !title || !tcode || !subject || !questions || !date || files.length > questions.length ) {
+        res.send({'status':'failure', 'message':"Please send proper data!"})
+        return;
+    }else {
         //checking qhich questions contain images
-        filePathMap = [];
         flag = false;
         var index = 0
+        var promises = [];
         for( ; index<questions.length; index++){
             if(questions[index].file === "true"){
                 // const i = questions.indexOf(question)
@@ -86,11 +83,22 @@ exports.set_quiz = function(req,res){
                     flag = true;
                     break;
                 }
-                filename = `quizzies/images/${icode}/${cl}/${tcode}/${section}/${title}-${dueDate}-q${index}-${Date.now()}-${file.name}`
+                filename = `quizzies/images/${icode}/${cl}/${tcode}/${section}/${title}-${dueDate}-q${index}-${Date.now()}-${file.orignalname}`
                 questions[index].filePath = filename;
-                questions[index].fileType = file.type;
-                filePathMap.push({'filename': file.path, 'uploadName': filename})
+                questions[index].fileType = file.mimetype;
+
                 console.log("True for", index,"Question", questions[index])
+                promises.push(new Promise((resolve, reject)=>{
+                    const blob = get_file_ref(bucketName,filename)
+                    blob.createWriteStream({
+                      metadata: { contentType: file.mimetype }
+                    }).on('finish', async response => {
+                      
+                      resolve(response)
+                    }).on('error', err => {
+                      reject('upload error: ', err)
+                    }).end(file.buffer)
+                  }))
             }
         }
         if(flag){
@@ -99,23 +107,21 @@ exports.set_quiz = function(req,res){
         }
         //added file path in GCP bucket to the respective questions and imagemap created
         //adding quiz doc to collection.
-        db.collection(`quizzes/${icode}/${cl}`).add({
-            'title': title,
-            'author': tcode,
-            'subject': subject,
-            'questions': questions,
-            'due_date': dueDate,
+        Promise.all(promises).then(response =>{
+            db.collection(`quizzes/${icode}/${cl}`).add({
+                'title': title,
+                'author': tcode,
+                'subject': subject,
+                'questions': questions,
+                'due_date': dueDate,
+            })
+            .then((ref)=>{
+                //uploading images to bucket.
+                res.send({'status':'success', 'message': `Quiz uploaded! ${ref.id}`})
+            })
+            .catch(err => res.send({'status': 'failure','error': err.message}));
         })
-        .then(async (ref)=>{
-            //uploading images to bucket.
-            await Promise
-            .all(filePathMap.map( each => {
-                return upload_file(bucketName, each.filename, each.uploadName)
-            }))
-            .then(() => res.send({'status':'success','message':`Quiz ${ref.id} added!`}))
-            .catch(err => res.send({'error': err.message}));
-        })
-        .catch(err => res.send({'error': err.message}));
+        
     }
 
 };

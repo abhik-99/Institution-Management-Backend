@@ -63,7 +63,7 @@ exports.set_exam = function(req,res){
     cl = body.class;
     icode = body.icode;
     exam_type = body.examType;
-    fm = body.FullMarks;
+    
     if(!section || typeof date != 'string' || !icode || !cl || (!exam_type || ( examType !== '1' && examType !== '2' && examType !== '3'))) 
     res.send({'status': 'failure', 'error': 'Please provide all the proper details!'})
     if(exam_type){
@@ -92,7 +92,7 @@ exports.set_exam = function(req,res){
 
         //adding exam to the collection
         db.collection('exam')
-        .add({'full_marks':fm, 'chapters':chapters, 'section':section, 'date':date, 'class':cl, 'icode':icode, 'exam_type':exam_type, 'student_list': studentList})
+        .add({'chapters':chapters, 'section':section, 'date':date, 'class':cl, 'icode':icode, 'exam_type':exam_type, 'student_list': studentList})
         .then(()=> res.send({'status': 'success','message': 'Exam Added!'}))
         .catch(err => res.send({'status': 'failure', 'error': err.message}));
     })
