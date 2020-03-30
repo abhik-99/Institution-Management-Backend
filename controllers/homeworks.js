@@ -75,15 +75,15 @@ exports.check_homeworks = function(req,res){
     sec = params.sec;
 
     //following are obtianed via URL Query
-    sub = query.sub;
+    author = query.tcode;
 
-    if( !icode || !cl || !sec || !sub ) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
+    if( !icode || !cl || !sec || !author ) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
     else {
         db.collection('homeworks')
         .where('school_code','==',icode)
         .where('class','==',cl)
         .where('section','==',sec)
-        .where('subject','==',sub)
+        .where('author','==',author)
         .get()
         .then(snap=>{
             if(snap.empty) {
