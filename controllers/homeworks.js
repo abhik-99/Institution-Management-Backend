@@ -19,7 +19,8 @@ exports.assign_homework = function(req,res){
         title = homework.title;
         desc = homework.desc;
     } catch (error) {
-        res.send({'status':'failure', 'error': err.message})
+        res.send({'status':'failure', 'error': "Please send the homework in proper format!"})
+        return;
     }
      
     try {
@@ -29,19 +30,41 @@ exports.assign_homework = function(req,res){
         res.send({'status': 'failure', 'message':'Please enter a proper Date!'})
         return;
     }
-    if( !icode || !cl || !sec || !sub || !chapter || !title || !sub_date || !file.originalname) res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'})
+    if( !icode || !cl || !sec || !sub || !chapter || !title || !sub_date ) res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'})
     else{
-        filename =`homeworks/${icode}/${cl}/${sec}/${sub}/${chapter}-${title}-${Date.now()}-`+file.originalname;
-        var blob = get_file_ref(bucketName, filename);
-            
-        const blobStream = blob.createWriteStream({
-            metadata: {
-                contentType: file.mimetype
-            }
-            });
-        blobStream.on("error", err => res.send({'status': 'failure', 'error': err.message}));
+        if(file){
+            filename =`homeworks/${icode}/${cl}/${sec}/${sub}/${chapter}-${title}-${Date.now()}-`+file.originalname;
+            var blob = get_file_ref(bucketName, filename);
+                
+            const blobStream = blob.createWriteStream({
+                metadata: {
+                    contentType: file.mimetype
+                }
+                });
+            blobStream.on("error", err => res.send({'status': 'failure', 'error': err.message}));
 
-        blobStream.on("finish", () => {
+            blobStream.on("finish", () => {
+                db.collection('homeworks')
+                .add({
+                    author: author,
+                    school_code: icode, 
+                    class: cl, 
+                    section: sec,
+                    subject: sub,
+                    chapter: chapter,
+                    due_date: sub_date,
+                    file_path: filename,
+                    file_type: file.mimetype,
+                    title: title,
+                    desc: desc,
+                    submissions:[]
+                }).then(ref=>{
+                    res.send({'status': 'success', 'message': `Homewwork ${ref.id} uploaded!`}); 
+                })
+                .catch(err => res.send({'status': 'failure', 'error': err.message}));
+            });
+            blobStream.end(file.buffer);
+        } else{
             db.collection('homeworks')
             .add({
                 author: author,
@@ -51,16 +74,14 @@ exports.assign_homework = function(req,res){
                 subject: sub,
                 chapter: chapter,
                 due_date: sub_date,
-                file_path: filename,
-                file_type: file.mimetype,
                 title: title,
                 desc: desc,
                 submissions:[]
             }).then(ref=>{
                 res.send({'status': 'success', 'message': `Homewwork ${ref.id} uploaded!`}); 
-            });
-        });
-        blobStream.end(file.buffer);
+            })
+            .catch(err => res.send({'status': 'failure', 'error': err.message}));
+        }
     }                        
 };
 
