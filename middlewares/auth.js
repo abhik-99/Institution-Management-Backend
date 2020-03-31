@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 
 exports.check_valid = function(req,res,next){
     type = req.headers.type;
-    console.log("Checking nigga!");
     token = req.headers['x-access-token'];
     //console.log("Received Token-",token);
     if(!token) { res.send({'message': 'No access token detected. Please sign in!'});}

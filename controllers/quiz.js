@@ -12,38 +12,32 @@ exports.get_quiz = function(req,res){
     params = req.params;
     //URL parameter
     icode = params.icode;
-    cl = params.class;
-    section = params.sec;
+    cl = (params.class)? params.class.toLowerCase() : undefined;
+    section = (params.sec)? params.sec.toLowerCase() : undefined;
     //URL Query
-    author = query.author;
-    subject = query.sub; 
+    author = (query.author)? query.author.toLowerCase() : undefined;
+    subject = (query.sub)? query.sub.toLowerCase() : undefined; 
     due = query.dueDate;
 
-    db.collection(`quizzes/${icode}/${cl}`)
+    db.collection('quizzes')
+    .where('icode', '==', icode)
     .get()
     .then(snap =>{
-        list = [];
         if(snap.empty) {
-            res.send({'status':'quiz', 'quiz': []})
+            res.send({'status': 'failure', 'message':'No such School Found!'})
             return;
         }
-        snap.forEach( doc => list.push({'id': doc.id, 'data':doc.data()}));
-        if(section){
-            console.log(section);
-            list = list.filter(each => each.data.section === section);
-        }
-        if(author){
-            list = list.filter(each => each.data.author === author);
-        }
-        if(subject){
-            list = list.filter(each => each.data.subject == subject);
-        }
-        if(due){
-            list.forEach(each => Date.parse(each.data.due_date) > Date.parse(due));
-        }
-        res.send({'status':'success','quiz': list});
+        list = [];
+        //filtering and pushing it to
+        snap.forEach(doc=> list.push({'id': doc.id, 'data': doc.data()}));
+        if(section !== 'all') list = list.filter( each => each.data.section === section)
+        if(cl !== 'all') list = list.filter( each => each.data.class === cl)
+        if(author) list = list.filter( each => each.data.section === author)
+        if(subject) list = list.filter( each => each.data.section === subject)
+        if(due) list = list.filter( each => each.data.section === due)
+        res.send({'status': 'success', 'quiz': list})
     })
-    .catch(err => res.send({'status':'failure', 'error': err.message}));    
+    .catch(err => res.send({'status': 'failure','error': err.message}));
 };
 
 //POST request (Edit this handler)
@@ -65,19 +59,21 @@ exports.set_quiz = function(req,res){
     try {
         date = Date.parse(dueDate) || undefined
         questions = JSON.parse(questions); //an array of stringified JSON of questions being parsed
-        syllabus = JSON.parse(syllabus); //String Array (Stringified)
-        if(!section) section = 'all';
+        syllabus = JSON.parse(syllabus); //String Array (Stringified) chapters
+        cl = cl.toLowerCase();
+        section = section.toLowerCase();
+        if(typeof section !== 'string' || section === 'all' || cl === 'all' ) throw 'Please give proper data';
         if(files){
             if(files.length> questions.length)
             throw 'More Files than Questions!'
         }
     } catch (error) {
         console.log(error)
-        res.send({'status':'failure', 'message':'Please send proper data!'})
+        res.send({'status':'failure', 'message':error.message})
         return;
     }
 
-    if( !title || !tcode || !subject || !questions || !date ) {
+    if( !title || !tcode || !subject || !questions || !date || syllabus.length === 0 || !section) {
         res.send({'status':'failure', 'message':"Please send proper data!"})
         return;
     }else {
@@ -89,13 +85,13 @@ exports.set_quiz = function(req,res){
             if(questions[index].file === "true"){
                 // const i = questions.indexOf(question)
                 if(!files){
-                    res.send({'status':'failure','message':'Question contains file but file not supplied!'})
+                    res.send({'status':'failure','message':'Question(s) contains file but file not supplied!'})
                     return;
                 }
                 file = files.filter( file => file.fieldname === `fileq${index}`)[0];
                 if(!file){
-                    flag = true;
-                    break;
+                    res.send({'status':'failure','message':`File for Question ${index} not found!`})
+                    return;
                 }
                 filename = `quizzies/images/${icode}/${cl}/${tcode}/${section}/${title}-${dueDate}-q${index}-${Date.now()}-${file.originalname}`
                 questions[index].filePath = filename;
@@ -113,19 +109,20 @@ exports.set_quiz = function(req,res){
                   }))
             }
         }
-        if(flag){
-            res.send({'status':'failure','message':`Image for Question ${index} not found!`})
-            return;
-        }
+
         //added file path in GCP bucket to the respective questions and imagemap created
         //adding quiz doc to collection.
         Promise.all(promises).then(response =>{
-            db.collection(`quizzes/${icode}/${cl}`).add({
+            db.collection(`quizzes`).add({
                 'title': title,
                 'author': tcode,
                 'subject': subject,
                 'questions': questions,
                 'due_date': dueDate,
+                'syllabus': syllabus, 
+                'section': section,
+                'class':cl,
+                'icode': icode
             })
             .then((ref)=>{
                 //uploading images to bucket.

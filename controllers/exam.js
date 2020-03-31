@@ -17,9 +17,9 @@ exports.get_exams = function(req, res){
     examType = params.examType;
 
     //following via URL query
-    section = query.sec;
-    subject = query.subject;
-    author = query.tcode;
+    section = (query.sec)? query.sec.toLowerCase() : undefined;
+    subject = (query.subject)? query.subject.toLowerCase() : undefined;
+    author = (query.tcode)? query.tcode.toLowerCase() : undefined;
 
     db.collection('exam')
     .where('icode', '==', icode)
@@ -28,7 +28,7 @@ exports.get_exams = function(req, res){
     .then(snap =>{
         docs= [];
         snap.docs.forEach( doc => docs.push({id: doc.id, data: doc.data()}));
-        if(section){
+        if(section && section !=='all'){
             console.log(section);
             docs = docs.filter( doc => doc.data.section === section);
         }
@@ -55,28 +55,48 @@ exports.get_exams = function(req, res){
 
 //POST request from teacher
 exports.set_exam = function(req,res){
-
     body = req.body;
-    chapters = body.chapters;
-    section = body.sec;
+
+    //URL parameter    
     date = body.date;
     cl = body.class;
     icode = body.icode;
+    section = body.sec;
     exam_type = body.examType;
-    
-    if(!section || typeof date != 'string' || !icode || !cl || (!exam_type || ( examType !== '1' && examType !== '2' && examType !== '3'))) 
-    res.send({'status': 'failure', 'error': 'Please provide all the proper details!'})
+    fm = body.fullMarks;
+    title = body.title;
+
+    try {
+        chapters = JSON.parse(body.chapters)
+        tdate = Date.parse(date)
+        f = parseFloat(fm)
+    } catch (error) {
+        res.send({'status':'failure', 'message': "Please send proper data format!"})
+        return;
+    }
+    if(!section || typeof title !== 'string' || !icode || !cl || (!exam_type || ( examType !== '1' && examType !== '2' && examType !== '3'))) {
+        res.send({'status': 'failure', 'error': 'Please provide all the proper details!'})
+        return
+    }
     if(exam_type){
         t = exam[exam_type];
-        if(!t){ res.send({'status': 'failure', 'error': 'Please provide all the proper details!'});}
+        if(!t){ 
+            res.send({'status': 'failure', 'error': 'Please provide all the proper details!'}); 
+            return;
+        }
         else { exam_type = t; }
     }
     db.collection(`profiles/students/${icode}`)
     .where('class', '==',cl)
+    .where('section', '==', sec)
     .get()
     .then(snap =>{
         //Pushing in eligible student for the exam
         studentList = [];
+        if( snap.empty){
+            res.send({'status':'failure', 'message': 'No such student found!'})
+            return;
+        }
         if(section === 'all'){
             snap.forEach(doc => {
                 info = doc.data();
@@ -88,11 +108,21 @@ exports.set_exam = function(req,res){
                 if(section === info.sec) { studentList.push({'docId': doc.id, 'scode':info.code, 'sname': info.name}); }
             });
         }
-        if(studentList.length === 0) { res.send({'status': 'failure','error': 'No students Found for given school/class/section!'}); }
+        if(studentList.length === 0) res.send({'status': 'failure','error': 'No students Found for given school/class/section!'});
 
         //adding exam to the collection
         db.collection('exam')
-        .add({'chapters':chapters, 'section':section, 'date':date, 'class':cl, 'icode':icode, 'exam_type':exam_type, 'student_list': studentList})
+        .add({
+            'chapters':chapters, 
+            'full_marks': fm, 
+            'title': title,
+            'section':section, 
+            'date':date,
+            'class':cl, 
+            'icode':icode, 
+            'exam_type':exam_type, 
+            'student_list': studentList
+        })
         .then(()=> res.send({'status': 'success','message': 'Exam Added!'}))
         .catch(err => res.send({'status': 'failure', 'error': err.message}));
     })

@@ -7,7 +7,7 @@ var router = express.Router();
 const {multer} = require('../middlewares/file_handler');
 var {check_valid, only_teacher} = require('../middlewares/auth');
 var {get_students, give_attendance, get_student_attendance, get_class_attendance} = require('../controllers/attendance');
-var {assign_homework,check_homeworks,check_submissions,get_homework} = require('../controllers/homeworks');
+var {assign_homework,check_homeworks,check_submissions,get_homework_submission} = require('../controllers/homeworks');
 var {get_quiz, get_quiz_file,set_quiz, get_submissions} = require('../controllers/quiz');
 var {set_exam,get_exams, grade_exam} = require('../controllers/exam');
 var {get_announcements, make_announcement} = require('../controllers/announcement');
@@ -21,7 +21,7 @@ router.use(check_valid, only_teacher);
 router.post('/homework',multer.single('assignment'),assign_homework);
 router.get('/homework/:icode/:class/:sec',check_homeworks);
 router.get('/homework/submissions/:icode/:class/:sec',check_submissions);
-router.get('/homework/submissions/download',get_homework);
+router.get('/homework/submissions/download',get_homework_submission);
 
 //for attendance
 router.get('/attendance/:icode/:class/:sec',get_students);

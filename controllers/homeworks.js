@@ -12,24 +12,22 @@ exports.assign_homework = function(req,res){
     author = body.tcode;
     cl = body.class;
     sec = body.sec;
+    period = body.period;
     sub = body.subject;
     chapter = body.chapter;
+    
     try {
         homework = JSON.parse(body.homework)
         title = homework.title;
         desc = homework.desc;
+        if( typeof period !== 'string') throw 'Invalid period'
+        date = Date.parse(body.sub_date);
+        sub_date = body.sub_date;
     } catch (error) {
         res.send({'status':'failure', 'error': "Please send the homework in proper format!"})
         return;
     }
      
-    try {
-        date = Date.parse(body.sub_date);
-        sub_date = body.sub_date;
-    } catch (error) {
-        res.send({'status': 'failure', 'message':'Please enter a proper Date!'})
-        return;
-    }
     if( !icode || !cl || !sec || !sub || !chapter || !title || !sub_date ) res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'})
     else{
         if(file){
@@ -50,9 +48,11 @@ exports.assign_homework = function(req,res){
                     school_code: icode, 
                     class: cl, 
                     section: sec,
+                    period: period,
                     subject: sub,
                     chapter: chapter,
                     due_date: sub_date,
+                    hasFile: 'true',
                     file_path: filename,
                     file_type: file.mimetype,
                     title: title,
@@ -71,9 +71,11 @@ exports.assign_homework = function(req,res){
                 school_code: icode, 
                 class: cl, 
                 section: sec,
+                period: period,
                 subject: sub,
                 chapter: chapter,
                 due_date: sub_date,
+                hasFile: 'false',
                 title: title,
                 desc: desc,
                 submissions:[]
@@ -266,27 +268,60 @@ exports.check_submissions = function(req,res){
             });
 
             res.json({'status': 'success','submissions': subs});
-        }).catch(err => res.send({'status': 'failure','error': err}));
+        })
+        .catch(err => res.send({'status': 'failure','error': err.message}));
     }      
 };
 
 // GET Request from teacher where docID needs to be present
-exports.get_homework = function(req,res){
+exports.get_homework_submission = function(req,res){
     query = req.query;
     docId = query.id;
     scode = query.scode;//if any specific submission is needed otherwise the value is 'undefined'
 
-    if( !docID) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
+    if( !docId) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
     else{
         db.collection('homeworks').doc(docId)
         .get()
         .then(doc => {
+            if(!doc.exists){
+                res.send({'status': 'failure', 'message': 'No such Document'})
+                return;
+            }
             info = doc.data();
             subs = info.submissions;
             file_path = subs.filter(eachSub => scode.includes(eachSub.student_code) || eachSub.student_code === scode )[0].file_path;
-            download_link(bucketName,file_path).then((data)=>{
+            download_link(bucketName,file_path)
+            .then((data)=>{
                 res.json({'status': 'success', 'download_link': data[0]});
-            });
-        });
+            })
+            .catch(err => res.send({'status': 'failure','error': err.message}));
+        })
+        .catch(err => res.send({'status': 'failure','error': err.message}));
     }    
 };
+exports.get_homework_file = function(req,res){
+    query = req.query;
+    docId = query.id;
+    if(!docId) res.send({'status': 'failure', 'message': 'Please send proper data!'})
+    else{
+        db.collection('homeworks').doc(docId)
+        .get()
+        .then(doc =>{
+            if(!doc.exists){
+                res.send({'status':'success', 'message':'No such Document!'})
+                return;
+            }
+            info = doc.data()
+            if( info.hasFile !== 'true'){
+                res.send({'status': 'failure', 'message': 'Document has no file!'})
+                return;
+            }
+            download_link(bucketName, info.file_path)
+            .then(data=> res.json({'status': 'success', 'download_link': data[0]}))
+            .catch(err => res.send({'status': 'failure','error': err.message}));
+
+        })
+        .catch(err => res.send({'status': 'failure','error': err.message}));
+    }
+}
