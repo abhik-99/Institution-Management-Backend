@@ -4,7 +4,7 @@ exports.seed_SQL_db = function(req,res){
      //URL body
      body = req.body;  
      sequelize.authenticate()
-     .then(res=>{
+     .then(r=>{
         Attendance.build({
             schoolCode: body.icode,
             teacherCode : body.tcode,
@@ -19,7 +19,8 @@ exports.seed_SQL_db = function(req,res){
              console.log(ref);
              res.send(`${ref.dataValues} inserted!`);
          });
-     })   
+     })
+     .catch(err => res.send({'err': err.message}))   
      
     //  Classes.build({
     //     schoolCode: body.icode,
