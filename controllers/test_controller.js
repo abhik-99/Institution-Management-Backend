@@ -8,7 +8,8 @@
 
 // let db = admin.firestore();
 let {db} = require('./db');
-let {Classes} = require('../models')
+let {Classes, sequelize} = require('../models')
+
 exports.show_firebase_data = function(req,res,next){
     let profiles_school_ref = db.doc('profiles/schools/a101/a101');
     profiles_school_ref.get()

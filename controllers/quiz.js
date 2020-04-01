@@ -3,7 +3,7 @@ Adding the capability of storing images for questions
 */
 
 const {db} = require('./db');
-var {upload_file,get_file_ref} = require('../gcp_buckets/file_handling');
+var {get_file_ref} = require('../gcp_buckets/file_handling');
 var {bucketName} = require('../config/secrets');
 
 //GET Request
