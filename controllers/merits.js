@@ -13,6 +13,7 @@ exports.edit_merit = function(req,res){
     reason = body.reason;
     merit = body.merit; //incase of demerit, value is false.
     tcode = body.tcode;
+    console.log(scode, !reason, ( merit !== 'true' && merit !== 'false'), !tcode)
     if( !scode || !reason || ( merit !== 'true' && merit !== 'false') || !tcode) { res.send({'status': 'failure', 'message': 'Please provide proper data!'}); }
     else{
         db.collection(`profiles/students/${icode}`)

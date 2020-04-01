@@ -12,8 +12,7 @@
     "username": "root",
     "password": "88qKqL40g91e1Hxy",
     "database": "studie",
-    "host": "127.0.0.1",
-    "port": 8080,
+    "host": "/cloudsql/project-student-management:asia-south1:dev-studie-server",
     "dialect": "mysql",
     "operatorsAliases": false
   },
@@ -21,8 +20,7 @@
     "username": "root",
     "password": "88qKqL40g91e1Hxy",
     "database": "studie",
-    "host": "127.0.0.1",
-    "port": 8080,
+    "host": "/cloudsql/project-student-management:asia-south1:dev-studie-server",
     "dialect": "mysql",
     "operatorsAliases": false
   }

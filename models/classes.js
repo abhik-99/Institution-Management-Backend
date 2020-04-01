@@ -25,7 +25,17 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0
-    }
+    },
+    numQuizzes:{
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    numHomeworks:{
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
   }, {});
   Classes.associate = function(models) {
     // associations can be defined here
