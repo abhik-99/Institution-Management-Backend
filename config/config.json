@@ -10,17 +10,9 @@
   },
   "test": {
     "username": "root",
-    "password": "88qKqL40g91e1Hxy",
+    "password": "KaMtilC2L4MxCGFk",
     "database": "studie",
-    "host": "/cloudsql/project-student-management:asia-south1:dev-studie-server",
-    "dialect": "mysql",
-    "operatorsAliases": false
-  },
-  "production": {
-    "username": "root",
-    "password": "88qKqL40g91e1Hxy",
-    "database": "studie",
-    "host": "/cloudsql/project-student-management:asia-south1:dev-studie-server",
+    "host": "/cloudsql/project-student-management:us-east1:test-studie-server",
     "dialect": "mysql",
     "operatorsAliases": false
   }

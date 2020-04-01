@@ -1,7 +1,7 @@
 let {db} = require('./db');
 const {upload_file,get_file_ref} = require('../gcp_buckets/file_handling');
 var {bucketName} = require('../config/secrets');
-
+// /cloudsql/project-student-management:us-east1:test-studie-server
 //GET request
 exports.get_announcements = function(req,res){
     //following needs to be sent in url params

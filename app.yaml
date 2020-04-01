@@ -2,7 +2,9 @@ service: studie-server
 runtime: nodejs12
 env_variables:
   SQL_USER: root
-  SQL_PASSWORD: 88qKqL40g91e1Hxy
+  SQL_PASSWORD_DEV: 88qKqL40g91e1Hxy
+  SQL_PASSWORD_TEST: KaMtilC2L4MxCGFk
   SQL_DATABASE: studie
-  INSTANCE_CONNECTION_NAME: project-student-management:asia-south1:dev-studie-server
-  NODE_ENV: production
+  INSTANCE_CONNECTION_NAME_DEV: project-student-management:asia-south1:dev-studie-server
+  INSTANCE_CONNECTION_NAME_TEST: project-student-management:us-east1:test-studie-server
+  NODE_ENV: test
