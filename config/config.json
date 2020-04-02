@@ -13,7 +13,6 @@
     "password": "KaMtilC2L4MxCGFk",
     "database": "studie",
     "host": "/cloudsql/project-student-management:us-east1:test-studie-server",
-    "dialect": "mysql",
-    "operatorsAliases": false
+    "dialect": "mysql"
   }
 }

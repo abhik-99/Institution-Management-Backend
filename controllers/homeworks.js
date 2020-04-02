@@ -2,7 +2,7 @@ const _ = require('lodash');
 var {upload_file,download_link, get_file_ref} = require('../gcp_buckets/file_handling');
 var {bucketName} = require('../config/secrets');
 let {db} = require('./db');
-
+let {Classes} = require('../models')
 //POST requests to assign homework. Uses FormidablemMiddleware
 exports.assign_homework = function(req,res){
     file = req.file;
@@ -15,7 +15,7 @@ exports.assign_homework = function(req,res){
     period = body.period;
     sub = body.subject;
     chapter = body.chapter;
-    
+
     try {
         homework = JSON.parse(body.homework)
         title = homework.title;
@@ -59,7 +59,24 @@ exports.assign_homework = function(req,res){
                     desc: desc,
                     submissions:[]
                 }).then(ref=>{
-                    res.send({'status': 'success', 'message': `Homewwork ${ref.id} uploaded!`}); 
+                    Classes.findOne({
+                        where:{
+                            schoolCode: icode, 
+                            teacherCode: author, 
+                            class: cl, 
+                            section: sec, 
+                            subjectCode: subject
+                        }
+                    })
+                    .then( row =>{
+                        if(row){
+                            row.increment('numHomeworks')
+                            .then(()=> res.send({'status': 'success', 'message': `Homewwork uploaded Successfully!`}))
+                        }else{
+                            res.send({'status': 'success', 'message': `Homewwork uploaded but Structure not Found!`});
+                        }
+                    })
+                     
                 })
                 .catch(err => res.send({'status': 'failure', 'error': err.message}));
             });
@@ -116,7 +133,7 @@ exports.check_homeworks = function(req,res){
             list = [];
             snap.forEach(doc => {
                 info = _.pick(doc.data(),['author','title','subject','class','section','chapter','due_date','school_code'])
-                list.push(info);
+                list.push({'id': doc.id,'data':info});
             });
             //console.log(list);
             res.json({'status': 'success','homeworks':list});

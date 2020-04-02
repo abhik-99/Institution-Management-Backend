@@ -141,34 +141,94 @@ exports.grade_exam = function(req,res){
     .then(doc => {
         if(!doc) { res.send({'status': 'failure', 'error': 'No such exam entry found in the system!'}); }
         info = doc.data();
-        //console.log("Exam Details", info);
-        info.student_list.forEach( student => {
-            marks = marksList.filter( m => m.scode === student.scode && m.sname === student.sname);
-            //there cannot be more than 1 student with the same student name and code
-            if(marks.length === 1){
+
+        // //first get the details of the class and then use batch update to update
+        // var collectionRef = db.collection(`profiles/students/${info.icode}`);
+        // batch = db.batch();
+        // info.student_list.forEach( student => {
+        //     // marks = marksList.filter( m => m.scode === student.scode && m.sname === student.sname);
+        //     // //there cannot be more than 1 student with the same student name and code
+        //     // if(marks.length === 1){
+        //     //     student.marks_obtained = marks[0].marks;
+
+        //     //     //updating marks simultaneously in student profile
+        //     //     db.collection(`profiles/students/${info.icode}`).doc(student.docId)
+        //     //     .get()
+        //     //     .then(doc =>{
+        //     //         infoDoc = doc.data();
+        //     //         examScores = infoDoc.examScores;
+        //     //         if(!examScores) { examScores = []; }
+        //     //         examScores.push({'examId':docId, 'exam_type':info.exam_type, 'marks': student.marks_obtained});
+        //     //         db.collection(`profiles/students/${info.icode}`).doc(student.docId)
+        //     //         .update({examScores: examScores})
+        //     //         .then()
+        //     //         .catch( err => res.send({'status': 'failure', 'error': err.message}));
+        //     //     });
+
+        //     // }else if (marks.length > 1) {
+        //     //     res.send({'status': 'failure', 'error': 'Duplicate Student Entry Found in Student List!'});
+        //     // }
+        //     var docRef = collectionRef.doc(student.docId)
+        //     batch.update(docRef, )
+
+        // });
+        var batch = db.batch();
+        var collectionRef = db.collection(`profiles/students/${info.icode}`);
+        db.collection(`profiles/students/${info.icode}`)
+        .where('class', '==', info.class)
+        .get()
+        .then(snap =>{
+            if(snap.empty){
+                res.send({'status':'failure', 'message':' No students in this class!'})
+                return;
+            }
+
+            studentList = [];
+            docList =[]
+            snap.forEach(doc =>{
+                dInfo = doc.data();
+                if( info.section ==='all') {studentList.push({'id': doc.id, 'data': dInfo.examScores}); docList.push(doc.id);}
+                else if(info.section === dInfo.sec) {studentList.push({'id': doc.id, 'data': dInfo.examScores}); docList.push(doc.id);}
+            });
+            if( studentList.length === 0 ){
+                res.send({'status': 'failure', 'message': 'No students of that section found!'})
+                return;
+            }
+
+            //making changes to DB (Batch writes)
+            info.student_list.forEach(student =>{
+                marks = marksList.filter( m => m.scode === student.scode && m.sname === student.sname);
+                fStudent = studentList.filter(s => student.docId === s.id)
+                if(marks.length > 1 || fStudent.length > 1){
+                    res.send({'status':'failure', 'message': 'Duplicate students found!'})
+                    return;
+                }
+
                 student.marks_obtained = marks[0].marks;
 
-                //updating marks simultaneously in student profile
-                db.collection(`profiles/students/${info.icode}`).doc(student.docId)
-                .get()
-                .then(doc =>{
-                    infoDoc = doc.data();
-                    examScores = infoDoc.examScores;
-                    if(!examScores) { examScores = []; }
-                    examScores.push({'examId':docId, 'exam_type':info.exam_type, 'marks': student.marks_obtained});
-                    db.collection(`profiles/students/${info.icode}`).doc(student.docId)
-                    .update({examScores: examScores})
-                    .then()
-                    .catch( err => res.send({'status': 'failure', 'error': err.message}));
-                });
+                if( !docList.includes(student.docId)){
+                    res.send({'status':'failure', 'message': 'Student(s) not found!'})
+                    return;
+                }
 
-            }else if (marks.length > 1) {
-                res.send({'status': 'failure', 'error': 'Duplicate Student Entry Found in Student List!'});
-            }
-        });
-        db.collection('exam').doc(docId).update({student_list: info.student_list})
-        .then(()=> res.send({'status': 'success', 'message': 'Successfully Updated the Exam Status!'}))
-        .catch( err => res.send({'status': 'failure', 'error': err.message}));        
+                var docRef = collectionRef.doc(student.docId);
+                if(!fStudent[0].examScores ) fStudent[0].examScores = [];
+                fStudent[0].examScores.push({'tcode': info.author, 'type': info.exam_type, 'score': marks[0].marks})
+                batch.update(docRef,{ 'examScores': fStudent[0].examScores});
+            })//completed making changes to received data.
+            
+            db.collection('exam').doc(docId).update({student_list: info.student_list})
+            .then(()=>{
+                batch.commit()
+                .then(()=> res.send({'status': 'success', 'message': 'Successfully Updated the Exam Status!'}))
+            })
+            .catch( err => res.send({'status': 'failure', 'error': err.message}));
+
+        })
+        .catch( err => res.send({'status': 'failure', 'error': err.message}));
+        // db.collection('exam').doc(docId).update({student_list: info.student_list})
+        // .then(()=> res.send({'status': 'success', 'message': 'Successfully Updated the Exam Status!'}))
+        // .catch( err => res.send({'status': 'failure', 'error': err.message}));        
     })
     .catch( err => res.send({'status': 'failure', 'error': err.message}));
 };

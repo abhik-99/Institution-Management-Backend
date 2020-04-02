@@ -50,8 +50,16 @@ exports.give_attendance = function(req,res){
    tcode = body.tcode;
    subject = body.subject;
    absentStudents = body.absentStudents;
-
-   if(!icode || !tcode || !subject || !cl || !sec ) { res.send({'status': 'failure','message': 'Please send proper arguments!'}); }
+   period = body.period;  
+   try {
+    date = Date.parse(body.date)
+    absentStudents = JSON.parse(absentStudents)
+    date = body.date;
+    if( typeof +period !== 'number') throw 'Incorrect period'
+   } catch (error) {
+       res.send({'status': 'failure', 'message': error.message})
+   }
+   if(!icode || !tcode || !subject || !cl || !sec || !period) { res.send({'status': 'failure','message': 'Please send proper arguments!'}); }
    else{
         db.collection(`profiles/students/${icode}`)
         .where('class', '==', cl)
@@ -73,13 +81,18 @@ exports.give_attendance = function(req,res){
                 //updating number of clases and then committing the changes
                 Classes.findOne({ where: {schoolCode: icode, teacherCode: tcode, class: cl, section: sec, subjectCode: subject} })
                 .then(row =>{
+                    if(!row){
+                        res.send({'status':'failure', 'message': 'no rows found!'})
+                        return;
+                    }
+
                     absentList.forEach((student) =>{
                         // get absentRecord and append the new absent data
                         absentRecord = student.data.absentRecord;
     
                         if( !absentRecord || absentRecord.length === 0 ) absentRecord = [];
     
-                        absentRecord.push({'id': row.dataValues.id,'teacherCode': tcode, 'subject': subject, 'date': Date.now()});
+                        absentRecord.push({'id': row.dataValues.id,'teacherCode': tcode, 'subject': subject, 'date': date, 'period': period});
                         student.data.absentRecord = absentRecord;
                     });                   
     
@@ -100,6 +113,8 @@ exports.give_attendance = function(req,res){
                                section: sec,
                                subjectCode: subject,
                                numAbsent: absentList.length,
+                               period: period,
+                               date: date
                            })
                            .save()
                            .then(()=>res.send({'status': 'success','message': `Attendance/Absence added ${absentList.length}.`}))

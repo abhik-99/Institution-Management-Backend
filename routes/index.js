@@ -5,6 +5,7 @@ const {class_test} = require('../controllers/test_controller')
 const {seed_SQL_db} = require('../controllers/seed_db')
 var {login,logout} = require('../controllers/login_out');
 var {set_quiz} = require('../controllers/quiz')
+const {sql_initialize} = require('../controllers/test_controller')
 
 router.get('/',(req,res) => res.redirect('http://www.thestudieapp.com/'));
 router.post('/login',login);

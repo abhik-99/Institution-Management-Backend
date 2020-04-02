@@ -9,7 +9,6 @@
 // let db = admin.firestore();
 let {db} = require('./db');
 let {Classes, sequelize} = require('../models')
-
 exports.show_firebase_data = function(req,res,next){
     let profiles_school_ref = db.doc('profiles/schools/a101/a101');
     profiles_school_ref.get()
@@ -45,22 +44,14 @@ exports.sql_initialize = function(req,res){
     })
     .catch(err =>{
         console.log("Error",err);
-        res.send("SNAFU!!");
+        res.send(`SNAFU!!${err}`);
     });
 
 };
 exports.class_test = function(req,res){
-    body = req.body;
-    Classes.findOne({ where: {
-        schoolCode: body.icode, 
-        teacherCode: body.tcode, 
-        class: body.class, 
-        section: body.sec, 
-        subjectCode: body.subject} })
+    Classes.findOne({ where: {schoolCode: body.icode, teacherCode: body.tcode, class: body.cl, section: body.sec, subjectCode: body.subject} })
     .then( row =>{
-        if(row){
-            row.increment('numClasses')
-            res.send(row)
-        }
+        if(row) 
+        row.increment("numClasses").then(()=> res.send("Row Updated!"))
     })
 }
