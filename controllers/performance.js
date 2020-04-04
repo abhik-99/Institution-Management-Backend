@@ -5,7 +5,7 @@ Any deeper function/analysis needs to be provided with the student's doc ID.
 
 Endpoints to be accessible to students, teachers, and parents.
 */
-
+const {Classes} = require('../models');
 const {db} = require('./db');
 
 exports.get_student_profile = function(req,res){
@@ -23,8 +23,25 @@ exports.get_student_profile = function(req,res){
     .where('code', '==', scode)
     .get()
     .then(snap =>{
-        if(!snap) res.send({'status':'failure', 'message':'No match Found!'})
+        if(snap.empty) res.send({'status':'failure', 'message':'No match Found!'})
 
-        // Assess performance based on the  
-    });
+        var studentData = {};
+        snap.forEach(doc => studentData = {'id': doc.id, 'data': doc.data()}) 
+
+        Classes.findAll({
+            where:{
+                schoolCode: icode,
+                class: cl,
+                section: sec
+            },
+            attributes: ['numQuizzes', 'numHomeworks','numClasses', 'subjectCode'],
+            group: ['subjectCode']
+        })
+        .then( results =>{
+            studentData.data.classStats = results;
+            res.send({'status':'success','data': studentData})
+        })
+        .catch(err => res.send({'status': 'failure','error': err.message}))
+    })
+    .catch(err => res.send({'status': 'failure','error': err.message}));
 };

@@ -5,6 +5,7 @@ Adding the capability of storing images for questions
 const {db} = require('./db');
 var {get_file_ref} = require('../gcp_buckets/file_handling');
 var {bucketName} = require('../config/secrets');
+let {Classes} = require('../models')
 
 //GET Request
 exports.get_quiz = function(req,res){
@@ -18,6 +19,7 @@ exports.get_quiz = function(req,res){
     author = (query.author)? query.author.toLowerCase() : undefined;
     subject = (query.sub)? query.sub.toLowerCase() : undefined; 
     due = query.dueDate;
+    console.log(author, subject, due);
 
     db.collection('quizzes')
     .where('icode', '==', icode)
@@ -32,9 +34,9 @@ exports.get_quiz = function(req,res){
         snap.forEach(doc=> list.push({'id': doc.id, 'data': doc.data()}));
         if(section !== 'all') list = list.filter( each => each.data.section === section)
         if(cl !== 'all') list = list.filter( each => each.data.class === cl)
-        if(author) list = list.filter( each => each.data.section === author)
-        if(subject) list = list.filter( each => each.data.section === subject)
-        if(due) list = list.filter( each => each.data.section === due)
+        if(author) list = list.filter( each => each.data.author === author)
+        if(subject) list = list.filter( each => each.data.subject === subject)
+        if(due) list = list.filter( each => each.data.due_date === due)
         res.send({'status': 'success', 'quiz': list})
     })
     .catch(err => res.send({'status': 'failure','error': err.message}));
@@ -126,7 +128,25 @@ exports.set_quiz = function(req,res){
             })
             .then((ref)=>{
                 //uploading images to bucket.
-                res.send({'status':'success', 'message': `Quiz uploaded! ${ref.id}`})
+                Classes.findOne({
+                    where:{
+                        schoolCode: icode,
+                        teacherCode: tcode,
+                        class: cl,
+                        section: section,
+                        subjectCode: subject
+                    }
+                })
+                .then( row=>{
+                    if(row){
+                        row.increment('numQuizzes').then(()=> res.send({'status':'success', 'message': `Quiz uploaded Successfully! ${ref.id}`}))
+                        
+                    }else{
+                        res.send({'status': 'success', 'message': `Quiz uploaded by not Recorded! ${ref.id}`})
+                    }
+                })
+                .catch(err => res.send({'status': 'failure','error': err.message}));
+                
             })
             .catch(err => res.send({'status': 'failure','error': err.message}));
         })
@@ -147,7 +167,7 @@ exports.get_quiz_file = function(req,res){
     //URL query
     docId = query.id;
     q = query.q;
-    db.doc(`quizzes/${icode}/${cl}/${docId}`)
+    db.doc(`quizzes/${docId}`)
     .get()
     .then( doc =>{
         if(!doc) res.send({'status':'failure', 'message':'Please send proper data!'})

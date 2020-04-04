@@ -3,6 +3,7 @@ var {upload_file,download_link, get_file_ref} = require('../gcp_buckets/file_han
 var {bucketName} = require('../config/secrets');
 let {db} = require('./db');
 let {Classes} = require('../models')
+
 //POST requests to assign homework. Uses FormidablemMiddleware
 exports.assign_homework = function(req,res){
     file = req.file;
@@ -65,7 +66,7 @@ exports.assign_homework = function(req,res){
                             teacherCode: author, 
                             class: cl, 
                             section: sec, 
-                            subjectCode: subject
+                            subjectCode: sub
                         }
                     })
                     .then( row =>{

@@ -13,7 +13,7 @@ exports.edit_merit = function(req,res){
     reason = body.reason;
     merit = body.merit; //incase of demerit, value is false.
     tcode = body.tcode;
-    console.log(scode, !reason, ( merit !== 'true' && merit !== 'false'), !tcode)
+    // console.log(scode, !reason, ( merit !== 'true' && merit !== 'false'), !tcode)
     if( !scode || !reason || ( merit !== 'true' && merit !== 'false') || !tcode) { res.send({'status': 'failure', 'message': 'Please provide proper data!'}); }
     else{
         db.collection(`profiles/students/${icode}`)
@@ -33,6 +33,7 @@ exports.edit_merit = function(req,res){
             if(merit) merits.points += 1;
             else merits.points -= 1;
             merits.meritHistory.push({'date': Date.now(), 'reason': reason, 'teacherCode': tcode});
+
             db.collection(`profiles/students/${icode}`).doc(info.id)
             .update({
                 merits: merits
@@ -40,8 +41,60 @@ exports.edit_merit = function(req,res){
             .then(() => res.send({'status': 'success', 'message': `Merit of ${info.name} changed!`}))
             .catch(err => res.send({ 'status': 'failure', 'error':err}));
         })
-        .catch(err => res.send({ 'status': 'failure', 'error':err}));
+        .catch(err => res.send({ 'status': 'failure', 'error':err.message}));
     }
+
+};
+
+//POST Request
+exports.edit_class_merit = function(req,res){
+    params = req.params;
+    body = req.body;
+
+    //URL Parameters
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+
+    //URL Body    
+    reason = body.reason;
+    merit = body.merit; //incase of demerit, value is false.
+    tcode = body.tcode;
+
+    if( typeof reason !== 'string' || ( merit !== 'true' && merit!=='false') || typeof tcode !== 'string'){
+        res.send({'status':'failure', 'message': 'Please send proper data!'})
+        return;
+    }
+    merit = merit === 'true';
+    db.collection(`profiles/students/${icode}`)
+    .where('class', '==', cl)
+    .where('sec', '==', sec)
+    .get()
+    .then(snap =>{
+        if(snap.empty){
+            res.send({'status':'failure', 'message': 'No matching Class found!'})
+            return;
+        }
+        var batch = db.batch();
+        var collectionRef = db.collection(`profiles/students/${icode}`);
+        snap.forEach( doc =>{
+
+            info = doc.data();
+            merits = info.merits;
+            if(!merits) merits = { points:0, meritHistory: []};
+
+            if(merit) merits.points += 1;
+            else merits.points -= 1;
+            merits.meritHistory.push({'date': Date.now(), 'reason': `Class Demit - ${reason}`, 'teacherCode': tcode})
+
+            var docRef = collectionRef.doc(doc.id);
+            batch.update(docRef, { merits: merits})
+        })
+        batch.commit()
+        .then(() => res.send({'status': 'success', 'message': 'Class Demeritted'}))
+        .catch(err => res.send({ 'status': 'failure', 'error':err.message}));
+    })
+    .catch(err => res.send({ 'status': 'failure', 'error':err.message}));
 
 };
 

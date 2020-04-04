@@ -12,9 +12,10 @@ var {get_quiz, get_quiz_file,set_quiz, get_submissions} = require('../controller
 var {set_exam,get_exams, grade_exam} = require('../controllers/exam');
 var {get_announcements, make_announcement} = require('../controllers/announcement');
 var {get_chapters, edit_chapter_status, add_chapter, remove_chapter, get_doubts, resolve_doubt} = require('../controllers/chapters');
-var {get_merit, edit_merit, reset_merit} = require('../controllers/merits');
+var {get_merit, edit_merit, edit_class_merit, reset_merit} = require('../controllers/merits');
 var {publish_doc, get_doc, doc_download} = require('../controllers/documents');
 var {get_student_profile} = require('../controllers/performance');
+
 router.use(check_valid, only_teacher);
 //replace formidable with multer
 //for homework
@@ -58,6 +59,7 @@ router.post('/chapters/doubts/resolve/:icode/:class/:sec', resolve_doubt)
 //for Reports/Merits
 router.get('/merits/:icode/:class/:sec', get_merit);
 router.post('/merits/:icode/:class/:sec', edit_merit);
+router.post('/merits/class/:icode/:class/:sec', edit_class_merit);
 router.post('/merits/reset/:icode', reset_merit);
 
 //for Documents

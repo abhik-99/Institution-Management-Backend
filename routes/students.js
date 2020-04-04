@@ -33,7 +33,7 @@ router.post('/quiz', submit_quiz);
 
 //for fetching announcements
 router.get('/announce/:icode', get_announcements);
-router.get('/announce/pic', get_announce_file);
+router.get('/announce/file', get_announce_file);
 
 //for getting exams and their scores
 router.get('/exam/:icode/:class/:examType', get_exams);
