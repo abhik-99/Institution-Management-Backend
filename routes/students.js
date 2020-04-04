@@ -13,7 +13,7 @@ var {get_merit} = require('../controllers/merits');
 var {get_doc, doc_download} = require('../controllers/documents');
 var {raise_doubt, get_doubts} = require('../controllers/chapters');
 var {get_students, get_student_attendance} = require('../controllers/attendance');
-
+var {get_student_profile} = require('../controllers/performance');
 
 router.use(check_valid, only_student);
 
@@ -52,5 +52,8 @@ router.get('/merits/:icode/:class/:sec', get_merit);
 //for Documents
 router.get('/docs/:icode/:class/:sec', get_doc);
 router.get('/docs/download/:icode/', doc_download);
+
+//for Performance
+router.get('/performance/student/:icode/:class/:sec', get_student_profile);
 
 module.exports = router;
