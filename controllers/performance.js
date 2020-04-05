@@ -37,7 +37,6 @@ exports.get_student_profile = function(req,res){
                 section: sec
             },
             attributes: ['numQuizzes', 'numHomeworks','numClasses', 'subjectCode'],
-            group: ['subjectCode']
         })
         .then( results =>{
             studentData.data.classStats = results;

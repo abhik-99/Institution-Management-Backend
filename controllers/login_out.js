@@ -35,10 +35,10 @@ exports.login = function(req, res) {
           res.send({"Error":"Duplicate Users Exists, Signing Halted!"});
           return;
         } 
-        if(list[0].data.lastSignin  && (list[0].data.lastSignin + (60*60*1000) > Date.now() ) ){
-          res.send({'status':'failure','message':'Timeout!'})
-          return;
-        }
+        // if(list[0].data.lastSignin  && (list[0].data.lastSignin + (60*60*1000) > Date.now() ) ){
+        //   res.send({'status':'failure','message':'Timeout!'})
+        //   return;
+        // }
 
         let token = jwt.sign({
            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24), //24 hrs

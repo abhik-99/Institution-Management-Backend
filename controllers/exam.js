@@ -65,7 +65,8 @@ exports.set_exam = function(req,res){
     exam_type = body.examType;
     fm = body.fullMarks;
     title = body.title;
-
+    sub = (body.sub)? body.sub : "Null";
+    author = (body.author)? body.author : "Null";
     try {
         chapters = JSON.parse(body.chapters)
         tdate = Date.parse(date)
@@ -113,9 +114,11 @@ exports.set_exam = function(req,res){
         //adding exam to the collection
         db.collection('exam')
         .add({
+            'author': author,
             'chapters':chapters, 
             'full_marks': fm, 
             'title': title,
+            'sub': sub,
             'section':section, 
             'date':date,
             'class':cl, 
