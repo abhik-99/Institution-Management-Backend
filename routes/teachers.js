@@ -1,20 +1,20 @@
 /*Need to Edit the endpoints to accomodate parameters*/
 
 
-var express = require('express');
+const express = require('express');
 var router = express.Router();
 
-const {multer} = require('../middlewares/file_handler');
-var {check_valid, only_teacher} = require('../middlewares/auth');
-var {get_students, give_attendance, get_student_attendance, get_class_attendance} = require('../controllers/attendance');
-var {assign_homework,check_homeworks,check_submissions,get_homework_submission} = require('../controllers/homeworks');
-var {get_quiz, get_quiz_file,set_quiz, get_submissions} = require('../controllers/quiz');
-var {set_exam,get_exams, grade_exam} = require('../controllers/exam');
-var {get_announcements, make_announcement} = require('../controllers/announcement');
-var {get_chapters, edit_chapter_status, add_chapter, remove_chapter, get_doubts, resolve_doubt} = require('../controllers/chapters');
-var {get_merit, edit_merit, edit_class_merit, reset_merit} = require('../controllers/merits');
-var {publish_doc, get_doc, doc_download} = require('../controllers/documents');
-var {get_student_profile} = require('../controllers/performance');
+var {multer} = require('../middlewares/file_handler');
+const {check_valid, only_teacher} = require('../middlewares/auth');
+const {get_students, give_attendance, get_student_attendance, get_class_attendance} = require('../controllers/attendance');
+const {assign_homework,check_homeworks,check_submissions,get_homework_submission} = require('../controllers/homeworks');
+const {get_quiz, get_quiz_file,set_quiz, get_submissions} = require('../controllers/quiz');
+const {set_exam,get_exams, grade_exam} = require('../controllers/exam');
+const {get_announcements, make_announcement} = require('../controllers/announcement');
+const {get_chapters, edit_chapter_status, add_chapter, remove_chapter, get_doubts, resolve_doubt} = require('../controllers/chapters');
+const {get_merit, edit_merit, edit_class_merit, reset_merit} = require('../controllers/merits')
+const {publish_doc, get_doc, doc_download} = require('../controllers/documents');
+const {get_student_profile, get_teacher_profile} = require('../controllers/performance');
 
 router.use(check_valid, only_teacher);
 //replace formidable with multer
@@ -69,4 +69,8 @@ router.post('/docs/:icode/:class/:sec', multer.single('doc'),publish_doc);
 
 //for Performance
 router.get('/performance/student/:icode/:class/:sec', get_student_profile);
+
+
+//for Profile
+router.get('/profile/:icode', get_teacher_profile)
 module.exports = router;

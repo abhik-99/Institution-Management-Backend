@@ -1,8 +1,8 @@
 const _ = require('lodash');
-var {upload_file,download_link, get_file_ref} = require('../gcp_buckets/file_handling');
-var {bucketName} = require('../config/secrets');
-let {db} = require('./db');
-let {Classes} = require('../models')
+const {upload_file,download_link, get_file_ref} = require('../gcp_buckets/file_handling');
+const {bucketName} = require('../config/secrets');
+const {db} = require('./db');
+const {Classes} = require('../models')
 
 //POST requests to assign homework. Uses FormidablemMiddleware
 exports.assign_homework = function(req,res){
@@ -115,16 +115,16 @@ exports.check_homeworks = function(req,res){
     cl = params.class;
     sec = params.sec;
 
-    //following are obtianed via URL Query
+    //following are obtianed via URL Query (Optional)
     author = query.tcode;
+    sub = query.sub;
 
-    if( !icode || !cl || !sec || !author ) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
+    if( !icode || !cl || !sec) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
     else {
         db.collection('homeworks')
         .where('school_code','==',icode)
         .where('class','==',cl)
         .where('section','==',sec)
-        .where('author','==',author)
         .get()
         .then(snap=>{
             if(snap.empty) {
@@ -134,7 +134,15 @@ exports.check_homeworks = function(req,res){
             list = [];
             snap.forEach(doc => {
                 info = _.pick(doc.data(),['author','title','subject','class','section','chapter','due_date','school_code'])
-                list.push({'id': doc.id,'data':info});
+                if( typeof author === 'string'){
+                    if( typeof sub === 'string'){
+                        if(author === info.author && sub === info.subject) list.push({'id': doc.id,'data':info});
+                    }else if(author === info.author) list.push({'id': doc.id,'data':info});
+                    
+                }else if(typeof sub === 'string'){
+                    if(sub === info.subject) list.push({'id': doc.id,'data':info});
+                }else list.push({'id': doc.id,'data':info});
+                
             });
             //console.log(list);
             res.json({'status': 'success','homeworks':list});

@@ -134,46 +134,28 @@ exports.set_exam = function(req,res){
 // the exam's docId is sent by get_exams handler
 exports.grade_exam = function(req,res){
     body = req.body;
-    docId = body.examId; //document Id of the exam in firestore
-    marksList = body.marksList; // marks of each student
+    try {
+        var docId = body.id ; //document Id of the exam in firestore
+        var marksList = JSON.parse(body.marksList); // marks of each student
+        if(!docId) throw 'Please send the doc ID!'
+    } catch (error) {
+        res.send({'status': 'failure', 'error': error.message})
+        return;
+    }
+
+
     db.collection('exam').doc(docId)
     .get()
     .then(doc => {
-        if(!doc) { res.send({'status': 'failure', 'error': 'No such exam entry found in the system!'}); }
+        if(!doc.exists) { 
+            res.send({'status': 'failure', 'error': 'No such exam entry found in the system!'}); 
+            return
+        }
+
         info = doc.data();
-
-        // //first get the details of the class and then use batch update to update
-        // var collectionRef = db.collection(`profiles/students/${info.icode}`);
-        // batch = db.batch();
-        // info.student_list.forEach( student => {
-        //     // marks = marksList.filter( m => m.scode === student.scode && m.sname === student.sname);
-        //     // //there cannot be more than 1 student with the same student name and code
-        //     // if(marks.length === 1){
-        //     //     student.marks_obtained = marks[0].marks;
-
-        //     //     //updating marks simultaneously in student profile
-        //     //     db.collection(`profiles/students/${info.icode}`).doc(student.docId)
-        //     //     .get()
-        //     //     .then(doc =>{
-        //     //         infoDoc = doc.data();
-        //     //         examScores = infoDoc.examScores;
-        //     //         if(!examScores) { examScores = []; }
-        //     //         examScores.push({'examId':docId, 'exam_type':info.exam_type, 'marks': student.marks_obtained});
-        //     //         db.collection(`profiles/students/${info.icode}`).doc(student.docId)
-        //     //         .update({examScores: examScores})
-        //     //         .then()
-        //     //         .catch( err => res.send({'status': 'failure', 'error': err.message}));
-        //     //     });
-
-        //     // }else if (marks.length > 1) {
-        //     //     res.send({'status': 'failure', 'error': 'Duplicate Student Entry Found in Student List!'});
-        //     // }
-        //     var docRef = collectionRef.doc(student.docId)
-        //     batch.update(docRef, )
-
-        // });
         var batch = db.batch();
         var collectionRef = db.collection(`profiles/students/${info.icode}`);
+
         db.collection(`profiles/students/${info.icode}`)
         .where('class', '==', info.class)
         .get()
@@ -190,6 +172,7 @@ exports.grade_exam = function(req,res){
                 if( info.section ==='all') {studentList.push({'id': doc.id, 'data': dInfo.examScores}); docList.push(doc.id);}
                 else if(info.section === dInfo.sec) {studentList.push({'id': doc.id, 'data': dInfo.examScores}); docList.push(doc.id);}
             });
+
             if( studentList.length === 0 ){
                 res.send({'status': 'failure', 'message': 'No students of that section found!'})
                 return;
@@ -225,10 +208,7 @@ exports.grade_exam = function(req,res){
             .catch( err => res.send({'status': 'failure', 'error': err.message}));
 
         })
-        .catch( err => res.send({'status': 'failure', 'error': err.message}));
-        // db.collection('exam').doc(docId).update({student_list: info.student_list})
-        // .then(()=> res.send({'status': 'success', 'message': 'Successfully Updated the Exam Status!'}))
-        // .catch( err => res.send({'status': 'failure', 'error': err.message}));        
+        .catch( err => res.send({'status': 'failure', 'error': err.message}));   
     })
     .catch( err => res.send({'status': 'failure', 'error': err.message}));
 };

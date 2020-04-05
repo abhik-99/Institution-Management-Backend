@@ -55,7 +55,7 @@ exports.login = function(req, res) {
 
         db.collection('users').doc(list[0].id)
         .update({'lastSignin':lastSignin,'session': sessions})
-        .then(()=> res.send({"x-access-token": token}))
+        .then(()=> res.send({"x-access-token": token, 'user':{ "icode": iCode, 'code': username}}))
         .catch(err=> res.send({'status':'failure','message':err.message}));
         
       })

@@ -1,19 +1,19 @@
 /*Need to Edit the endpoints to accomodate parameters*/
 
-var express = require('express');
+const express = require('express');
 var router = express.Router();
 var {multer} = require('../middlewares/file_handler')
-var {check_valid, only_student} = require('../middlewares/auth');
-var {check_homeworks,submit_homework, get_homework_file} = require('../controllers/homeworks');
-var {get_quiz, get_quiz_file, submit_quiz} = require('../controllers/quiz');
-var {get_announcements, get_announce_file} = require('../controllers/announcement');
-var {get_exams} = require('../controllers/exam');
-var {get_chapters} = require('../controllers/chapters');
-var {get_merit} = require('../controllers/merits');
-var {get_doc, doc_download} = require('../controllers/documents');
-var {raise_doubt, get_doubts} = require('../controllers/chapters');
-var {get_students, get_student_attendance} = require('../controllers/attendance');
-var {get_student_profile} = require('../controllers/performance');
+const {check_valid, only_student} = require('../middlewares/auth');
+const {check_homeworks,submit_homework, get_homework_file} = require('../controllers/homeworks');
+const {get_quiz, get_quiz_file, submit_quiz} = require('../controllers/quiz');
+const {get_announcements, get_announce_file} = require('../controllers/announcement');
+const {get_exams} = require('../controllers/exam');
+const {get_chapters} = require('../controllers/chapters');
+const {get_merit} = require('../controllers/merits');
+const {get_doc, doc_download} = require('../controllers/documents');
+const {raise_doubt, get_doubts} = require('../controllers/chapters');
+const {get_students, get_student_attendance} = require('../controllers/attendance');
+const {get_student_profile} = require('../controllers/performance');
 
 router.use(check_valid, only_student);
 

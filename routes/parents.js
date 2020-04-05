@@ -1,11 +1,11 @@
-var express = require('express');
+const express = require('express');
 var router = express.Router();
-var {check_valid, only_parent} = require('../middlewares/auth');
-var {get_announcements, get_announce_file} = require('../controllers/announcement');
-var {get_students, get_student_attendance} = require('../controllers/attendance');
-var {get_exams} = require('../controllers/exam');
-var {get_students, get_student_attendance} = require('../controllers/attendance');
-var {get_student_profile} = require('../controllers/performance');
+
+const {check_valid, only_parent} = require('../middlewares/auth');
+const {get_announcements, get_announce_file} = require('../controllers/announcement');
+const {get_exams} = require('../controllers/exam');
+const {get_students, get_student_attendance} = require('../controllers/attendance');
+const {get_student_profile, get_parent_profile} = require('../controllers/performance');
 
 /* GET users listing. */
 router.use(check_valid, only_parent);
@@ -27,5 +27,8 @@ router.get('/attendance/student/:icode/:class/:sec', get_student_attendance);//s
 
 //for Performance
 router.get('/performance/student/:icode/:class/:sec', get_student_profile);
+
+//For getting profile
+router.get('/profile/:icode', get_parent_profile)
 
 module.exports = router;
