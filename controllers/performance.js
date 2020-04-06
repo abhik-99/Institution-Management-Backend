@@ -18,7 +18,7 @@ exports.get_student_profile = function(req,res){
     sec = params.sec;
     //URL Query
     scode = query.scode;
-    if( !scode ) { res.send({'status': 'failure', 'error': 'Please provide proper information!'}); }
+    if( !scode ) { res.send({'status': 'failure', 'error': 'Please provide proper information!'}); return;}
     db.collection(`profiles/students/${icode}`)
     .where('class', '==', cl)
     .where('sec', '==', sec)
