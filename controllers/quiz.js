@@ -55,7 +55,7 @@ exports.set_quiz = function(req,res){
     section = params.sec;
 
     //URL body
-    var {title, subject, tcode, dueDate, questions, syllabus} = body;
+    var {title, subject, tcode, tname, dueDate, questions, syllabus} = body;
     
     
     try {
@@ -75,7 +75,7 @@ exports.set_quiz = function(req,res){
         return;
     }
 
-    if( !title || !tcode || !subject || !questions || !date || syllabus.length === 0 || !section) {
+    if( !title || !tcode || !tname || !subject || !questions || !date || syllabus.length === 0 || !section) {
         res.send({'status':'failure', 'message':"Please send proper data!"})
         return;
     }else {
@@ -118,6 +118,7 @@ exports.set_quiz = function(req,res){
             db.collection(`quizzes`).add({
                 'title': title,
                 'author': tcode,
+                'author_name': tname,
                 'subject': subject,
                 'questions': questions,
                 'due_date': dueDate,

@@ -44,7 +44,7 @@ router.get('/chapters/:icode/:class/:sec', get_chapters);
 
 //for raising doubts and fetching chapter doubts in a refined manned.
 router.get('/chapters/doubts/:icode/:class/:sec', get_doubts);
-router.post('/chapters/doubts/:icode/:class/:sec', raise_doubt);
+router.post('/chapters/doubts/:icode/:class/:sec', multer.single('file'),raise_doubt);
 
 //for fetching the merit points and history of a student.
 router.get('/merits/:icode/:class/:sec', get_merit);

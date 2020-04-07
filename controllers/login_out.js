@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
-let FieldValue = require('firebase-admin').firestore.FieldValue;
-let {db} = require('./db');
-let {secret} = require('../config/secrets');
+const FieldValue = require('firebase-admin').firestore.FieldValue;
+const {db} = require('./db');
+const {secret} = require('../config/secrets');
+const bcrypt = require('bcrypt')
 
 exports.login = function(req, res) {
     type = req.headers.type;
@@ -39,6 +40,10 @@ exports.login = function(req, res) {
         //   res.send({'status':'failure','message':'Timeout!'})
         //   return;
         // }
+        if(list[0].firstSignin === true || resetPass === true){
+          res.send({'status': 'failure', 'message': 'User must change the default password first!'})
+          return;
+        }
 
         let token = jwt.sign({
            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24), //24 hrs

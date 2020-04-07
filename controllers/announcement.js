@@ -1,6 +1,6 @@
-let {db} = require('./db');
+const {db} = require('./db');
 const {upload_file,get_file_ref} = require('../gcp_buckets/file_handling');
-var {bucketName} = require('../config/secrets');
+const {bucketName} = require('../config/secrets');
 // /cloudsql/project-student-management:us-east1:test-studie-server
 //GET request
 exports.get_announcements = function(req,res){
@@ -93,8 +93,8 @@ exports.make_announcement = function(req,res){
     announcement = {};
     
     if(!icode || !tcode || (!announce || typeof announce !== 'string')) {
-    res.send({'status':'failure', 'message': '1Please send proper data!'})
-    return;
+        res.send({'status':'failure', 'message': '1Please send proper data!'})
+        return;
     }
 
 

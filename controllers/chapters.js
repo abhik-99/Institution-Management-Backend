@@ -1,4 +1,6 @@
 const {db} = require('./db');
+const {get_file_ref} = require('../gcp_buckets/file_handling');
+const {bucketName} = require('../config/secrets');
 
 //POST request
 exports.add_chapter = function(req, res){
@@ -43,6 +45,8 @@ exports.add_chapter = function(req, res){
                         if( chapters[i].name === chapter){
                             chapters[i].ongoing = true;
                             chapters[i].started_on = date;
+                        }else{
+                            chapters[i].ongoing = false;
                         }
                     }
                     db.collection('chapters').doc(subject.id).update({
@@ -140,8 +144,8 @@ exports.get_chapters = function(req, res){
 };
 //Not Given in the UI
 exports.remove_chapter = function(req, res){
-    params = req.params;
-    query = req.query; 
+    var params = req.params;
+    var query = req.query; 
     //following are obtained from the URL parameter
     icode = params.icode;
     cl = params.class;
@@ -161,22 +165,34 @@ exports.remove_chapter = function(req, res){
 
 //POST request
 exports.raise_doubt = function(req,res){
-    body = req.body; 
+    var body = req.body; 
+    var file = req.file;
+
     //following are obtained from the URL parameter
     icode = params.icode;
     cl = params.class;
     sec = params.sec;
+
     //following are obtained from the URL Body
     docId = body.id;
     chapterName = body.chapterName;
     doubtText = body.doubtText; //main text of the Doubt
     scode = body.scode; //student code
     sname = body.sname; //student name
-    if( !docId || !chapterName || !doubtText || !scode) { res.send({'status': 'failure', 'message': 'Please send proper data!'}); }
+
+    if( !docId || !chapterName || !doubtText || !scode) { 
+        res.send({'status': 'failure', 'message': 'Please send proper data!'});
+        return;
+    }
+
     db.collection('chapters').doc(docId)
     .get()
     .then( doc =>{
-        if(!doc) res.send({'status': 'failure', 'message': 'No Match Found!'})
+        if(!doc) {
+            res.send({'status': 'failure', 'message': 'No Match Found!'});
+            return;
+        }
+
         info = doc.data();
         index = -1;
         chapters = info.chapters
@@ -186,14 +202,44 @@ exports.raise_doubt = function(req,res){
                 break;
             }
         }
-        if( index === -1) res.send({'status': 'failure', 'message': 'Duplicate or No Chapters Found!'})
-        
+        if( index === -1) {
+            res.send({'status': 'failure', 'message': 'Duplicate or No Chapters Found!'})
+            return;
+        }
+        var doubtOb = { 
+            'scode': scode, 
+            'sname': sname, 
+            'doubtText': doubtText, 
+            'asked': Date.now()
+        }
+        if( file ){
+            doubtOb.hasFile = true;
+            doubtOb.filePath = `chapters/${icode}/${cl}/${sec}/${chapters[index].name}/doubts/students-${scode}-${file.originalname}`
+            doubtOb.fileType = file.mimetype;
+        }
+
         if(!chapters[index].doubts) chapters[index].doubts = [];
-        chapters[index].doubts.push({ 'scode': scode, 'sname': sname, 'doubtText': doubtText, 'asked': Date.now()});
+
+        chapters[index].doubts.push(doubtOb);
+
         db.collection('chapters').doc(docId).update({
             chapters: chapters
         })
-        .then(()=> res.send({'status': 'success', 'message': 'Doubt Added!'}))
+        .then(()=> {
+            res.send({'status': 'success', 'message': 'Doubt Added!'})
+            //Writing file to bucket.
+
+            var blob = get_file_ref(bucketName, filename);
+            const blobStream = blob.createWriteStream({
+                metadata: {
+                    contentType: file.mimetype
+                }
+                });
+                blobStream.on("error", err => res.send({'status': 'failure', 'error': err.message}));
+                blobStream.on('finish', ()=> console.log("Uploaded",doubtOb.filePath))
+                blobStream.end(file.buffer);
+
+        })
         .catch( err => res.send({ 'status': 'failure', 'error': err}));
     })
     .catch( err => res.send({ 'status': 'failure', 'error': err}));
