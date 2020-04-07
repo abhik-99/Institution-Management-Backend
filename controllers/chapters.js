@@ -1,6 +1,7 @@
 const {db} = require('./db');
 const {get_file_ref} = require('../gcp_buckets/file_handling');
 const {bucketName} = require('../config/secrets');
+const _ = require('lodash')
 
 //POST request
 exports.add_chapter = function(req, res){
@@ -261,7 +262,10 @@ exports.get_doubts = function(req,res){
     db.collection('chapters').doc(docId)
     .get()
     .then(doc =>{
-        if(!doc) res.send({'status': 'failure', 'message': 'No Match Found!'})
+        if(!doc.exists){
+            res.send({'status': 'failure', 'message': 'No Match Found!'})
+            return;
+        }
         info = doc.data();
         chapter = info.chapters.filter( each => each.name === chapterName);
         if( chapter.length !== 1) res.send({'status':'failure', 'message': 'Duplicate or No chapters found!'})
@@ -272,6 +276,67 @@ exports.get_doubts = function(req,res){
     .catch( err => res.send({ 'status': 'failure', 'error': err}));
 };
 
+//Not exposed
+//GET Request for getting the doubt file.
+exports.get_doubt_file = function(req,res){
+    params = req.params;
+    query = req.query;
+    //URL parameters
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+    //URL query
+    docId = query.id;
+    chapterName = query.cn;
+    scode = query.scode; //student code
+    asked = query.a;
+    if( !docId || !cn || !scode){
+        res.send({'status': 'failure', 'message': 'Please send all the data!'})
+        return;
+    }
+
+    db.collection('chapters').doc(docId)
+    .get()
+    .then((doc)=>{
+        if(!doc.exists){
+            res.send({'status': 'failure', 'message': 'No Match Found!'})
+            return;
+        }
+        info = _.pick(doc.data(),['chapters']).chapters;
+        chapter = info.filter(each => each.name === chapterName);
+        if(chapter.length === 0 || chapter.doubt){
+            res.send({'status': 'failure', 'message': 'No Matching Chapter Found!'})
+            return;
+        }else chapter = chapter[0];
+        doubts = chapter[0].doubts.filter(each => each.scode === scode && each.asked === asked);
+        if( doubts.length !== 1 || !doubts[0].hasfile){
+            res.send({'status': 'failure', 'message': 'No Matching Doubt Found!'})
+            return;
+        }
+
+        //creating reference and sending the file
+        var ref = get_file_ref(bucketName,doubts[0].filePath);
+        
+        var stream = ref.createReadStream();
+        res.writeHead(200, {'Content-Type': doubts[0].fileType });
+        stream.on('data', function (data) {
+            res.write(data);
+            });
+        
+            stream.on('error', function (err) {
+            console.log('error reading stream', err);
+            });
+        
+            stream.on('end', function () {
+            res.end();
+            });
+
+    })
+    .catch( err => res.send({ 'status': 'failure', 'error': err}));
+
+}
+
+//Add file support to the resolve doubt
 //POST request
 exports.resolve_doubt = function(req,res){
     params = req.params;
