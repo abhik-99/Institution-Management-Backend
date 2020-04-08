@@ -11,7 +11,7 @@ const {assign_homework,check_homeworks,check_submissions,get_homework_submission
 const {get_quiz, get_quiz_file,set_quiz, get_submissions} = require('../controllers/quiz');
 const {set_exam,get_exams, grade_exam} = require('../controllers/exam');
 const {get_announcements, make_announcement} = require('../controllers/announcement');
-const {get_chapters, edit_chapter_status, add_chapter, remove_chapter, get_doubts, resolve_doubt} = require('../controllers/chapters');
+const {get_chapters, edit_chapter_status, add_chapter, get_doubt_file, get_doubts, resolve_doubt} = require('../controllers/chapters');
 const {get_merit, edit_merit, edit_class_merit, reset_merit} = require('../controllers/merits')
 const {publish_doc, get_doc, doc_download} = require('../controllers/documents');
 const {get_student_profile, get_teacher_profile} = require('../controllers/performance');
@@ -54,7 +54,8 @@ router.patch('/chapters/:icode/:class/:sec', edit_chapter_status);
 
 //for chapter doubts and resolution
 router.get('/chapters/doubts/:icode/:class/:sec', get_doubts)
-router.post('/chapters/doubts/resolve/:icode/:class/:sec', resolve_doubt)
+router.get('/chapters/doubts/:icode/:class/:sec/:id', get_doubt_file)
+router.post('/chapters/doubts/resolve/:icode/:class/:sec', multer.single('file'), resolve_doubt)
 
 //for Reports/Merits
 router.get('/merits/:icode/:class/:sec', get_merit);

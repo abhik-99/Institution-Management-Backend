@@ -94,6 +94,7 @@ exports.edit_chapter_status = function(req, res){
                             flag = true;
                         } else {
                             res.send({'status':'success', 'message': 'No change detected!'});
+                            return;
                         }
                     }
                 }
@@ -143,6 +144,8 @@ exports.get_chapters = function(req, res){
         .catch( err => res.send({'status':'failure', 'error': err}));
     }
 };
+
+//Not Exposed
 //Not Given in the UI
 exports.remove_chapter = function(req, res){
     var params = req.params;
@@ -155,7 +158,10 @@ exports.remove_chapter = function(req, res){
     //following parameters are to be obtained from URL query
     id = query.id;
     chapterName = query.chapterName
-    if(!id) { res.send({'status': 'failure', 'message': 'Please send proper data!'}); }
+    if(!id) { 
+        res.send({'status': 'failure', 'message': 'Please send proper data!'}); 
+        return;
+    }
     db.collection('chapters').doc(id)
     .get()
     .then(doc => {
@@ -229,17 +235,17 @@ exports.raise_doubt = function(req,res){
         .then(()=> {
             res.send({'status': 'success', 'message': 'Doubt Added!'})
             //Writing file to bucket.
-
-            var blob = get_file_ref(bucketName, filename);
-            const blobStream = blob.createWriteStream({
-                metadata: {
-                    contentType: file.mimetype
-                }
-                });
-                blobStream.on("error", err => res.send({'status': 'failure', 'error': err.message}));
-                blobStream.on('finish', ()=> console.log("Uploaded",doubtOb.filePath))
-                blobStream.end(file.buffer);
-
+            if(file){
+                var blob = get_file_ref(bucketName, doubtOb.filePath);
+                const blobStream = blob.createWriteStream({
+                    metadata: {
+                        contentType: file.mimetype
+                    }
+                    });
+                    blobStream.on("error", err => res.send({'status': 'failure', 'error': err.message}));
+                    blobStream.on('finish', ()=> console.log("Uploaded",doubtOb.filePath))
+                    blobStream.end(file.buffer);
+            }
         })
         .catch( err => res.send({ 'status': 'failure', 'error': err}));
     })
@@ -258,6 +264,10 @@ exports.get_doubts = function(req,res){
     docId = query.id;
     chapterName = query.chapterName;
     scode = query.scode; //student code
+    if(!docId){
+        res.send({'status': 'failure', 'message': 'Please send proper data!'})
+        return;
+    }
 
     db.collection('chapters').doc(docId)
     .get()
@@ -276,7 +286,6 @@ exports.get_doubts = function(req,res){
     .catch( err => res.send({ 'status': 'failure', 'error': err}));
 };
 
-//Not exposed
 //GET Request for getting the doubt file.
 exports.get_doubt_file = function(req,res){
     params = req.params;
@@ -285,13 +294,14 @@ exports.get_doubt_file = function(req,res){
     icode = params.icode;
     cl = params.class;
     sec = params.sec;
+    docId = params.id;
     //URL query
-    docId = query.id;
     chapterName = query.cn;
     scode = query.scode; //student code
     asked = query.a;
-    if( !docId || !cn || !scode){
-        res.send({'status': 'failure', 'message': 'Please send all the data!'})
+
+    if( !cn || !scode || !asked){
+        res.send({'status': 'failure', 'message': 'Please send all the data! Chapter name, scode, and time the doubt was asked is needed.'})
         return;
     }
 
@@ -308,6 +318,8 @@ exports.get_doubt_file = function(req,res){
             res.send({'status': 'failure', 'message': 'No Matching Chapter Found!'})
             return;
         }else chapter = chapter[0];
+        
+        //filtering doubts
         doubts = chapter[0].doubts.filter(each => each.scode === scode && each.asked === asked);
         if( doubts.length !== 1 || !doubts[0].hasfile){
             res.send({'status': 'failure', 'message': 'No Matching Doubt Found!'})
@@ -341,6 +353,7 @@ exports.get_doubt_file = function(req,res){
 exports.resolve_doubt = function(req,res){
     params = req.params;
     body = req.body;
+    file = req.file;
     //URL parameters
     icode = params.icode;
     cl = params.class;
@@ -350,13 +363,20 @@ exports.resolve_doubt = function(req,res){
     chapterName = body.chapterName;
     answer = body.answer; //main text of the Doubt
     scode = body.scode; //student code
-    asked = body.sname; //student who asked the doubt
+    tcode = body.tcode; //Teacher Code of the teacher who resolves the doubt.
+    tname = body.tname; //Teacher Name of the Teacher who resolves the doubt.
+    asked = body.asked; //Time when it was asked.
+
     if( !docId || !chapterName || !answer || !scode || !asked) { res.send({'status': 'failure', 'message': 'Please send proper data!'}); }
 
     db.collection('chapters').doc(docId)
     .get()
     .then( doc =>{
-        if(!doc) res.send({'status': 'failure', 'message': 'No Match Found!'})
+        if(!doc.exists) {
+            res.send({'status': 'failure', 'message': 'No Match Found!'})
+            return;
+        }
+
         info = doc.data();
         index = -1;
         chapters = info.chapters
@@ -366,7 +386,10 @@ exports.resolve_doubt = function(req,res){
                 break;
             }
         }
-        if( index === -1) res.send({'status': 'failure', 'message': 'Duplicate or No Chapters Found!'})
+        if( index === -1) {
+            res.send({'status': 'failure', 'message': 'Duplicate or No Chapters Found!'})
+            return;
+        }
 
         doubts = chapter[index].doubts;
         if(!doubts || doubts.length === 0) res.send({'status':'failure', 'message': 'No doubts in this Chapter!'})
@@ -377,14 +400,114 @@ exports.resolve_doubt = function(req,res){
                 break;
             }
         }
-        if( dI === -1) res.send({'status': 'failure', 'message': 'No such Doubts asked by the Student in this Chapter!'})
-        chapters[index].doubts[dI].answer = answer;
+        if( dI === -1) {
+            res.send({'status': 'failure', 'message': 'No such Doubts asked by the Student in this Chapter!'})
+            return;
+        }
+        var ob = {
+            answer: answer,
+            tcode: tcode,
+            tname: tname
+        }
+        //if the request contains a file.
+        if(file){
+            ob.filePath = `chapters/${icode}/${cl}/${sec}/${chapters[index].name}/doubts/${tname}/${Date.now()}-${tcode}-${scode}-${file.originalname}`;
+            ob.fileType = file.mimetype;
+            ob.hasFile = true;
+        }
+
+        chapters[index].doubts[dI].answer = ob;
         db.collection('chapters').doc(docId).update({
             chapters: chapters
         })
-        .then(()=> res.send({'status': 'success', 'message': 'Answer Added!'}))
+        .then(()=> {
+            if(file){
+                var blob = get_file_ref(bucketName, ob.filePath);
+                const blobStream = blob.createWriteStream({
+                    metadata: {
+                        contentType: file.mimetype
+                    }
+                    });
+                    blobStream.on("error", err => res.send({'status': 'failure', 'error': err.message}));
+                    blobStream.on('finish', ()=> console.log("Uploaded",ob.filePath))
+                    blobStream.end(file.buffer);
+            }
+            res.send({'status': 'success', 'message': 'Answer Added!'})
+        })
         .catch( err => res.send({ 'status': 'failure', 'error': err}));
 
     })
     .catch( err => res.send({ 'status': 'failure', 'error': err}));
 };
+
+//GET Resolved Doubt file.
+exports.get_answer_file = function(req,res){
+    params = req.params;
+    query = req.query;
+    //URL parameters
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+    docId = params.id;
+    chapterName = params.cn;
+    //URL query
+    scode = query.scode; //student code
+    tcode = query.tcode; //Teacher Code of the teacher who resolves the doubt.
+    asked = query.asked; //When was the doubt asked.
+
+    if( !tcode || !scode ||!asked) { 
+        res.send({'status': 'failure', 'message': 'Please send proper data! tcode, scode and time the doubt was asked is missing'}); 
+        return;
+    }
+    db.collection('chapters').doc(docId)
+    .get()
+    .then( doc =>{
+        if(!doc.exists) {
+            res.send({'status': 'failure', 'message': 'No Match Found!'})
+            return;
+        }
+
+        info = doc.data();
+        index = -1;
+        chapters = info.chapters
+        for( i=0; i<chapters.length ; i++){
+            if( chapterName === chapters[i].name){
+                index = i;
+                break;
+            }
+        }
+        if( index === -1) {
+            res.send({'status': 'failure', 'message': 'Duplicate or No Chapters Found!'})
+            return;
+        }
+
+        doubts = chapter[index].doubts;
+        if(!doubts || doubts.length === 0) res.send({'status':'failure', 'message': 'No doubts in this Chapter!'})
+        dI = -1;
+        for( i=0; i<doubts.length; i++){
+            if( doubts[i].scode === scode && doubts[i].asked === asked){
+                dI = i;
+                break;
+            }
+        }
+        if( dI === -1 || !doubts[dI].answer.hasFile) {
+            res.send({'status': 'failure', 'message': 'No such Doubts asked by the Student in this Chapter!'})
+            return;
+        }
+        var ref = get_file_ref(bucketName, doubts[dI].answer.filePath)
+        var stream = ref.createReadStream();
+        res.writeHead(200, {'Content-Type': doubts[dI].answer.fileType});
+        stream.on('data', function (data) {
+            res.write(data);
+            });
+        
+            stream.on('error', function (err) {
+            console.log('error reading stream', err);
+            });
+        
+            stream.on('end', function () {
+            res.end();
+            });
+    });
+
+}

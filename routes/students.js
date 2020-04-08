@@ -11,7 +11,7 @@ const {get_exams} = require('../controllers/exam');
 const {get_chapters} = require('../controllers/chapters');
 const {get_merit} = require('../controllers/merits');
 const {get_doc, doc_download} = require('../controllers/documents');
-const {raise_doubt, get_doubts} = require('../controllers/chapters');
+const {raise_doubt, get_doubts, get_answer_file} = require('../controllers/chapters');
 const {get_students, get_student_attendance} = require('../controllers/attendance');
 const {get_student_profile} = require('../controllers/performance');
 
@@ -45,6 +45,7 @@ router.get('/chapters/:icode/:class/:sec', get_chapters);
 //for raising doubts and fetching chapter doubts in a refined manned.
 router.get('/chapters/doubts/:icode/:class/:sec', get_doubts);
 router.post('/chapters/doubts/:icode/:class/:sec', multer.single('file'),raise_doubt);
+router.get('/chapters/doubts/:icode/:class/:sec/:id/:cn', get_answer_file);
 
 //for fetching the merit points and history of a student.
 router.get('/merits/:icode/:class/:sec', get_merit);
