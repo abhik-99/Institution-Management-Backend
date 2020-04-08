@@ -1,0 +1,521 @@
+{
+	"info": {
+		"_postman_id": "2da2e32e-d53a-4585-8e21-ce52e0611e54",
+		"name": "TeamCognito StudieApp",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "localhost:8081/login",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "type",
+						"value": "parent",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "icode",
+							"value": "a101",
+							"type": "text"
+						},
+						{
+							"key": "uname",
+							"value": "a101001",
+							"type": "text"
+						},
+						{
+							"key": "pass",
+							"value": "123",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8081/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "studie-server-dot-project-student-management.appspot.com/student/performance/student/a101/1/a?scode=a101001",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "type",
+						"value": "student",
+						"type": "text"
+					},
+					{
+						"key": "x-access-token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODYyMzYxMTEsImRhdGEiOiJ7XCIwXCI6XCJzdHVkZW50XCIsXCIxXCI6XCJhMTAxXCIsXCIyXCI6XCJhMTAxMDAxXCIsXCIzXCI6MTU4NjE0OTcxMTUwOX0iLCJpYXQiOjE1ODYxNDk3MTF9.26ze3QruYQhzL5FOc02WwjCTzFR-IWR9PsA9U14Nrkk",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "studie-server-dot-project-student-management.appspot.com/student/performance/student/a101/1/a?scode=a101001",
+					"host": [
+						"studie-server-dot-project-student-management",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"student",
+						"performance",
+						"student",
+						"a101",
+						"1",
+						"a"
+					],
+					"query": [
+						{
+							"key": "scode",
+							"value": "a101001"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "studie-server-dot-project-student-management.appspot.com/student/merits/a101/1/a?scode=a101001",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "type",
+						"value": "student",
+						"type": "text"
+					},
+					{
+						"key": "x-access-token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODYyMzYxMTEsImRhdGEiOiJ7XCIwXCI6XCJzdHVkZW50XCIsXCIxXCI6XCJhMTAxXCIsXCIyXCI6XCJhMTAxMDAxXCIsXCIzXCI6MTU4NjE0OTcxMTUwOX0iLCJpYXQiOjE1ODYxNDk3MTF9.26ze3QruYQhzL5FOc02WwjCTzFR-IWR9PsA9U14Nrkk",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "studie-server-dot-project-student-management.appspot.com/student/merits/a101/1/a?scode=a101001",
+					"host": [
+						"studie-server-dot-project-student-management",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"student",
+						"merits",
+						"a101",
+						"1",
+						"a"
+					],
+					"query": [
+						{
+							"key": "scode",
+							"value": "a101001"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "studie-server-dot-project-student-management.appspot.com/parents/performance/student/a101/1/a?scode=a101001",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "type",
+						"value": "student",
+						"type": "text"
+					},
+					{
+						"key": "x-access-token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODYyMzYxMTEsImRhdGEiOiJ7XCIwXCI6XCJzdHVkZW50XCIsXCIxXCI6XCJhMTAxXCIsXCIyXCI6XCJhMTAxMDAxXCIsXCIzXCI6MTU4NjE0OTcxMTUwOX0iLCJpYXQiOjE1ODYxNDk3MTF9.26ze3QruYQhzL5FOc02WwjCTzFR-IWR9PsA9U14Nrkk",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "studie-server-dot-project-student-management.appspot.com/parent/performance/student/a101/1/a?scode=a101001",
+					"host": [
+						"studie-server-dot-project-student-management",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"parent",
+						"performance",
+						"student",
+						"a101",
+						"1",
+						"a"
+					],
+					"query": [
+						{
+							"key": "scode",
+							"value": "a101001"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "studie-server-dot-project-student-management.appspot.com/parent/merits/a101/1/a?scode=a101001",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "type",
+						"value": "student",
+						"type": "text"
+					},
+					{
+						"key": "x-access-token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODYyMzYxMTEsImRhdGEiOiJ7XCIwXCI6XCJzdHVkZW50XCIsXCIxXCI6XCJhMTAxXCIsXCIyXCI6XCJhMTAxMDAxXCIsXCIzXCI6MTU4NjE0OTcxMTUwOX0iLCJpYXQiOjE1ODYxNDk3MTF9.26ze3QruYQhzL5FOc02WwjCTzFR-IWR9PsA9U14Nrkk",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "studie-server-dot-project-student-management.appspot.com/parent/merits/a101/1/a?scode=a101001",
+					"host": [
+						"studie-server-dot-project-student-management",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"parent",
+						"merits",
+						"a101",
+						"1",
+						"a"
+					],
+					"query": [
+						{
+							"key": "scode",
+							"value": "a101001"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8081/admin/a101/class",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "type",
+						"value": "admin",
+						"type": "text"
+					},
+					{
+						"key": "x-access-token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODYyMzg5ODUsImRhdGEiOiJ7XCIwXCI6XCJhZG1pblwiLFwiMVwiOlwiYTEwMVwiLFwiMlwiOlwiYTEwMTAwM1wiLFwiM1wiOjE1ODYxNTI1ODUwMTl9IiwiaWF0IjoxNTg2MTUyNTg1fQ.1ERzfV1fq9UL2IqpYCbZOowxAdmfT1BN8ABQE_1eXPg",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"classMap\":[\n\t\t{\n\t\t\t\"class\": \"1\",\n\t\t\t\"section\": [\"a\",\"b\"]\n\t\t},\n\t\t{\n\t\t\t\"class\": \"2\",\n\t\t\t\"section\": [\"a\",\"b\",\"c\"]\n\t\t}\n\t\t]\n}"
+				},
+				"url": {
+					"raw": "localhost:8081/admin/a101/class",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"admin",
+						"a101",
+						"class"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8081/admin/chapters/a101/1/a?sub=history",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "type",
+						"value": "admin",
+						"type": "text"
+					},
+					{
+						"key": "x-access-token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODYxODYwMzYsImRhdGEiOiJ7XCIwXCI6XCJhZG1pblwiLFwiMVwiOlwiYTEwMVwiLFwiMlwiOlwiYTEwMTAwMVwiLFwiM1wiOjE1ODYwOTk2MzY4MDB9IiwiaWF0IjoxNTg2MDk5NjM2fQ.GjESmizCbeQIwI8zurJYNsHf6EF8ImXj3GekdT9OBnc",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:8081/admin/chapters/a101/1/a?sub=history",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"admin",
+						"chapters",
+						"a101",
+						"1",
+						"a"
+					],
+					"query": [
+						{
+							"key": "sub",
+							"value": "history"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "studie-server-dot-project-student-management.appspot.com/login",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "type",
+						"value": "teacher",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "studie-server-dot-project-student-management.appspot.com/login",
+					"host": [
+						"studie-server-dot-project-student-management",
+						"appspot",
+						"com"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": " localhost:8081/admin/students",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "type",
+						"type": "text",
+						"value": "admin"
+					},
+					{
+						"key": "x-access-token",
+						"type": "text",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODYzMzI0MTIsImRhdGEiOiJ7XCIwXCI6XCJhZG1pblwiLFwiMVwiOlwiYTEwMVwiLFwiMlwiOlwiYTEwMTAwMVwiLFwiM1wiOjE1ODYyNDYwMTIyNDd9IiwiaWF0IjoxNTg2MjQ2MDEyfQ.TOs7__LbJ4HYo7L9t3uvZJDmIxmatJSoVZLE0s6XoGk"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": ""
+						},
+						{
+							"key": "icode",
+							"value": "a102",
+							"type": "text"
+						},
+						{
+							"key": "class",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "sec",
+							"value": "a",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8081/admin/students",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"admin",
+						"students"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8081/parent/teacher/a101",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "type",
+						"value": "parent",
+						"type": "text"
+					},
+					{
+						"key": "x-access-token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODY0MjUyMDksImRhdGEiOiJ7XCIwXCI6XCJwYXJlbnRcIixcIjFcIjpcImExMDFcIixcIjJcIjpcImExMDEwMDFcIixcIjNcIjoxNTg2MzM4ODA5OTMwfSIsImlhdCI6MTU4NjMzODgwOX0.Xb-eiqhJ_T1xwoU6Rxe7EqYMfuy4ciAye7rxiEAeJE4",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:8081/parent/teacher/a101",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"parent",
+						"teacher",
+						"a101"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8081/parent/query/a101",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "type",
+						"value": "parent",
+						"type": "text"
+					},
+					{
+						"key": "x-access-token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODY0MjUyMDksImRhdGEiOiJ7XCIwXCI6XCJwYXJlbnRcIixcIjFcIjpcImExMDFcIixcIjJcIjpcImExMDEwMDFcIixcIjNcIjoxNTg2MzM4ODA5OTMwfSIsImlhdCI6MTU4NjMzODgwOX0.Xb-eiqhJ_T1xwoU6Rxe7EqYMfuy4ciAye7rxiEAeJE4",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "pcode",
+							"value": "a101001",
+							"type": "text"
+						},
+						{
+							"key": "pname",
+							"value": "adi de",
+							"type": "text"
+						},
+						{
+							"key": "tname",
+							"value": "arijit dh",
+							"type": "text"
+						},
+						{
+							"key": "tcode",
+							"value": "a101002",
+							"type": "text"
+						},
+						{
+							"key": "title",
+							"value": "Test",
+							"type": "text"
+						},
+						{
+							"key": "desc",
+							"value": "Test Desc",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8081/parent/query/a101",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"parent",
+						"query",
+						"a101"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

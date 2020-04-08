@@ -40,7 +40,7 @@ exports.login = function(req, res) {
         //   res.send({'status':'failure','message':'Timeout!'})
         //   return;
         // }
-        if(list[0].firstSignin === true || resetPass === true){
+        if(list[0].firstSignin || list[0].resetPass ){
           res.send({'status': 'failure', 'message': 'User must change the default password first!'})
           return;
         }

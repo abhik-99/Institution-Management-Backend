@@ -55,7 +55,7 @@ exports.set_quiz = function(req,res){
     section = params.sec;
 
     //URL body
-    var {title, subject, tcode, tname, dueDate, questions, syllabus} = body;
+    var {title, subject, tcode, tname, dueDate, questions, syllabus, qTime} = body;
     
     
     try {
@@ -64,7 +64,7 @@ exports.set_quiz = function(req,res){
         syllabus = JSON.parse(syllabus); //String Array (Stringified) chapters
         cl = cl.toLowerCase();
         section = section.toLowerCase();
-        if(typeof section !== 'string' || section === 'all' || cl === 'all' ) throw 'Please give proper data';
+        if(typeof section !== 'string' || section === 'all' || cl === 'all' || typeof qTime !== 'number') throw 'Please give proper data';
         if(files){
             if(files.length> questions.length)
             throw 'More Files than Questions!'
@@ -125,7 +125,8 @@ exports.set_quiz = function(req,res){
                 'syllabus': syllabus, 
                 'section': section,
                 'class':cl,
-                'icode': icode
+                'icode': icode,
+                'total_time': qTime
             })
             .then((ref)=>{
                 //uploading images to bucket.

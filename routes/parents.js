@@ -6,6 +6,7 @@ const {get_announcements, get_announce_file} = require('../controllers/announcem
 const {get_exams} = require('../controllers/exam');
 const {get_students, get_student_attendance} = require('../controllers/attendance');
 const {get_student_profile, get_parent_profile} = require('../controllers/performance');
+const {get_teachers, make_query, leave_application} = require('../controllers/applications');
 
 /* GET users listing. */
 router.use(check_valid, only_parent);
@@ -31,4 +32,10 @@ router.get('/performance/student/:icode/:class/:sec', get_student_profile);
 //For getting profile
 router.get('/profile/:icode', get_parent_profile)
 
+//For raising query.
+router.get('/teacher/:icode', get_teachers)
+router.post('/query/:icode', make_query)
+
+//For leave applications
+router.post('/leave/:icode/', leave_application)
 module.exports = router;
