@@ -21,7 +21,13 @@ exports.get_students = function(req,res){
                 list = [];
                 snap.forEach(doc => {
                     info = doc.data();
-                    list.push({'id': doc.id, 'name': info.name, 'code': info.code});
+                    var toBeAbsent = false;
+                    if(info.leave_applications){
+                        info.leave_applications.forEach( leave =>{
+                            if(Date.parse(leave.start_date)< Date.now() && Date.now< leave.end_date) toBeAbsent = true;
+                        })
+                    }
+                    list.push({'id': doc.id, 'name': info.name, 'code': info.code, 'appliedAbsence': toBeAbsent});
                 });
                 res.send({'status':'success','students': list});
             }

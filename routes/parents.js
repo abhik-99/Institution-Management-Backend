@@ -37,5 +37,5 @@ router.get('/teacher/:icode', get_teachers)
 router.post('/query/:icode', make_query)
 
 //For leave applications
-router.post('/leave/:icode/', leave_application)
+router.post('/leave/:icode', leave_application)
 module.exports = router;

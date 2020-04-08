@@ -70,8 +70,10 @@ exports.leave_application = function(req,res){
 
     //URL Body
     try {
-        start = Date.parse(body.startDate);
-        end = Date.parse(body.end);
+        start = body.startDate;
+        end = body.endDate
+        t = Date.parse(start);
+        t = Date.parse(end);
         reason = (typeof body.reason === 'string')? body.reason : undefined;
         tname = (typeof body.tname === 'string')? body.tname : undefined;
         tcode = (typeof body.tcode === 'string')? body.tcode : undefined;
@@ -98,6 +100,7 @@ exports.leave_application = function(req,res){
     //Checking for matching student profile and adding the token to it.
     db.collection(`profiles/students/${icode}`)
     .where('code', '==', scode)
+    .get()    
     .then( snap=>{
         //checking conditions
         if(snap.empty){
@@ -106,7 +109,7 @@ exports.leave_application = function(req,res){
         }
         student = [];
         snap.forEach( doc => student.push({'id': doc.id, 'data': doc.data()}))
-        if(student.length !== 0){
+        if(student.length !== 1){
             res.send({'status': 'failure', 'message': 'Duplicate Student profile found!'})
             return;
         }
