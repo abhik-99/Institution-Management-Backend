@@ -22,11 +22,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false
     },
-    numAbsent:{
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0
-    },
     period:{
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -34,6 +29,14 @@ module.exports = (sequelize, DataTypes) => {
     },
     date:{
       type: DataTypes.STRING,
+      allowNull: false
+    },
+    studentName: {
+      type: Datatypes.STRING,
+      allowNull: false
+    },
+    studentCode: {
+      type: Datatypes.STRING,
       allowNull: false
     }
   }, {});

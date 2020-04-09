@@ -516,6 +516,88 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "localhost:8081/parent/leave/a101",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-access-token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODY0MjUyMDksImRhdGEiOiJ7XCIwXCI6XCJwYXJlbnRcIixcIjFcIjpcImExMDFcIixcIjJcIjpcImExMDEwMDFcIixcIjNcIjoxNTg2MzM4ODA5OTMwfSIsImlhdCI6MTU4NjMzODgwOX0.Xb-eiqhJ_T1xwoU6Rxe7EqYMfuy4ciAye7rxiEAeJE4",
+						"type": "text"
+					},
+					{
+						"key": "type",
+						"value": "parent",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "tcode",
+							"value": "a101007",
+							"type": "text"
+						},
+						{
+							"key": "tname",
+							"value": "Arijit Dhar",
+							"type": "text"
+						},
+						{
+							"key": "icode",
+							"value": "a101",
+							"type": "text"
+						},
+						{
+							"key": "pcode",
+							"value": "a101001",
+							"type": "text"
+						},
+						{
+							"key": "scode",
+							"value": "a101001",
+							"type": "text"
+						},
+						{
+							"key": "reason",
+							"value": "Testing Reason",
+							"type": "text"
+						},
+						{
+							"key": "startDate",
+							"value": "16APR2020",
+							"type": "text"
+						},
+						{
+							"key": "endDate",
+							"value": "19APR2020",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8081/parent/leave/a101",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"parent",
+						"leave",
+						"a101"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

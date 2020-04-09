@@ -73,9 +73,14 @@ exports.give_attendance = function(req,res){
         .get()
         .then(snap =>{
             
-            if( !snap) { res.send({'status':'failure', 'error': 'No such School found!'}); }
+            if(snap.empty) { 
+                res.send({'status':'failure', 'error': 'No such School found!'}); 
+                return;
+            }
 
             var collectionRef = db.collection(`profiles/students/${icode}`);
+
+            //absentList will contain the student details.
             absentList = [];
             snap.forEach(doc=>{
                 if( absentStudents.includes(doc.id)) {  absentList.push({'id': doc.id, 'data': doc.data()}); }
@@ -91,15 +96,28 @@ exports.give_attendance = function(req,res){
                         res.send({'status':'failure', 'message': 'no rows found!'})
                         return;
                     }
-
+                    var attendanceArray = [];
                     absentList.forEach((student) =>{
                         // get absentRecord and append the new absent data
                         absentRecord = student.data.absentRecord;
     
                         if( !absentRecord || absentRecord.length === 0 ) absentRecord = [];
-    
+
+                        //Pushing absent record into student profile.
                         absentRecord.push({'id': row.dataValues.id,'teacherCode': tcode, 'subject': subject, 'date': date, 'period': period});
                         student.data.absentRecord = absentRecord;
+                        //Pushing attendanceArray for bulk create
+                        attendanceArray.push({
+                            schoolCode: icode,
+                            teacherCode: tcode,
+                            class: cl,
+                            section: sec,
+                            subjectCode: subject,
+                            studentCode: student.data.code,
+                            studentName: student.data.name,
+                            period: period,
+                            date: date
+                        })
                     });                   
     
                     batch = db.batch();
@@ -111,20 +129,11 @@ exports.give_attendance = function(req,res){
                     if(row) return row.increment('numClasses')
                     else return Promise.reject(Error('No Match Found in DB!'))
                    }).then(()=>{
+                       //change attendance part.
                        batch.commit().then(() =>{
-                           Attendance.build({
-                               schoolCode: icode,
-                               teacherCode: tcode,
-                               class: cl,
-                               section: sec,
-                               subjectCode: subject,
-                               numAbsent: absentList.length,
-                               period: period,
-                               date: date
-                           })
-                           .save()
-                           .then(()=>res.send({'status': 'success','message': `Attendance/Absence added ${absentList.length}.`}))
-                           .catch( err => res.send({'status': 'failure', 'error in SQL': err.message}));
+                           res.send({'status': 'success', 'message': `${attendanceArray.length} absences detected!`})
+                           Attendance.bulkCreate(attendanceArray)
+                           .catch(err=> console.log("Error in Uploading Attendance!", err))
                        })                    
                 })
                 .catch( err => res.send({'status': 'failure', 'error': err.message}));
