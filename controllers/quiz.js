@@ -121,6 +121,7 @@ exports.set_quiz = function(req,res){
                 'author_name': tname,
                 'subject': subject,
                 'questions': questions,
+                'num_submissions': 0,
                 'due_date': dueDate,
                 'syllabus': syllabus, 
                 'section': section,
@@ -214,9 +215,11 @@ exports.submit_quiz = function(req,res){
         .get()
         .then(snap =>{
             student = [];
-            snap.docs.forEach(each => student.push({"docId": each.id, "data":each.data()}));
-            if(student.length != 1 ) { res.send({'status':'failure','message' : "Duplicate or no student found!"}); }
-            else{
+            snap.forEach(each => student.push({"docId": each.id, "data":each.data()}));
+            if(student.length != 1 ) { 
+                res.send({'status':'failure','message' : "Duplicate or no student found!"}); 
+                return;
+            }else{
                 student = student[0];
                 quizScores = student.data.quizScores;
                 if( !quizScores) quizScores = [];
@@ -231,9 +234,10 @@ exports.submit_quiz = function(req,res){
                     .then(doc =>{
                         info = doc.data();
                         submissions = info.submissions;
+                        num_submissions = info.num_submissions + 1;
                         if (!submissions) submissions = [];
                         submissions.push(submission);
-                        db.doc(`quizzes/${icode}/${cl}/${quizId}`).update({submissions: submissions})
+                        db.doc(`quizzes/${icode}/${cl}/${quizId}`).update({submissions: submissions, num_submissions: num_submissions})
                         .then( () => res.send({'status': "success", 'message': "successful submission made!"}));                        
                     });
                 })
@@ -256,13 +260,55 @@ exports.get_submissions = function(req,res){
 
     //URL query
     quizId = query.id;
-    db.doc(`quizzes/${icode}/${cl}/${quizId}`)
+    db.doc(`quizzes/${quizId}`)
     .get()
     .then( doc =>{
-        if(!doc) res.send({'status':'failure','message':'Please send proper details!'})
+        if(!doc.exists) {
+            res.send({'status':'failure','message':'Please send proper details!'})
+            return;
+        }
         info = doc.data();
         submissions = info.submissions;
-        res.send({'status': 'success', 'submissions': submissions});
+        res.send({'status': 'success', 'totalSubmissions':info.num_submissions, 'submissions': submissions});
     })
     .catch( err => res.send({'status': 'failure', 'error': err.message}));
+}
+
+exports.get_quiz_summary = function(req,res){
+    params = req.params;
+    query = req.query;
+
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+
+    tcode = query.tcode;
+    sub = query.sub;
+
+    if( !tcode){
+        res.send({'status':'failure', 'message': 'Please send the teacher code in the query'})
+        return;
+    }
+
+    db.collection('quizzes')
+    .where('icode','==',icode)
+    .where('class','==',cl)
+    .where('section','==',sec)
+    .where('author', '==', tcode)
+    .get()
+    .then( snap=>{
+        if(snap.empty){
+            res.send({'status':'failure', 'message': 'Teacher has not given any'})
+            return;
+        }
+        data = [];
+        snap.docs.forEach( doc =>{
+            doc = _.pick(doc, ['author','class','section', 'subject', 'title', 'num_submissions'])
+            if(subject && doc.subject === subject)  data.push(doc)
+            else data.push(doc)
+        })
+        res.send({'status':'success', 'data': data})
+    })
+    .catch(err => res.send({'status': 'failure','error': err.message}));
+
 }

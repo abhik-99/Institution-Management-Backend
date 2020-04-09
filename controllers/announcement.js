@@ -40,6 +40,7 @@ exports.get_announcements = function(req,res){
     })
     .catch( err => res.send({'status': 'failure', 'error': err.message}));
 };
+
 exports.get_announce_file = function(req,res){
     query = req.query;
     id = query.id; //Doc Id of the Announcement;
@@ -98,7 +99,10 @@ exports.make_announcement = function(req,res){
     }
 
 
-    if( gen_announce != 'true' && gen_announce != 'false') { res.send({'status':'failure', 'error':'Please enter proper query parameters!'}); }
+    if( gen_announce != 'true' && gen_announce != 'false') { 
+        res.send({'status':'failure', 'error':'Please enter proper query parameters!'}); 
+        return;
+    }
     else {
         announcement.gen_announce = (gen_announce === 'true');
     }

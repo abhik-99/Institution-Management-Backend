@@ -36,7 +36,7 @@ exports.get_student_profile = function(req,res){
                 class: cl,
                 section: sec
             },
-            attributes: ['numQuizzes', 'numHomeworks','numClasses', 'subjectCode'],
+            attributes: ['numQuizzes', 'numHomeworks','numClasses', 'subjectCode', 'teacherCode'],
         })
         .then( results =>{
             studentData.data.classStats = results;
@@ -108,5 +108,27 @@ exports.get_parent_profile = function(req,res){
         res.send({'status': 'success', 'data': parentData})
         
     })
-    .catch(err => res.send({'status': 'failure','error': err.message}))
+    .catch(err => res.send({'status': 'failure','error': err.message}));
 }
+
+exports.get_class_stats = function(req,res){
+    params = req.params;
+
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+
+    Classes.findAll({
+        where:{
+            schoolCode: icode,
+            class: cl,
+            section: sec
+        },
+        attributes: ['numQuizzes', 'numHomeworks','numClasses', 'subjectCode', 'teacherCode'],
+    })
+    .then( results =>{
+        if(results) res.send({'status':'success','data': results})
+        else res.send({'status': 'failure','message': 'Match not found!'})
+    })
+    .catch(err => res.send({'status': 'failure','error': err.message}))
+};

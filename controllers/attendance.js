@@ -129,9 +129,11 @@ exports.give_attendance = function(req,res){
                     if(row) return row.increment('numClasses')
                     else return Promise.reject(Error('No Match Found in DB!'))
                    }).then(()=>{
-                       //change attendance part.
+                       //Committing to DB.
                        batch.commit().then(() =>{
                            res.send({'status': 'success', 'message': `${attendanceArray.length} absences detected!`})
+
+                           //Bulk create of attendance
                            Attendance.bulkCreate(attendanceArray)
                            .catch(err=> console.log("Error in Uploading Attendance!", err))
                        })                    
@@ -238,71 +240,36 @@ exports.get_class_attendance = function(req,res){
     cl = params.class;
     sec = params.sec;
 
-    //URL Query;
-    tcode = query.tcode;
-    subject = query.subject;
-    
-    db.collection(`profiles/students/${icode}`)
-    .where('class', '==', cl)
-    .where('sec', '==', sec)
-    .get()
-    .then(async (snap)=>{
-        docs = [];
-        snap.forEach(doc => docs.push({'id':doc.id, 'data': doc.data()}));
-        strength = docs.length;
+    //URL query
+    try{
+        date = Date.parse(query.date);
+        subject = query.subject;
+        tcode = query.tcode;
+    }catch(error){
+        res.send({'status': 'failure', 'error': error.message})
+        return;
+    }
 
-        if(!snap || strength === 0) res.send({'status': 'failure','message': 'No Students in the class'})
-
-        var classRows = await Classes.findAll({ where:{schoolCode: icode, class: cl, section: sec}});
-        var attendanceRows = await Attendance.findAll({ where:{schoolCode: icode, class: cl, section: sec}});
-
-        if( !classRows || !attendanceRows) res.send({'status': 'failure', 'message': 'Please send proper data!'});
-
-        var classAttendance = [];
-        if(tcode){
-            classRows = classRows.filter( row => row.dataValues.teacherCode === tcode);
-            classRows.forEach( row=>{
-                data = row.dataValues;
-                var absence = 0;
-                absence = attendanceRows
-                .filter( row => row.dataValues.teacherCode === tcode && row.dataValues.subjectCode === data.subjectCode)
-                .forEach( row => absence += row.numAbsent);
-                absence /= data.numClasses;
-                avgAttendance = (strength - absence) / strength;
-                classAttendance.push({'tcode': tcode, 'subjectCode': data.subjectCode, 'attendance': avgAttendance});
-            })
+    Attendance.findAll({ where: {
+        schoolCode: icode,
+        class: cl,
+        section: sec
+    }})
+    .then( row =>{
+        if(!row){
+            res.send({'status':'failure','message':'No matching entries found!'})
+            return;
         }
-        if(subject){
-            if(classAttendance.length === 0){
-                classRows = classRows.filter( row => row.dataValues.subjectCode === subject);
-                classRows.forEach( row=>{
-                    data = row.dataValues;
-                    var absence = 0;
-                    absence = attendanceRows
-                    .filter( row => row.dataValues.subjectCode === subject && row.dataValues.teacherCode === data.teacherCode)
-                    .forEach( row => absence += row.numAbsent);
-                    absence = absence/data.numClasses | 0;
-                    avgAttendance = (strength - absence) / strength;
-                    classAttendance.push({'tcode': tcode, 'subjectCode': data.subjectCode, 'attendance': avgAttendance});
-                })
-            }else{
-                classAttendance = classAttendance.filter( each => each.subjectCode === subject);
-            }
-        }
-        if( !tcode && !subject){
-            classRows.forEach( row=>{
-                data = row.dataValues;
-                var absence = 0;
-                absence = attendanceRows
-                .filter( row => row.dataValues.subjectCode === subject && row.dataValues.teacherCode === data.teacherCode)
-                .forEach( row => absence += row.numAbsent);
-                absence = absence / data.numClasses | 0;
-                avgAttendance = (strength - absence) / strength;
-                classAttendance.push({'tcode': tcode, 'subjectCode': data.subjectCode, 'attendance': avgAttendance});
-            })
-        }
-        if(classAttendance.length === 0) res.send({'status':'success', 'message':'Class hasn\'t been added!'})
-        else res.send({'status': 'success', 'attendance': classAttendance});
+        var data = row.dataValues;
+        if( tcode ) data = data.filter(each => each.teacherCode === tcode)
+        if( date ) try {
+            data = data.filter(each => Date.parse(each.date) === date)
+        } catch (error) {
+            res.send({'status':'failure','error' : `While filtering - ${error.message}`})
+            return;
+        } 
+        if( subject ) data = data.filter(each => each.subjectCode === subject)
+        res.send({'status':'success', 'data':data})
     })
-    .catch( err => res.send({'status': 'failure', 'error': err.message}));
+    .catch( err => res.send({'status': 'failure', 'error': err.message}))
 };

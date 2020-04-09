@@ -140,6 +140,15 @@ exports.grade_exam = function(req,res){
     try {
         var docId = body.id ; //document Id of the exam in firestore
         var marksList = JSON.parse(body.marksList); // marks of each student
+        var avg = 0;
+        var max = 0
+        //getting the average and maximum.
+        marksList.forEach( student => {
+            avg += student.marks
+            if(student.marks > max) max = student.marks;
+        });
+        avg = avg/marksList.length;
+
         if(!docId) throw 'Please send the doc ID!'
     } catch (error) {
         res.send({'status': 'failure', 'error': error.message})
@@ -199,11 +208,11 @@ exports.grade_exam = function(req,res){
 
                 var docRef = collectionRef.doc(student.docId);
                 if(!fStudent[0].examScores ) fStudent[0].examScores = [];
-                fStudent[0].examScores.push({'tcode': info.author, 'type': info.exam_type, 'score': marks[0].marks})
+                fStudent[0].examScores.push({'tcode': info.author, 'type': info.exam_type, 'score': marks[0].marks, 'avgMarks': avg, 'maxMarks': max})
                 batch.update(docRef,{ 'examScores': fStudent[0].examScores});
             })//completed making changes to received data.
             
-            db.collection('exam').doc(docId).update({student_list: info.student_list})
+            db.collection('exam').doc(docId).update({student_list: info.student_list, 'avgMarks': avg, 'maxMarks': max})
             .then(()=>{
                 batch.commit()
                 .then(()=> res.send({'status': 'success', 'message': 'Successfully Updated the Exam Status!'}))
@@ -215,3 +224,42 @@ exports.grade_exam = function(req,res){
     })
     .catch( err => res.send({'status': 'failure', 'error': err.message}));
 };
+
+exports.get_exams_summary = function(req,res){
+    params = req.params;
+    query = req.query;
+
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+
+    tcode = query.tcode;
+    sub = query.sub;
+
+    if( !tcode){
+        res.send({'status':'failure', 'message': 'Please send the teacher code in the query'})
+        return;
+    }
+
+    db.collection('exam')
+    .where('icode','==',icode)
+    .where('class','==',cl)
+    .where('section','==',sec)
+    .where('author', '==', tcode)
+    .get()
+    .then( snap=>{
+        if(snap.empty){
+            res.send({'status':'failure', 'message': 'Teacher has not given any'})
+            return;
+        }
+        data = [];
+        snap.docs.forEach( doc =>{
+            doc = _.pick(doc, ['author','class','section', 'subject', 'title', 'chapters','full_marks','avgMarks', 'maxMarks', 'exam_type'])
+            if(subject && doc.subject === subject)  data.push(doc)
+            else data.push(doc)
+        })
+        res.send({'status':'success', 'data': data})
+    })
+    .catch(err => res.send({'status': 'failure','error': err.message}));
+
+}

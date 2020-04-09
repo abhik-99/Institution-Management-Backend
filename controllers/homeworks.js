@@ -52,6 +52,7 @@ exports.assign_homework = function(req,res){
                     period: period,
                     subject: sub,
                     chapter: chapter,
+                    num_submissions: 0,
                     due_date: sub_date,
                     hasFile: 'true',
                     file_path: filename,
@@ -96,6 +97,7 @@ exports.assign_homework = function(req,res){
                 hasFile: 'false',
                 title: title,
                 desc: desc,
+                num_submissions: 0,
                 submissions:[]
             }).then(ref=>{
                 res.send({'status': 'success', 'message': `Homewwork ${ref.id} uploaded!`}); 
@@ -208,11 +210,12 @@ exports.submit_homework = function(req,res){
                 }
                 homeInfo = homeInfo[0];
                 subs = homeInfo.submissions;
+                num_submissions = homeInfo.num_submissions+1;
                 subs.push(ob);
 
                 //updaint submissions record in homework document
                 db.collection('homeworks').doc(id)
-                .update({submissions: subs})
+                .update({submissions: subs, num_submissions: num_submissions})
                 .then(()=>{
                     //checking student profile and updating it.
                     db.collection(`profiles/students/${icode}`)
@@ -350,4 +353,42 @@ exports.get_homework_file = function(req,res){
         })
         .catch(err => res.send({'status': 'failure','error': err.message}));
     }
+}
+
+exports.get_homework_summary = function(req,res){
+    params = req.params;
+    query = req.query;
+
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+
+    tcode = query.tcode;
+    sub = query.sub;
+
+    if( !tcode){
+        res.send({'status':'failure', 'message': 'Please send the teacher code in the query'})
+        return;
+    }
+
+    db.collection('homeworks')
+    .where('school_code','==',icode)
+    .where('class','==',cl)
+    .where('section','==',sec)
+    .where('author', '==', tcode)
+    .get()
+    .then( snap=>{
+        if(snap.empty){
+            res.send({'status':'failure', 'message': 'Teacher has not given any'})
+            return;
+        }
+        data = [];
+        snap.docs.forEach( doc =>{
+            doc = _.pick(doc, ['author','class','section', 'title', 'chapter','num_submissions', 'subject'])
+            if(subject && doc.subject === subject)  data.push(doc)
+            else data.push(doc)
+        })
+        res.send({'status':'success', 'data': data})
+    })
+    .catch(err => res.send({'status': 'failure','error': err.message}));
 }
