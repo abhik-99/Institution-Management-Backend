@@ -65,6 +65,7 @@ exports.give_attendance = function(req,res){
    } catch (error) {
        res.send({'status': 'failure', 'message': error.message})
    }
+   var attendanceArray = [];
    if(!icode || !tcode || !subject || !cl || !sec || !period) { res.send({'status': 'failure','message': 'Please send proper arguments!'}); }
    else{
         db.collection(`profiles/students/${icode}`)
@@ -88,15 +89,15 @@ exports.give_attendance = function(req,res){
             
             if(absentList.length === 0) { res.send({'status': 'success', 'message': 'full attendance detected!'}); }
             else {
-
                 //updating number of clases and then committing the changes
+                // Classes.findAll()
+                // .then( rows => console.log("Rows",rows))
                 Classes.findOne({ where: {schoolCode: icode, teacherCode: tcode, class: cl, section: sec, subjectCode: subject} })
                 .then(row =>{
                     if(!row){
-                        res.send({'status':'failure', 'message': 'no rows found!'})
-                        return;
+                        return Promise.reject('No Rows Found!');
                     }
-                    var attendanceArray = [];
+                    //Creating absentList and SQL Attendance entries.
                     absentList.forEach((student) =>{
                         // get absentRecord and append the new absent data
                         absentRecord = student.data.absentRecord;
@@ -136,12 +137,12 @@ exports.give_attendance = function(req,res){
                            //Bulk create of attendance
                            Attendance.bulkCreate(attendanceArray)
                            .catch(err=> console.log("Error in Uploading Attendance!", err))
-                       })                    
+                       }).catch(err=> console.log("Error in Uploading Attendance to NO SQL!", err))                    
                 })
-                .catch( err => res.send({'status': 'failure', 'error': err.message}));
+                .catch( err => {res.send({'status': 'failure', 'error': err}); console.log(err)});
             }
         })
-        .catch( err => res.send({'status': 'failure', 'error': err.message}));
+        .catch( err => {res.send({'status': 'failure', 'error': err}); console.log(err)});
     }
 };
 
@@ -159,7 +160,10 @@ exports.get_student_attendance = function(req,res){
     tcode = query.tcode;
     subject = query.subject;
 
-    if( !docId ) { res.send({'status': 'failure', 'error': 'Please send proper information!'}); }
+    if( !docId ) { 
+        res.send({'status': 'failure', 'error': 'Please send proper information!'}); 
+        return;
+    }
 
     db.collection(`profiles/students/${icode}`).doc(docId)
     .get()
@@ -176,10 +180,17 @@ exports.get_student_attendance = function(req,res){
         studentAttendance = [];
         if(tcode) { 
             absentRecord = absentRecord.filter( record => record.teacherCode === tcode); 
-            const rows = await Classes.findAll({
-                where: {schoolCode: icode, teacherCode: tcode, class: cl, section: sec},
-                attributes: ['subjectCode','numClasses']
-            });
+            try {
+                var rows = await Classes.findAll({
+                    where: {schoolCode: icode, teacherCode: tcode, class: cl, section: sec},
+                    attributes: ['subjectCode','numClasses']
+                });
+            } catch (error) {
+                res.send({'status': 'failure', 'error': error.message})
+                console.log(err);
+                return;
+            }
+
             if(!rows) res.send({'status': 'failure', 'message': 'No such Teacher Found!'})
             else{              
                     rows.forEach(row =>{
@@ -195,10 +206,17 @@ exports.get_student_attendance = function(req,res){
         }
         if(subject) { 
             if(studentAttendance.length === 0){
-                const rows = await Classes.findAll({
-                    where: {schoolCode: icode, subjectCode: subject, class: cl, section: sec},
-                    attributes: ['teacherCode','numClasses']
-                });
+                try {
+                    var rows = await Classes.findAll({
+                        where: {schoolCode: icode, subjectCode: subject, class: cl, section: sec},
+                        attributes: ['teacherCode','numClasses']
+                    });
+                } catch (error) {
+                    res.send({'status': 'failure', 'error': error.message})
+                    console.log(err);
+                    return;
+                }
+
                 if(!rows) res.send({'status': 'failure', 'message': 'No such Teacher Found!'})
                 else{                              
                         rows.forEach(row =>{
@@ -214,11 +232,17 @@ exports.get_student_attendance = function(req,res){
              
         }
         if( !subject && !tcode){
-            const rows = await Classes.findAll({
-                where: {schoolCode: icode, class: cl, section: sec},
-                attributes: ['subjectCode','numClasses'],
-                group: ['subjectCode']
-            });
+            try {
+                var rows = await Classes.findAll({
+                    where: {schoolCode: icode, class: cl, section: sec},
+                    attributes: ['teachercode','subjectCode','numClasses'],
+                });
+            } catch (error) {
+                res.send({'status': 'failure', 'error': error.message})
+                console.log(err);
+                return;
+            }
+
             rows.forEach( row =>{
                 data = row.dataValues;
                 absences = absentRecord.filter( each => each.subject === data.subjectCode).length;
@@ -228,7 +252,8 @@ exports.get_student_attendance = function(req,res){
         }
         if(studentAttendance.length === 0) res.send({'status': 'success','message': 'The Student has not been absent yet!'})  
         else res.send({'status': 'success', 'attendance': studentAttendance})     
-    });
+    })
+    .catch( err => console.log(err));
 }
 
 //GET Request
@@ -254,13 +279,16 @@ exports.get_class_attendance = function(req,res){
         schoolCode: icode,
         class: cl,
         section: sec
-    }})
-    .then( row =>{
-        if(!row){
+        },
+        attributes: ['teacherCode', 'subjectCode','period', 'date', 'studentName', 'studentCode']
+    })
+    .then( rows =>{
+        if(!rows){
             res.send({'status':'failure','message':'No matching entries found!'})
             return;
         }
-        var data = row.dataValues;
+        var data = [];
+        rows.forEach( row => data.push(row.dataValues))
         if( tcode ) data = data.filter(each => each.teacherCode === tcode)
         if( date ) try {
             data = data.filter(each => Date.parse(each.date) === date)

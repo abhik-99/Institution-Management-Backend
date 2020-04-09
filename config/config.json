@@ -3,7 +3,7 @@
     "username": "root",
     "password": "KaMtilC2L4MxCGFk",
     "database": "studie",
-    "host": "127.0.0.1",
+    "host": "localhost",
     "port": 8080,
     "dialect": "mysql",
     "operatorsAliases": false

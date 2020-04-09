@@ -7,14 +7,14 @@ var router = express.Router();
 var {multer} = require('../middlewares/file_handler');
 const {check_valid, only_teacher} = require('../middlewares/auth');
 const {get_students, give_attendance, get_student_attendance, get_class_attendance} = require('../controllers/attendance');
-const {assign_homework,check_homeworks,check_submissions,get_homework_submission} = require('../controllers/homeworks');
-const {get_quiz, get_quiz_file,set_quiz, get_submissions} = require('../controllers/quiz');
-const {set_exam,get_exams, grade_exam} = require('../controllers/exam');
+const {assign_homework,check_homeworks,check_submissions,get_homework_submission, get_homework_summary} = require('../controllers/homeworks');
+const {get_quiz, get_quiz_file,set_quiz, get_submissions, get_quiz_summary} = require('../controllers/quiz');
+const {set_exam,get_exams, grade_exam, get_exams_summary} = require('../controllers/exam');
 const {get_announcements, make_announcement} = require('../controllers/announcement');
 const {get_chapters, edit_chapter_status, add_chapter, get_doubt_file, get_doubts, resolve_doubt} = require('../controllers/chapters');
 const {get_merit, edit_merit, edit_class_merit, reset_merit} = require('../controllers/merits')
 const {publish_doc, get_doc, doc_download} = require('../controllers/documents');
-const {get_student_profile, get_teacher_profile} = require('../controllers/performance');
+const {get_student_profile, get_teacher_profile, get_class_stats} = require('../controllers/performance');
 
 router.use(check_valid, only_teacher);
 //replace formidable with multer
@@ -23,6 +23,7 @@ router.post('/homework',multer.single('assignment'),assign_homework);
 router.get('/homework/:icode/:class/:sec',check_homeworks);
 router.get('/homework/submissions/:icode/:class/:sec',check_submissions);
 router.get('/homework/submissions/download',get_homework_submission);
+router.get('/homework/:icode/:class/:sec/summary', get_homework_summary);
 
 //for attendance
 router.get('/attendance/:icode/:class/:sec',get_students);
@@ -30,17 +31,18 @@ router.post('/attendance/:icode/:class/:sec', give_attendance);
 router.get('/attendance/student/:icode/:class/:sec', get_student_attendance);
 router.get('/attendance/class/:icode/:class/:sec', get_class_attendance);
 
-
 //for quiz
 router.get('/quiz/:icode/:class/:sec',get_quiz);
 router.get('/quiz/q/:icode/:class', get_quiz_file);
 router.post('/quiz/:icode/:class/:sec',multer.any(),set_quiz);
 router.get('/quiz/submissions/:icode/:class/:sec', get_submissions);
+router.get('/quiz/:icode/:class/:sec/summary', get_quiz_summary)
 
 //for exam
 router.get('/exam/:icode/:class/:examType', get_exams);
 router.post('/exam', set_exam);
 router.patch('/exam', grade_exam);
+router.get('/exam/:icode/:class/:sec/summary', get_exams_summary)
 
 //for announcements
 // router.get('/announce/:icode', get_announcements);
@@ -70,7 +72,7 @@ router.post('/docs/:icode/:class/:sec', multer.single('doc'),publish_doc);
 
 //for Performance
 router.get('/performance/student/:icode/:class/:sec', get_student_profile);
-
+router.get('/stats/:icode/:class/:sec', get_class_stats);
 
 //for Profile
 router.get('/profile/:icode', get_teacher_profile)

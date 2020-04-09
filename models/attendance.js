@@ -32,11 +32,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     studentName: {
-      type: Datatypes.STRING,
+      type: DataTypes.STRING,
       allowNull: false
     },
     studentCode: {
-      type: Datatypes.STRING,
+      type: DataTypes.STRING,
       allowNull: false
     }
   }, {});

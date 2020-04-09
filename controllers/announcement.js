@@ -21,7 +21,7 @@ exports.get_announcements = function(req,res){
     }
     gen_announce = (gen_announce === 'true');
     if( !icode ) { res.send({'status':'failure', 'error':'Please enter proper query parameters!'}); }
-    db.collection('annoucement')
+    db.collection('announcement')
     .where('school', '==', icode)
     .where('gen_announce', '==', gen_announce)
     .get()
@@ -45,7 +45,7 @@ exports.get_announce_file = function(req,res){
     query = req.query;
     id = query.id; //Doc Id of the Announcement;
     if(!id) res.send({'status': 'failure', 'message': 'Please send proper data!'})
-    db.doc(`annoucement/${id}`)
+    db.doc(`announcement/${id}`)
     .get()
     .then( doc =>{
         if(!doc.data()) {
@@ -134,7 +134,7 @@ exports.make_announcement = function(req,res){
 
         announcement.author = teacher[0];
         announcement.date = date;
-        db.collection('annoucement').add(announcement)
+        db.collection('announcement').add(announcement)
         .then(()=> {
             if(file){
                 var blob = get_file_ref(bucketName, filePath);
