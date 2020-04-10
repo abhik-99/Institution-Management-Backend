@@ -132,3 +132,112 @@ exports.get_class_stats = function(req,res){
     })
     .catch(err => res.send({'status': 'failure','error': err.message}))
 };
+
+exports.get_class_quiz_stats = function(req,res){
+    params = req.params;
+    query = req.query;
+
+    icode = params.icode;
+    cl = params.class;
+    sec =  params.sec;
+
+    subject = query.sub;
+
+    db.collection('quizzes')
+    .where('icode', '==', icode)
+    .where('class', '==', cl)
+    .where('section', '==', sec)
+    .get()
+    .then(snap=>{
+        if(snap.empty){
+            res.send({'status': 'failure', 'message': 'No Class or Section Match Found!'})
+            return;
+        }
+        avgSubs = 0;
+        var n = 0
+        snap.docs.forEach( doc => {
+            if(subject && doc.data().subject === subject){
+                avgSubs += (doc.data().num_submissions)? doc.data().num_submissions: 0;
+                n += 1;
+            }else{
+                avgSubs += (doc.data().num_submissions)? doc.data().num_submissions: 0;
+                n += 1;
+            }
+            
+        })
+        res.send({'status': 'success', 'data': avgSubs/n})
+    })
+    .catch(err => res.send({'status': 'failure','error': err.message}))
+}
+
+exports.get_class_homework_stats = function(req,res){
+    params = req.params;
+    query = req.query;
+    icode = params.icode;
+    cl = params.class;
+    sec =  params.sec;
+
+    subject = query.sub;
+
+    db.collection('homeworks')
+    .where('school_code', '==', icode)
+    .where('class', '==', cl)
+    .where('section', '==', sec)
+    .get()
+    .then(snap=>{
+        if(snap.empty){
+            res.send({'status': 'failure', 'message': 'No Class or Section Match Found!'})
+            return;
+        }
+        avgSubs = 0;
+        var n = 0
+        snap.docs.forEach( doc => {
+            if(subject && doc.data().subject === subject){
+                avgSubs += (doc.data().num_submissions)? doc.data().num_submissions: 0;
+                n += 1;
+            }else{
+                avgSubs += (doc.data().num_submissions)? doc.data().num_submissions: 0;
+                n += 1;
+            }
+        })
+        res.send({'status': 'success', 'data': avgSubs/n})
+    })
+    .catch(err => res.send({'status': 'failure','error': err.message}))
+}
+
+exports.get_class_exam_stats = function(req,res){
+    params = req.params;
+    query = req.query;
+
+    icode = params.icode;
+    cl = params.class;
+    sec =  params.sec;
+
+    subject = query.sub;
+
+    db.collection('exam')
+    .where('icode', '==', icode)
+    .where('class', '==', cl)
+    .where('section', '==', sec)
+    .get()
+    .then(snap=>{
+        if(snap.empty){
+            res.send({'status': 'failure', 'message': 'No Class or Section Match Found!'})
+            return;
+        }
+        avgMarks = 0;
+        var n = 0
+        snap.docs.forEach( doc => {
+            info = doc.data();
+            if(subject && info.subject === subject){
+                avgMarks += (info.avgMarks && info.full_marks)? info.avgMarks/info.full_marks: 0;
+                n += 1;
+            }else{
+                avgMarks += (info.avgMarks && info.full_marks)? info.avgMarks/info.full_marks: 0;
+                n += 1;
+            }
+        })
+        res.send({'status': 'success', 'data': avgMarks/n})
+    })
+    .catch(err => res.send({'status': 'failure','error': err.message}))
+}

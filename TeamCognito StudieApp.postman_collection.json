@@ -12,7 +12,7 @@
 				"header": [
 					{
 						"key": "type",
-						"value": "parent",
+						"value": "teacher",
 						"type": "text"
 					},
 					{
@@ -71,10 +71,6 @@
 						"type": "text"
 					}
 				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
 				"url": {
 					"raw": "studie-server-dot-project-student-management.appspot.com/student/performance/student/a101/1/a?scode=a101001",
 					"host": [
@@ -116,10 +112,6 @@
 						"type": "text"
 					}
 				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
 				"url": {
 					"raw": "studie-server-dot-project-student-management.appspot.com/student/merits/a101/1/a?scode=a101001",
 					"host": [
@@ -160,10 +152,6 @@
 						"type": "text"
 					}
 				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
 				"url": {
 					"raw": "studie-server-dot-project-student-management.appspot.com/parent/performance/student/a101/1/a?scode=a101001",
 					"host": [
@@ -205,10 +193,6 @@
 						"type": "text"
 					}
 				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
 				"url": {
 					"raw": "studie-server-dot-project-student-management.appspot.com/parent/merits/a101/1/a?scode=a101001",
 					"host": [
@@ -234,96 +218,6 @@
 			"response": []
 		},
 		{
-			"name": "localhost:8081/admin/a101/class",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "type",
-						"value": "admin",
-						"type": "text"
-					},
-					{
-						"key": "x-access-token",
-						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODYyMzg5ODUsImRhdGEiOiJ7XCIwXCI6XCJhZG1pblwiLFwiMVwiOlwiYTEwMVwiLFwiMlwiOlwiYTEwMTAwM1wiLFwiM1wiOjE1ODYxNTI1ODUwMTl9IiwiaWF0IjoxNTg2MTUyNTg1fQ.1ERzfV1fq9UL2IqpYCbZOowxAdmfT1BN8ABQE_1eXPg",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"classMap\":[\n\t\t{\n\t\t\t\"class\": \"1\",\n\t\t\t\"section\": [\"a\",\"b\"]\n\t\t},\n\t\t{\n\t\t\t\"class\": \"2\",\n\t\t\t\"section\": [\"a\",\"b\",\"c\"]\n\t\t}\n\t\t]\n}"
-				},
-				"url": {
-					"raw": "localhost:8081/admin/a101/class",
-					"host": [
-						"localhost"
-					],
-					"port": "8081",
-					"path": [
-						"admin",
-						"a101",
-						"class"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "localhost:8081/admin/chapters/a101/1/a?sub=history",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "type",
-						"value": "admin",
-						"type": "text"
-					},
-					{
-						"key": "x-access-token",
-						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODYxODYwMzYsImRhdGEiOiJ7XCIwXCI6XCJhZG1pblwiLFwiMVwiOlwiYTEwMVwiLFwiMlwiOlwiYTEwMTAwMVwiLFwiM1wiOjE1ODYwOTk2MzY4MDB9IiwiaWF0IjoxNTg2MDk5NjM2fQ.GjESmizCbeQIwI8zurJYNsHf6EF8ImXj3GekdT9OBnc",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "localhost:8081/admin/chapters/a101/1/a?sub=history",
-					"host": [
-						"localhost"
-					],
-					"port": "8081",
-					"path": [
-						"admin",
-						"chapters",
-						"a101",
-						"1",
-						"a"
-					],
-					"query": [
-						{
-							"key": "sub",
-							"value": "history"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "studie-server-dot-project-student-management.appspot.com/login",
 			"request": {
 				"method": "POST",
@@ -340,7 +234,10 @@
 						"type": "text"
 					}
 				],
-				"body": {},
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
 				"url": {
 					"raw": "studie-server-dot-project-student-management.appspot.com/login",
 					"host": [
@@ -350,61 +247,6 @@
 					],
 					"path": [
 						"login"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": " localhost:8081/admin/students",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "type",
-						"type": "text",
-						"value": "admin"
-					},
-					{
-						"key": "x-access-token",
-						"type": "text",
-						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODYzMzI0MTIsImRhdGEiOiJ7XCIwXCI6XCJhZG1pblwiLFwiMVwiOlwiYTEwMVwiLFwiMlwiOlwiYTEwMTAwMVwiLFwiM1wiOjE1ODYyNDYwMTIyNDd9IiwiaWF0IjoxNTg2MjQ2MDEyfQ.TOs7__LbJ4HYo7L9t3uvZJDmIxmatJSoVZLE0s6XoGk"
-					}
-				],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "file",
-							"type": "file",
-							"src": ""
-						},
-						{
-							"key": "icode",
-							"value": "a102",
-							"type": "text"
-						},
-						{
-							"key": "class",
-							"value": "1",
-							"type": "text"
-						},
-						{
-							"key": "sec",
-							"value": "a",
-							"type": "text"
-						}
-					]
-				},
-				"url": {
-					"raw": "localhost:8081/admin/students",
-					"host": [
-						"localhost"
-					],
-					"port": "8081",
-					"path": [
-						"admin",
-						"students"
 					]
 				}
 			},
@@ -426,10 +268,6 @@
 						"type": "text"
 					}
 				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
 				"url": {
 					"raw": "localhost:8081/parent/teacher/a101",
 					"host": [
@@ -594,6 +432,222 @@
 						"parent",
 						"leave",
 						"a101"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8081/teacher/attendance/a101/1/a",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "type",
+						"value": "teacher",
+						"type": "text"
+					},
+					{
+						"key": "x-access-token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODY1MTEwMDQsImRhdGEiOiJ7XCIwXCI6XCJ0ZWFjaGVyXCIsXCIxXCI6XCJhMTAxXCIsXCIyXCI6XCJhMTAxMDAxXCIsXCIzXCI6MTU4NjQyNDYwNDI2NH0iLCJpYXQiOjE1ODY0MjQ2MDR9.vH2Ruh4rKyp6uutzVkjibZuVWim_LquxI0E9tOp_2XM",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8081/teacher/attendance/a101/1/a",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"teacher",
+						"attendance",
+						"a101",
+						"1",
+						"a"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8081/teacher/attendance/a101/1/a",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "type",
+						"value": "teacher",
+						"type": "text"
+					},
+					{
+						"key": "x-access-token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODY1MTEwMDQsImRhdGEiOiJ7XCIwXCI6XCJ0ZWFjaGVyXCIsXCIxXCI6XCJhMTAxXCIsXCIyXCI6XCJhMTAxMDAxXCIsXCIzXCI6MTU4NjQyNDYwNDI2NH0iLCJpYXQiOjE1ODY0MjQ2MDR9.vH2Ruh4rKyp6uutzVkjibZuVWim_LquxI0E9tOp_2XM",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "tcode",
+							"value": "a101003",
+							"type": "text"
+						},
+						{
+							"key": "subject",
+							"value": "geo",
+							"type": "text"
+						},
+						{
+							"key": "absentStudents",
+							"value": "[\"SDb8kLLbebD1CH3mugUW\", \"cUrgSx2VsKGxl5ymwLkf\", \"l2WEPn3cRrgCdNX1wxnM\"]",
+							"type": "text"
+						},
+						{
+							"key": "date",
+							"value": "20200403",
+							"type": "text"
+						},
+						{
+							"key": "period",
+							"value": "2",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8081/teacher/attendance/a101/1/a",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"teacher",
+						"attendance",
+						"a101",
+						"1",
+						"a"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8081/teacher/attendance/student/a101/1/a?id=SDb8kLLbebD1CH3mugUW",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "type",
+						"value": "teacher",
+						"type": "text"
+					},
+					{
+						"key": "x-access-token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODY1MTEwMDQsImRhdGEiOiJ7XCIwXCI6XCJ0ZWFjaGVyXCIsXCIxXCI6XCJhMTAxXCIsXCIyXCI6XCJhMTAxMDAxXCIsXCIzXCI6MTU4NjQyNDYwNDI2NH0iLCJpYXQiOjE1ODY0MjQ2MDR9.vH2Ruh4rKyp6uutzVkjibZuVWim_LquxI0E9tOp_2XM",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8081/teacher/attendance/class/a101/1/a",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"teacher",
+						"attendance",
+						"class",
+						"a101",
+						"1",
+						"a"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "SDb8kLLbebD1CH3mugUW",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8081/teacher/attendance/student/a101/1/a?id=SDb8kLLbebD1CH3mugUW",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "type",
+						"value": "teacher",
+						"type": "text"
+					},
+					{
+						"key": "x-access-token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODY1MTEwMDQsImRhdGEiOiJ7XCIwXCI6XCJ0ZWFjaGVyXCIsXCIxXCI6XCJhMTAxXCIsXCIyXCI6XCJhMTAxMDAxXCIsXCIzXCI6MTU4NjQyNDYwNDI2NH0iLCJpYXQiOjE1ODY0MjQ2MDR9.vH2Ruh4rKyp6uutzVkjibZuVWim_LquxI0E9tOp_2XM",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8081/teacher/attendance/student/a101/1/a?id=SDb8kLLbebD1CH3mugUW",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"teacher",
+						"attendance",
+						"student",
+						"a101",
+						"1",
+						"a"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "SDb8kLLbebD1CH3mugUW"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "localhost:8081/teacher/stats/a101/1/a",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "type",
+						"value": "teacher",
+						"type": "text"
+					},
+					{
+						"key": "x-access-token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1ODY1MTEwMDQsImRhdGEiOiJ7XCIwXCI6XCJ0ZWFjaGVyXCIsXCIxXCI6XCJhMTAxXCIsXCIyXCI6XCJhMTAxMDAxXCIsXCIzXCI6MTU4NjQyNDYwNDI2NH0iLCJpYXQiOjE1ODY0MjQ2MDR9.vH2Ruh4rKyp6uutzVkjibZuVWim_LquxI0E9tOp_2XM",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8081/teacher/stats/a101/1/a",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"teacher",
+						"stats",
+						"a101",
+						"1",
+						"a"
 					]
 				}
 			},

@@ -73,9 +73,9 @@ exports.assign_homework = function(req,res){
                     .then( row =>{
                         if(row){
                             row.increment('numHomeworks')
-                            .then(()=> res.send({'status': 'success', 'message': `Homewwork uploaded Successfully!`}))
+                            .then(()=> res.send({'status': 'success', 'message': `Homework uploaded Successfully!`}))
                         }else{
-                            res.send({'status': 'success', 'message': `Homewwork uploaded but Structure not Found!`});
+                            res.send({'status': 'success', 'message': `Homework uploaded but Structure not Found!`});
                         }
                     })
                      
@@ -100,7 +100,7 @@ exports.assign_homework = function(req,res){
                 num_submissions: 0,
                 submissions:[]
             }).then(ref=>{
-                res.send({'status': 'success', 'message': `Homewwork ${ref.id} uploaded!`}); 
+                res.send({'status': 'success', 'message': `Homework ${ref.id} uploaded!`}); 
             })
             .catch(err => res.send({'status': 'failure', 'error': err.message}));
         }
@@ -135,7 +135,7 @@ exports.check_homeworks = function(req,res){
             }
             list = [];
             snap.forEach(doc => {
-                info = _.pick(doc.data(),['author','title','subject','class','section','chapter','due_date','school_code'])
+                info = _.pick(doc.data(),['author','title','subject','class','section','chapter','due_date','school_code', 'desc'])
                 if( typeof author === 'string'){
                     if( typeof sub === 'string'){
                         if(author === info.author && sub === info.subject) list.push({'id': doc.id,'data':info});
@@ -153,6 +153,83 @@ exports.check_homeworks = function(req,res){
     }
 };
 
+//POST Request for giving homework submissions from teacher.
+exports.submit_homework_teacher = function(req,res){
+    params = req.params;
+    body = req.body;
+
+    //URL Parameters
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+
+    //URL Body;
+    try {
+
+        var id = body.id;
+        var studentList = body.submissions;
+        for( each of studentList){
+            if( typeof each.scode !== 'string' || typeof each.id !== 'string' || typeof each.sname !== 'string') throw 'Please send proper student data!'
+        }
+        if(typeof id !== 'string' || id.length !== 20) throw 'Please send proper document id!'
+    } catch (error) {
+        res.send({'status': 'failure', 'error': error})
+        return;
+    }
+    db.collection('homeworks')
+    .doc(id)
+    .get()
+    .then(doc =>{
+        if(!doc.exists){
+            res.send({'status': 'failure', 'message': 'No Matching Homeworks Found!'})
+            return;
+        }
+        var submissions = doc.data().submissions;
+        if(!submissions || submissions.length === 0) submissions = [];
+        var batch = db.batch();
+        var sIds = []//for containing the student Doc Ids of those who submitted.
+
+        //modifying submisions array with students
+        studentList.forEach( student =>{
+            duplicates = submissions.filter( sub => sub.id === student.id);
+            if(duplicates.length === 0){
+                submissions.push({'id': student.id, 'name': student.sname,'code': student.scode})
+                sIds.push(student.scode)
+            }
+        })
+        //fetching student profiles for batch write
+        db.collection(`profiles/students/${icode}`)
+        .where('code', 'in', sIds)
+        .get()
+        .then( snap =>{
+            if(snap.empty) throw 'No Student Found!'
+            //insert into the array(batch update)
+            snap.forEach( doc=>{
+                homeworkSubmissions = doc.data().homeworkSubmissions;
+                try {
+                    homeworkSubmissions.total += 1;
+                    homeworkSubmissions.submissions.push({'id': id, 'date': Date.now()})
+                } catch (error) {
+                    homeworkSubmissions = {total: 1, submissions:[{'id': id, 'date': Date.now()}]}
+                }
+                batch.update(db.collection(`profiles/students/${icode}`).doc(doc.id), { homeworkSubmissions:  homeworkSubmissions})
+            })
+            //batch commit to student profiles
+            batch.commit()
+            .catch(err => console.log("Error While Batch Update for Homework",id,"\nError:", err ));
+
+            //committing to homeworks collection
+            db.collection('homeworks')
+            .doc(id)
+            .update({submissions: submissions})
+            .then( () => res.send({'status':'status', 'message': 'Homeworks Submitted!'}))
+            .catch(err => console.log("Error While Update for Homework",id,"\nError:", err ));
+        }).catch(err => res.send({'status': 'failure', 'error': err}))
+    })
+    .catch(err => res.send({'status': 'failure', 'error': err}));
+}
+
+//Not exposed.
 //POST Request from Students
 exports.submit_homework = function(req,res){
     body = req.body;
@@ -268,35 +345,18 @@ exports.check_submissions = function(req,res){
     sec = params.sec;
 
     //following are to be obtained via URL query
-    author = query.tcode;
-    sub = query.sub;
-    chapter = query.chapter;
-    title = query.title;
-    console.log(icode, author, sub, chapter, title, cl, sec)
-    if( !icode || !author || !cl || !sec || !sub || !chapter || !title) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
+    id = query.id
+    if( !id) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
     else {
         db.collection('homeworks')
-        .where('school_code','==',icode)
-        .where('class','==',cl)
-        .where('section','==',sec)
-        .where('author','==',author)
-        .where('subject','==',sub)
-        .where('chapter','==',chapter)
-        .where('title','==',title)
+        .doc(id)
         .get()
-        .then(snap =>{ 
-            subs=[];
-            if(snap.empty) {
+        .then(doc =>{ 
+            if(!doc.exists) {
                 res.send({'status':'success', 'message': 'No Such document found!'})
                 return;
             }
-            snap.forEach(doc =>{
-                info = doc.data();
-                console.log("TEst");
-                subs = {id: doc.id, submissions: info.submissions};                
-            });
-
-            res.json({'status': 'success','submissions': subs});
+            res.json({'status': 'success','data': {'id': doc.id, 'submissions': doc.data().submissions}});
         })
         .catch(err => res.send({'status': 'failure','error': err.message}));
     }      

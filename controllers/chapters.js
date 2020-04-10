@@ -145,6 +145,35 @@ exports.get_chapters = function(req, res){
     }
 };
 
+exports.get_subjects = function(req, res){
+    params = req.params;
+    query = req.query; 
+    //following are obtained from the URL parameter
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+
+    if( !icode || !cl || !sec) { 
+        res.send({'status':'failure','message':'Please give proper paramters!'}); 
+        return;
+    }
+    db.collection('chapters')
+    .where('school_code', '==', icode)
+    .where('class', '==', cl)
+    .where('section', '==', sec)
+    .get()
+    .then(snap=>{
+        if(snap.empty){
+            res.send({'status': 'failure', 'message': 'No subjects found!'})
+            return;
+        }
+        subjects = [];
+        snap.docs.forEach( doc => subjects.push(doc.data().subject_code))
+        res.send({'status': 'success', 'data':subjects})
+    })
+    .catch( err => res.send({'status':'failure', 'error': err}));
+}
+
 //Not Exposed
 //Not Given in the UI
 exports.remove_chapter = function(req, res){
