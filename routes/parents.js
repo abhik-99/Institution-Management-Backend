@@ -2,6 +2,8 @@ const express = require('express');
 var router = express.Router();
 
 const {check_valid, only_parent} = require('../middlewares/auth');
+
+const {recover_password} = require('../controllers/login_out')
 const {get_announcements, get_announce_file} = require('../controllers/announcement');
 const {get_exams} = require('../controllers/exam');
 const {get_students, get_student_attendance} = require('../controllers/attendance');
@@ -39,4 +41,7 @@ router.post('/query/:icode', make_query)
 
 //For leave applications
 router.post('/leave/:icode', leave_application)
+
+//For password recovery.
+router.post('/account/recover', recover_password)
 module.exports = router;

@@ -6,6 +6,8 @@ var router = express.Router();
 
 var {multer} = require('../middlewares/file_handler');
 const {check_valid, only_teacher} = require('../middlewares/auth');
+
+const {recover_password} = require('../controllers/login_out')
 const {get_students, give_attendance, get_student_attendance, get_class_attendance} = require('../controllers/attendance');
 const {assign_homework,check_homeworks, submit_homework_teacher,check_submissions,get_homework_submission, get_homework_summary} = require('../controllers/homeworks');
 const {get_quiz, get_quiz_file,set_quiz, get_submissions, get_quiz_summary} = require('../controllers/quiz');
@@ -82,4 +84,7 @@ router.get('/stats/exam/:icode/:class/:sec', get_class_exam_stats);
 
 //for Profile
 router.get('/profile/:icode', get_teacher_profile)
+
+//For password recovery.
+router.post('/account/recover', recover_password)
 module.exports = router;

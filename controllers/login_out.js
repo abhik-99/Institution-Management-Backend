@@ -50,7 +50,7 @@ exports.login = function(req, res) {
           return;
         }
         let token = jwt.sign({
-           exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24), //24 hrs
+           exp: Math.floor(Date.now() / 1000) + (60 * 60 * 72), //72 hrs
            data: JSON.stringify({ 
               0: type,
               1: iCode,
@@ -75,6 +75,53 @@ exports.login = function(req, res) {
   };
 
 exports.recover_password = function(req,res){
+  try {
+    token = req.headers['x-access-token'];
+    decoded = jwt.verify(token, secret);
+  } catch (error) {
+    res.send({'status': 'failure', 'error': error})
+  }
+  db.collection('users')
+  .where('type', 'array-contains', type)
+  .where('username', '==', username)
+  .where('icode', '==', iCode)
+  .get()
+  .then( snap => {
+    if(snap.empty || snap.docs.length !== 1) throw 'No or Duplicate Errors detected!'
+
+    var user;
+    snap.forEach( doc => user = {id: doc.id, data: _.pick(doc.data(), ['email', 'username'])})
+
+    if(!user.data.email) throw 'User Email not defined! Contact Admin.'
+
+    var token = jwt.sign({
+      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 72), //72 hrs
+      data: JSON.stringify({ 
+         0: type,
+         1: iCode,
+         2: username,
+         3: Date.now()
+       })},
+      secret);
+
+    db.collection('users').doc(user.id).update({resetPass: true, resetPassToken: token})
+
+    transport.sendMail({
+      to: user.data.email,
+      from: "test@thestudieapp.com",
+      subject: "Password Recovery Initiated.",
+      html: `<h1> Please head to the <a href="http://fp.thestudieapp.com/?t=${token}">Link</a> to change password</h1><br>
+      Dear ${user.data.username},<br>A password recovery request was initiated against your account recently.Please head
+      onto this <a href="http://fp.thestudieapp.com/?t=${token}">link</a> to reset your password.<br>If this was not you, we recommend
+      that you change your password immediately as it might be vulnerable and also contact your admin immediately.
+      <br>You will not be able to login until you have changed your password.
+      <br>Hope you are happy with our services.<br><br>
+      With Best Regards,<br>The Studie App Team`
+    })
+    res.send({'status': 'success', 'message': 'Password Change initiated!'})
+  })
+  .catch( err => res.send({'status': 'failure','error': err}))
+
 };
 
 exports.logout = function(req,res){
