@@ -19,7 +19,6 @@ exports.get_quiz = function(req,res){
     author = (query.author)? query.author.toLowerCase() : undefined;
     subject = (query.sub)? query.sub.toLowerCase() : undefined; 
     due = query.dueDate;
-    console.log(author, subject, due);
 
     db.collection('quizzes')
     .where('icode', '==', icode)
@@ -64,14 +63,14 @@ exports.set_quiz = function(req,res){
         syllabus = JSON.parse(syllabus); //String Array (Stringified) chapters
         cl = cl.toLowerCase();
         section = section.toLowerCase();
-        if(typeof section !== 'string' || section === 'all' || cl === 'all' || typeof qTime !== 'number') throw 'Please give proper data';
+        if(section === 'all' || cl === 'all' || typeof qTime !== 'string') throw 'Please give proper data';
         if(files){
             if(files.length> questions.length)
             throw 'More Files than Questions!'
         }
     } catch (error) {
         console.log(error)
-        res.send({'status':'failure', 'message':error.message})
+        res.send({'status':'failure', 'message':error})
         return;
     }
 
@@ -151,7 +150,7 @@ exports.set_quiz = function(req,res){
                 .catch(err => res.send({'status': 'failure','error': err.message}));
                 
             })
-            .catch(err => res.send({'status': 'failure','error': err.message}));
+            .catch(err => res.send({'status': 'failure','error after recording quiz': err.message}));
         })
         
     }

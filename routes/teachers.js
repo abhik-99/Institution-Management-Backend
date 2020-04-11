@@ -14,7 +14,7 @@ const {get_announcements, make_announcement} = require('../controllers/announcem
 const {get_subjects, get_chapters, edit_chapter_status, add_chapter, get_doubt_file, get_doubts, resolve_doubt} = require('../controllers/chapters');
 const {get_merit, edit_merit, edit_class_merit, reset_merit} = require('../controllers/merits')
 const {publish_doc, get_doc, doc_download} = require('../controllers/documents');
-const {get_student_profile, get_teacher_profile, get_class_stats, get_class_quiz_stats, get_class_homework_stats, get_class_exam_stats} = require('../controllers/performance');
+const {get_routine,get_student_profile, get_teacher_profile, get_class_stats, get_class_quiz_stats, get_class_homework_stats, get_class_exam_stats} = require('../controllers/performance');
 
 router.use(check_valid, only_teacher);
 //replace formidable with multer
@@ -74,6 +74,7 @@ router.post('/docs/:icode/:class/:sec', multer.single('doc'),publish_doc);
 
 //for Performance
 router.get('/performance/student/:icode/:class/:sec', get_student_profile);
+router.get('/routine/:icode/:class/:sec', get_routine);
 router.get('/stats/:icode/:class/:sec', get_class_stats);
 router.get('/stats/quiz/:icode/:class/:sec', get_class_quiz_stats);
 router.get('/stats/homework/:icode/:class/:sec', get_class_homework_stats);

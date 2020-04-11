@@ -13,7 +13,7 @@ const {get_merit} = require('../controllers/merits');
 const {get_doc, doc_download} = require('../controllers/documents');
 const {raise_doubt, get_doubts, get_answer_file} = require('../controllers/chapters');
 const {get_students, get_student_attendance} = require('../controllers/attendance');
-const {get_student_profile} = require('../controllers/performance');
+const {get_student_profile, get_routine} = require('../controllers/performance');
 
 router.use(check_valid, only_student);
 
@@ -56,5 +56,5 @@ router.get('/docs/download/:icode/', doc_download);
 
 //for Performance
 router.get('/performance/student/:icode/:class/:sec', get_student_profile);
-
+router.get('/routine/:icode/:class/:sec', get_routine);
 module.exports = router;

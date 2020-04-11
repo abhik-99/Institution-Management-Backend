@@ -3,6 +3,8 @@ const FieldValue = require('firebase-admin').firestore.FieldValue;
 const {db} = require('./db');
 const {secret} = require('../config/secrets');
 const bcrypt = require('bcrypt')
+const _ = require('lodash')
+const {transport} = require('../mail/index')
 
 exports.login = function(req, res) {
     type = req.headers.type;
@@ -12,12 +14,11 @@ exports.login = function(req, res) {
     if(!iCode || !type || !username || !password) res.send({'status':'failure','message':'Please provide proper data!'})
     // console.log(req.body);
     // console.log(iCode, username, password);
-    userCollecRef = db.collection('users')
+    db.collection('users')
     .where('type', 'array-contains', type)
     .where('username', '==', username)
-    .where('password', '==', password)
-    .where('icode', '==', iCode);
-    userCollecRef.get()
+    .where('icode', '==', iCode)
+    .get()
     .then(snapshot => 
       {
         if (snapshot.empty) {
@@ -41,10 +42,13 @@ exports.login = function(req, res) {
         //   return;
         // }
         if(list[0].firstSignin || list[0].resetPass ){
-          res.send({'status': 'failure', 'message': 'User must change the default password first!'})
+          res.send({'status': 'failure', 'message': 'User must change the Password first!'})
           return;
         }
-
+        if(!bcrypt.compareSync(password, list[0].data.password)){
+          res.send({'status': 'failure','message': 'Passwords not Matched!'})
+          return;
+        }
         let token = jwt.sign({
            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24), //24 hrs
            data: JSON.stringify({ 
@@ -69,6 +73,9 @@ exports.login = function(req, res) {
         res.send(err);
       });
   };
+
+exports.recover_password = function(req,res){
+};
 
 exports.logout = function(req,res){
   token = req.headers['x-access-token'];

@@ -14,8 +14,8 @@ exports.get_student_profile = function(req,res){
     query = req.query;
     //URL parameters
     icode = params.icode;
-    cl = params.class;
-    sec = params.sec;
+    cl = params.class.toLowerCase();
+    sec = params.sec.toLowerCase();
     //URL Query
     scode = query.scode;
     if( !scode ) { res.send({'status': 'failure', 'error': 'Please provide proper information!'}); return;}
@@ -43,6 +43,31 @@ exports.get_student_profile = function(req,res){
             res.send({'status':'success','data': studentData})
         })
         .catch(err => res.send({'status': 'failure','error': err.message}))
+    })
+    .catch(err => res.send({'status': 'failure','error': err.message}));
+};
+
+exports.get_routine = function(req,res){
+    params = req.params;
+
+    icode = params.icode;
+    cl = params.class;
+    sec = params.sec;
+    db.collection('schools')
+    .where('code', '==', icode)
+    .get()
+    .then(snap=>{
+        if(snap.docs.length > 1){
+            res.send({'status':'failure','message': 'Duplicate Schools found!'})
+            return;
+        }
+
+        var routineMap;
+        snap.docs.forEach( doc => routineMap = doc.data().routineMap);
+        if(cl === 'all' && sec === 'all') res.send({'status': 'success', 'data': routineMap})
+        else if(cl === 'all' && sec !== 'all') res.send({'status': 'success', 'data': routineMap.filter( each => each.section === sec)})
+        else if(cl !== 'all' && sec === 'all') res.send({'status': 'success', 'data': routineMap.filter( each => each.class === cl)})
+        else res.send({'status': 'success', 'data': routineMap.filter( each => each.section === sec && each.class === cl)})
     })
     .catch(err => res.send({'status': 'failure','error': err.message}));
 };
