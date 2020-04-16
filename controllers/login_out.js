@@ -76,8 +76,9 @@ exports.login = function(req, res) {
 
 exports.recover_password = function(req,res){
   try {
-    token = req.headers['x-access-token'];
-    decoded = jwt.verify(token, secret);
+    var type = req.headers.type.toLowerCase();
+    var username = req.body.uname.toLowerCase();
+    var iCode = req.body.icode.toLowerCase();
   } catch (error) {
     res.send({'status': 'failure', 'error': error})
   }
@@ -109,7 +110,7 @@ exports.recover_password = function(req,res){
     transport.sendMail({
       to: user.data.email,
       from: "test@thestudieapp.com",
-      subject: "Password Recovery Initiated.",
+      subject: `Password Recovery for ${username} Initiated.`,
       html: `<h1> Please head to the <a href="http://fp.thestudieapp.com/?t=${token}">Link</a> to change password</h1><br>
       Dear ${user.data.username},<br>A password recovery request was initiated against your account recently.Please head
       onto this <a href="http://fp.thestudieapp.com/?t=${token}">link</a> to reset your password.<br>If this was not you, we recommend

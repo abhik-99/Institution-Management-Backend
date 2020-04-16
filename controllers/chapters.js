@@ -36,7 +36,7 @@ exports.add_chapter = function(req, res){
                 var subject = {};
                 snap.forEach(doc => subject = {'id': doc.id,'data':doc.data()})
 
-                chapters = subject.chapters;
+                chapters = subject.data.chapters;
                 if(chapters.filter( eachChapter => eachChapter.name === chapter).length !== 1){
                     res.send({'status': 'failure', 'message': 'Duplicate or no Chapters found!'})
                     return;
@@ -138,7 +138,7 @@ exports.get_chapters = function(req, res){
                 info = doc.data();
                 chapters.push({'id': doc.id, 'data': doc.data()});
             });
-            if(sub) { chapters= chapters.filter(eachDoc => eachDoc.data.subject_code === sub); }
+            if(sub) { chapters= chapters.filter(eachDoc => eachDoc.data.subject_code.toLowerCase() === sub.toLowerCase()); }
             res.send({'status': 'success', 'data': chapters});
         })
         .catch( err => res.send({'status':'failure', 'error': err}));
@@ -203,7 +203,7 @@ exports.remove_chapter = function(req, res){
 exports.raise_doubt = function(req,res){
     var body = req.body; 
     var file = req.file;
-
+    var params = req.params;
     //following are obtained from the URL parameter
     icode = params.icode;
     cl = params.class;
@@ -224,7 +224,7 @@ exports.raise_doubt = function(req,res){
     db.collection('chapters').doc(docId)
     .get()
     .then( doc =>{
-        if(!doc) {
+        if(!doc.exists) {
             res.send({'status': 'failure', 'message': 'No Match Found!'});
             return;
         }
@@ -245,6 +245,8 @@ exports.raise_doubt = function(req,res){
         var doubtOb = { 
             'scode': scode, 
             'sname': sname, 
+            'class': cl,
+            'sec': sec,
             'doubtText': doubtText, 
             'asked': Date.now()
         }
@@ -276,9 +278,9 @@ exports.raise_doubt = function(req,res){
                     blobStream.end(file.buffer);
             }
         })
-        .catch( err => res.send({ 'status': 'failure', 'error': err}));
+        .catch( err => res.send({ 'status': 'failure', 'error': err.message}));
     })
-    .catch( err => res.send({ 'status': 'failure', 'error': err}));
+    .catch( err => res.send({ 'status': 'failure', 'error': err.message}));
 };
 
 //GET request
@@ -293,7 +295,7 @@ exports.get_doubts = function(req,res){
     docId = query.id;
     chapterName = query.chapterName;
     scode = query.scode; //student code
-    if(!docId){
+    if(!docId && !chapterName){
         res.send({'status': 'failure', 'message': 'Please send proper data!'})
         return;
     }
@@ -308,7 +310,7 @@ exports.get_doubts = function(req,res){
         info = doc.data();
         chapter = info.chapters.filter( each => each.name === chapterName);
         if( chapter.length !== 1) res.send({'status':'failure', 'message': 'Duplicate or No chapters found!'})
-        doubts = chapter[0].doubts;
+        doubts = (chapter[0].doubts)? chapter[0].doubts: [];
         if(scode) doubts = doubts.filter(doubt => doubt.scode === scode);
         res.send({'status': 'success', 'doubts': doubts});
     })

@@ -42,10 +42,10 @@ exports.get_exams = function(req, res){
             }
         }
         if(author){
-            docs = docs.filter( doc => doc.data.author === author);
+            docs = docs.filter( doc => doc.data.author.toLowerCase() === author);
         }
         if(subject){
-            docs = docs.filter( doc => doc.data.subject === subject);
+            docs = docs.filter( doc => doc.data.sub.toLowerCase() === subject);
         }
         // console.log("Docs:",docs);
         res.send({'status': 'success', 'exams': docs});
@@ -65,17 +65,17 @@ exports.set_exam = function(req,res){
     exam_type = body.examType;
     fm = body.fullMarks;
     title = body.title;
-    sub = (body.sub)? body.sub : "Null";
+    sub = (body.sub)? body.sub.toLowerCase() : "Null";
     author = (body.author)? body.author : "Null";
     try {
         chapters = JSON.parse(body.chapters)
         tdate = Date.parse(date)
         f = parseFloat(fm)
     } catch (error) {
-        res.send({'status':'failure', 'message': "Please send proper data format!"})
+        res.send({'status':'failure', 'message': "Please send proper data format!", 'error': error.message})
         return;
     }
-    if(!section || typeof title !== 'string' || !icode || !cl || (!exam_type || ( examType !== '1' && examType !== '2' && examType !== '3'))) {
+    if(!section || typeof title !== 'string' || !icode || !cl || (!exam_type || ( exam_type !== '1' && exam_type !== '2'))) {
         res.send({'status': 'failure', 'error': 'Please provide all the proper details!'})
         return
     }
@@ -89,7 +89,7 @@ exports.set_exam = function(req,res){
     }
     db.collection(`profiles/students/${icode}`)
     .where('class', '==',cl)
-    .where('section', '==', sec)
+    .where('section', '==', section)
     .get()
     .then(snap =>{
         //Pushing in eligible student for the exam
@@ -106,7 +106,7 @@ exports.set_exam = function(req,res){
         }else{
             snap.forEach(doc => {
                 info = doc.data();
-                if(section === info.sec) { studentList.push({'docId': doc.id, 'scode':info.code, 'sname': info.name}); }
+                if(section === info.section) { studentList.push({'docId': doc.id, 'scode':info.code, 'sname': info.name}); }
             });
         }
         if(studentList.length === 0) res.send({'status': 'failure','error': 'No students Found for given school/class/section!'});

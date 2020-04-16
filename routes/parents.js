@@ -3,12 +3,12 @@ var router = express.Router();
 
 const {check_valid, only_parent} = require('../middlewares/auth');
 
-const {recover_password} = require('../controllers/login_out')
 const {get_announcements, get_announce_file} = require('../controllers/announcement');
 const {get_exams} = require('../controllers/exam');
 const {get_students, get_student_attendance} = require('../controllers/attendance');
 const {get_routine,get_student_profile, get_parent_profile} = require('../controllers/performance');
 const {get_teachers, make_query, leave_application} = require('../controllers/applications');
+const {get_subjects, get_chapters} = require('../controllers/chapters')
 
 /* GET users listing. */
 router.use(check_valid, only_parent);
@@ -16,6 +16,10 @@ router.use(check_valid, only_parent);
 //for announcements
 router.get('/announce/:icode', get_announcements);
 router.get('/announce/file', get_announce_file);
+
+//for chapters
+router.get('/subject/:icode/:class/:sec', get_subjects);
+router.get('/chapters/:icode/:class/:sec', get_chapters);
 
 //for attendance
 router.get('/attendance/:icode/:class/:sec',get_students);
@@ -42,6 +46,4 @@ router.post('/query/:icode', make_query)
 //For leave applications
 router.post('/leave/:icode', leave_application)
 
-//For password recovery.
-router.post('/account/recover', recover_password)
 module.exports = router;

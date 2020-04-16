@@ -121,7 +121,7 @@ exports.check_homeworks = function(req,res){
     author = query.tcode;
     sub = query.sub;
 
-    if( !icode || !cl || !sec) { res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'}); }
+    if( !icode || !cl || !sec) { res.send({'status': 'failure', 'message': 'Please enter all the parameters properly!'}); }
     else {
         db.collection('homeworks')
         .where('school_code','==',icode)
@@ -149,7 +149,7 @@ exports.check_homeworks = function(req,res){
             //console.log(list);
             res.json({'status': 'success','homeworks':list});
         })
-        .catch(err => res.send({'status': 'failure', 'error': err}));
+        .catch(err => res.send({'status': 'failure', 'error': err.message}));
     }
 };
 
@@ -167,13 +167,13 @@ exports.submit_homework_teacher = function(req,res){
     try {
 
         var id = body.id;
-        var studentList = body.submissions;
-        for( each of studentList){
+        var studentList = JSON.parse(body.submissions);
+        for( var each of studentList){
             if( typeof each.scode !== 'string' || typeof each.id !== 'string' || typeof each.sname !== 'string') throw 'Please send proper student data!'
         }
         if(typeof id !== 'string' || id.length !== 20) throw 'Please send proper document id!'
     } catch (error) {
-        res.send({'status': 'failure', 'error': error})
+        res.send({'status': 'failure', 'error': error.message})
         return;
     }
     db.collection('homeworks')

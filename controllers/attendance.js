@@ -12,7 +12,7 @@ exports.get_students = function(req,res){
     else{
         db.collection(`profiles/students/${icode}`)
         .where('class', '==', cl)
-        .where('sec', '==', sec)
+        .where('section', '==', sec)
         .get()
         .then(snap => {
 
@@ -70,7 +70,7 @@ exports.give_attendance = function(req,res){
    else{
         db.collection(`profiles/students/${icode}`)
         .where('class', '==', cl)
-        .where('sec', '==', sec)
+        .where('section', '==', sec)
         .get()
         .then(snap =>{
             
@@ -160,7 +160,7 @@ exports.get_student_attendance = function(req,res){
     tcode = query.tcode;
     subject = query.subject;
 
-    if( !docId ) { 
+    if( !docId ){ 
         res.send({'status': 'failure', 'error': 'Please send proper information!'}); 
         return;
     }
@@ -290,12 +290,13 @@ exports.get_class_attendance = function(req,res){
         var data = [];
         rows.forEach( row => data.push(row.dataValues))
         if( tcode ) data = data.filter(each => each.teacherCode === tcode)
-        if( date ) try {
-            data = data.filter(each => Date.parse(each.date) === date)
+        if( date ) {
+        try {
+            data = data.filter(each => Date.parse(each.date) === Date.parse(date))
         } catch (error) {
             res.send({'status':'failure','error' : `While filtering - ${error.message}`})
             return;
-        } 
+        }} 
         if( subject ) data = data.filter(each => each.subjectCode === subject)
         res.send({'status':'success', 'data':data})
     })

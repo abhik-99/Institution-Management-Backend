@@ -14,14 +14,10 @@ exports.get_student_profile = function(req,res){
     query = req.query;
     //URL parameters
     icode = params.icode;
-    cl = params.class.toLowerCase();
-    sec = params.sec.toLowerCase();
     //URL Query
     scode = query.scode;
     if( !scode ) { res.send({'status': 'failure', 'error': 'Please provide proper information!'}); return;}
     db.collection(`profiles/students/${icode}`)
-    .where('class', '==', cl)
-    .where('sec', '==', sec)
     .where('code', '==', scode)
     .get()
     .then(snap =>{
@@ -29,6 +25,8 @@ exports.get_student_profile = function(req,res){
 
         var studentData = {};
         snap.forEach(doc => studentData = {'id': doc.id, 'data': doc.data()}) 
+        var cl = studentData.data.class;
+        var sec = studentData.data.sec;
 
         Classes.findAll({
             where:{

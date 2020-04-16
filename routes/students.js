@@ -5,7 +5,6 @@ var router = express.Router();
 var {multer} = require('../middlewares/file_handler')
 const {check_valid, only_student} = require('../middlewares/auth');
 
-const {recover_password} = require('../controllers/login_out')
 const {check_homeworks,submit_homework, get_homework_file} = require('../controllers/homeworks');
 const {get_quiz, get_quiz_file, submit_quiz} = require('../controllers/quiz');
 const {get_announcements, get_announce_file} = require('../controllers/announcement');
@@ -16,6 +15,7 @@ const {get_doc, doc_download} = require('../controllers/documents');
 const {raise_doubt, get_doubts, get_answer_file} = require('../controllers/chapters');
 const {get_students, get_student_attendance} = require('../controllers/attendance');
 const {get_student_profile, get_routine} = require('../controllers/performance');
+const {get_teachers} = require('../controllers/applications');
 
 router.use(check_valid, only_student);
 
@@ -57,9 +57,8 @@ router.get('/docs/:icode/:class/:sec', get_doc);
 router.get('/docs/download/:icode/', doc_download);
 
 //for Performance
-router.get('/performance/student/:icode/:class/:sec', get_student_profile);
+router.get('/performance/student/:icode', get_student_profile);
+router.get('/teacher/:icode', get_teachers);
 router.get('/routine/:icode/:class/:sec', get_routine);
 
-//For password recovery.
-router.post('/account/recover', recover_password)
 module.exports = router;
