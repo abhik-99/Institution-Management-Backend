@@ -60,6 +60,7 @@ exports.set_quiz = function(req,res){
     try {
         date = Date.parse(dueDate) || undefined
         questions = JSON.parse(questions); //an array of stringified JSON of questions being parsed
+        fullMarks = questions.length;
         syllabus = JSON.parse(syllabus); //String Array (Stringified) chapters
         cl = cl.toLowerCase();
         section = section.toLowerCase();
@@ -118,6 +119,7 @@ exports.set_quiz = function(req,res){
                 'title': title,
                 'author': tcode,
                 'author_name': tname,
+                'full_marks': fullMarks,
                 'subject': subject,
                 'questions': questions,
                 'num_submissions': 0,
@@ -162,13 +164,10 @@ exports.get_quiz_file = function(req,res){
     params = req.params;
     query = req.query;
 
-    //URL parameters
-    icode = params.icode;
-    cl = params.class;
-
     //URL query
     docId = query.id;
     q = query.q;
+    console.log("Starting")
     db.doc(`quizzes/${docId}`)
     .get()
     .then( doc =>{
@@ -202,46 +201,50 @@ exports.submit_quiz = function(req,res){
     body = req.body;
     icode = body.icode;
     scode = body.scode;
+    sname = body.sname;
     quizId = body.quizId;
     score = body.score;
     cl = body.class;
-    submission = {"quizId": quizId,"student_code": scode, "score": score, "timestamp": Date.now()};
+    var submission = {"quizId": quizId,"student_code": scode,"student_name": sname, "score": score, "timestamp": Date.now()};
     if( !icode || !cl || !scode || !quizId || !score) { res.send({'status':'failure','message': "Please provide all details!"}); }
     else {
         //console.log("Body",body);
-        db.collection(`profiles/students/${icode}`)
-        .where("code", "==", scode)
+        db.doc(`quizzes/${quizId}`)
         .get()
-        .then(snap =>{
-            student = [];
-            snap.forEach(each => student.push({"docId": each.id, "data":each.data()}));
-            if(student.length != 1 ) { 
-                res.send({'status':'failure','message' : "Duplicate or no student found!"}); 
-                return;
-            }else{
-                student = student[0];
-                quizScores = student.data.quizScores;
-                if( !quizScores) quizScores = [];
-                quizScores.push(submission);
-                //console.log("Student:", student, "Quiz Score:",quizScores);
-
-                db.collection(`profiles/students/${icode}`).doc(student.docId)
-                .update({quizScores: quizScores})
-                .then(()=>{
-                    db.doc(`quizzes/${icode}/${cl}/${quizId}`)
-                    .get()
-                    .then(doc =>{
-                        info = doc.data();
-                        submissions = info.submissions;
-                        num_submissions = info.num_submissions + 1;
-                        if (!submissions) submissions = [];
-                        submissions.push(submission);
-                        db.doc(`quizzes/${icode}/${cl}/${quizId}`).update({submissions: submissions, num_submissions: num_submissions})
-                        .then( () => res.send({'status': "success", 'message': "successful submission made!"}));                        
-                    });
+        .then(doc =>{
+            if(!doc.exists) throw "Quiz not found!"
+            info = doc.data();
+            submissions = info.submissions;
+            num_submissions = info.num_submissions + 1;
+            if (!submissions) submissions = [];
+            submission.fullMarks = (info.full_marks)? info.full_marks: info.questions.length;
+            submissions.push(submission);
+            db.doc(`quizzes/${quizId}`).update({submissions: submissions, num_submissions: num_submissions})
+            .then( () => {
+                db.collection(`profiles/students/${icode}`)
+                .where("code", "==", scode)
+                .get()
+                .then(snap =>{
+                    student = [];
+                    snap.forEach(each => student.push({"docId": each.id, "data":each.data()}));
+                    if(student.length != 1 ) { 
+                        throw "Duplicate or no student found!"                
+                    }else{
+                        student = student[0];
+                        quizScores = student.data.quizScores;
+                        if( !quizScores) quizScores = [];
+                        quizScores.push(submission);
+                        //console.log("Student:", student, "Quiz Score:",quizScores);
+        
+                        db.collection(`profiles/students/${icode}`).doc(student.docId)
+                        .update({quizScores: quizScores})
+                        .catch(err => res.send({'status':'failure','error': err.message}));
+                    }
                 })
-                .catch(err => res.send({'status':'failure','error': err.message}));
-            }
+                .catch(err => res.send({'error': err.message}));
+
+                res.send({'status': "success", 'message': "successful submission made!"})
+            });                        
         })
         .catch(err => res.send({'error': err.message}));
     }

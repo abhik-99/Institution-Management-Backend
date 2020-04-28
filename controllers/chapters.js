@@ -20,7 +20,7 @@ exports.add_chapter = function(req, res){
     
     tcode = body.tcode;
 
-    if( !icode || !cl || !sec || !(typeof chapter === 'string') || !tcode) { res.send({'status':'failure','message':'Please give proper paramters!'}); }
+    if( !icode || !cl || !sec || !sub || typeof chapter !== 'string' || !tcode) { res.send({'status':'failure','message':'Please give proper paramters!'}); }
     else{
         db.collection('chapters')
         .where('school_code', '==', icode)
@@ -398,7 +398,7 @@ exports.resolve_doubt = function(req,res){
     tname = body.tname; //Teacher Name of the Teacher who resolves the doubt.
     asked = body.asked; //Time when it was asked.
 
-    if( !docId || !chapterName || !answer || !scode || !asked) { res.send({'status': 'failure', 'message': 'Please send proper data!'}); }
+    if( !docId || !chapterName || !answer || !scode || !asked) { res.send({'status': 'failure', 'message': 'Please send proper data!'}); return;}
 
     db.collection('chapters').doc(docId)
     .get()
@@ -422,11 +422,11 @@ exports.resolve_doubt = function(req,res){
             return;
         }
 
-        doubts = chapter[index].doubts;
+        doubts = chapters[index].doubts;
         if(!doubts || doubts.length === 0) res.send({'status':'failure', 'message': 'No doubts in this Chapter!'})
         dI = -1;
         for( i=0; i<doubts.length; i++){
-            if( doubts[i].scode === scode && doubts[i].asked === asked){
+            if( doubts[i].scode === scode && doubts[i].asked.toString() === asked){
                 dI = i;
                 break;
             }
@@ -465,10 +465,10 @@ exports.resolve_doubt = function(req,res){
             }
             res.send({'status': 'success', 'message': 'Answer Added!'})
         })
-        .catch( err => res.send({ 'status': 'failure', 'error': err}));
+        .catch( err => {res.send({ 'status': 'failure', 'error': err.message}); console.log(err)});
 
     })
-    .catch( err => res.send({ 'status': 'failure', 'error': err}));
+    .catch( err => {res.send({ 'status': 'failure', 'error': err.message}); console.log(err)});
 };
 
 //GET Resolved Doubt file.

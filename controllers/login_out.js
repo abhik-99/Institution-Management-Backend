@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const FieldValue = require('firebase-admin').firestore.FieldValue;
 const {db} = require('./db');
-const {secret} = require('../config/secrets');
+const {secret, resetPassSecret} = require('../config/secrets');
 const bcrypt = require('bcrypt')
 const _ = require('lodash')
 const {transport} = require('../mail/index')
@@ -41,7 +41,7 @@ exports.login = function(req, res) {
         //   res.send({'status':'failure','message':'Timeout!'})
         //   return;
         // }
-        if(list[0].firstSignin || list[0].resetPass ){
+        if(list[0].data.firstSignin || list[0].data.resetPass ){
           res.send({'status': 'failure', 'message': 'User must change the Password first!'})
           return;
         }
@@ -77,8 +77,8 @@ exports.login = function(req, res) {
 exports.recover_password = function(req,res){
   try {
     var type = req.headers.type.toLowerCase();
-    var username = req.body.uname.toLowerCase();
-    var iCode = req.body.icode.toLowerCase();
+    var username = req.body.uname;
+    var iCode = req.body.icode;
   } catch (error) {
     res.send({'status': 'failure', 'error': error})
   }
@@ -103,7 +103,7 @@ exports.recover_password = function(req,res){
          2: username,
          3: Date.now()
        })},
-      secret);
+      resetPassSecret);
 
     db.collection('users').doc(user.id).update({resetPass: true, resetPassToken: token})
 
@@ -119,6 +119,7 @@ exports.recover_password = function(req,res){
       <br>Hope you are happy with our services.<br><br>
       With Best Regards,<br>The Studie App Team`
     })
+    .catch(err => console.log(err))
     res.send({'status': 'success', 'message': 'Password Change initiated!'})
   })
   .catch( err => res.send({'status': 'failure','error': err}))

@@ -11,12 +11,10 @@ exports.get_students = function(req,res){
     if( !icode || !cl || !sec) { res.send({'status':'failure', 'error': "Please provide proper parameters"});}
     else{
         db.collection(`profiles/students/${icode}`)
-        .where('class', '==', cl)
-        .where('section', '==', sec)
         .get()
         .then(snap => {
 
-            if( !snap) { res.send({'status':'failure', 'error': 'No such School/Class/Section found!'}); }
+            if(snap.empty) { res.send({'status':'failure', 'error': 'No such School/Class/Section found!'}); }
             else{
                 list = [];
                 snap.forEach(doc => {
@@ -27,9 +25,13 @@ exports.get_students = function(req,res){
                             if(Date.parse(leave.start_date)< Date.now() && Date.now< leave.end_date) toBeAbsent = true;
                         })
                     }
-                    list.push({'id': doc.id, 'name': info.name, 'code': info.code, 'appliedAbsence': toBeAbsent});
+                    list.push({'id': doc.id, 'name': info.name, 'code': info.code, 'appliedAbsence': toBeAbsent, 'class': info.class, 'section': info.section});
                 });
-                res.send({'status':'success','students': list});
+                if(cl.toLowerCase() === 'all' && sec.toLowerCase === 'all') res.send({'status':'success','students': list});
+                else if(cl.toLowerCase() === 'all' && sec.toLowerCase !== 'all') res.send({'status':'success','students': list.filter( each => each.section === sec)});
+                else if(cl.toLowerCase() !== 'all' && sec.toLowerCase === 'all') res.send({'status':'success','students': list.filter( each => each.class === cl)});
+                else if(cl.toLowerCase() !== 'all' && sec.toLowerCase !== 'all') res.send({'status':'success','students': list.filter( each => each.class === cl && each.section === sec)});
+                
             }
         })
         .catch(err => res.send({'status':'failure', 'error': err.message}));

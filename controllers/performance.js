@@ -26,7 +26,7 @@ exports.get_student_profile = function(req,res){
         var studentData = {};
         snap.forEach(doc => studentData = {'id': doc.id, 'data': doc.data()}) 
         var cl = studentData.data.class;
-        var sec = studentData.data.sec;
+        var sec = studentData.data.section;
 
         Classes.findAll({
             where:{
@@ -132,6 +132,20 @@ exports.get_parent_profile = function(req,res){
         
     })
     .catch(err => res.send({'status': 'failure','error': err.message}));
+}
+
+exports.get_school_profile = function(req,res){
+    icode = req.params.icode;
+    db.collection('schools')
+    .where('code', '==', icode)
+    .get()
+    .then( snap =>{
+        if(snap.empty) throw 'School not Found!'
+        var data;
+        snap.forEach( doc => data = doc.data())
+        res.send({'status': 'success', 'data': data})
+    })
+    .catch( err=> { res.send({'status': 'failure', 'error': err}); console.log(err)})
 }
 
 exports.get_class_stats = function(req,res){

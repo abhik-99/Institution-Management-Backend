@@ -9,12 +9,12 @@ const {check_homeworks,submit_homework, get_homework_file} = require('../control
 const {get_quiz, get_quiz_file, submit_quiz} = require('../controllers/quiz');
 const {get_announcements, get_announce_file} = require('../controllers/announcement');
 const {get_exams} = require('../controllers/exam');
-const {get_chapters} = require('../controllers/chapters');
+const {get_chapters, get_subjects} = require('../controllers/chapters');
 const {get_merit} = require('../controllers/merits');
 const {get_doc, doc_download} = require('../controllers/documents');
 const {raise_doubt, get_doubts, get_answer_file} = require('../controllers/chapters');
 const {get_students, get_student_attendance} = require('../controllers/attendance');
-const {get_student_profile, get_routine} = require('../controllers/performance');
+const {get_student_profile, get_routine, get_school_profile} = require('../controllers/performance');
 const {get_teachers} = require('../controllers/applications');
 
 router.use(check_valid, only_student);
@@ -30,18 +30,19 @@ router.get('/attendance/student/:icode/:class/:sec', get_student_attendance);
 
 //for quiz
 router.get('/quiz/:icode/:class/:sec',get_quiz);
-router.get('/quiz/q/:icode/:class', get_quiz_file);
+router.get('/quiz/q', get_quiz_file);
 router.post('/quiz', submit_quiz);
 
 //for fetching announcements
-router.get('/announce/:icode', get_announcements);
 router.get('/announce/file', get_announce_file);
+router.get('/announce/:icode', get_announcements);
 
 //for getting exams and their scores
 router.get('/exam/:icode/:class/:examType', get_exams);
 
 //for getting chapters and chapter details. Returns doubts asked as well.
 //Doubts may be filtered for each student.
+router.get('/subject/:icode/:class/:sec', get_subjects);
 router.get('/chapters/:icode/:class/:sec', get_chapters);
 
 //for raising doubts and fetching chapter doubts in a refined manned.
@@ -57,8 +58,9 @@ router.get('/docs/:icode/:class/:sec', get_doc);
 router.get('/docs/download/:icode/', doc_download);
 
 //for Performance
-router.get('/performance/student/:icode', get_student_profile);
+router.get('/performance/:icode', get_student_profile);
 router.get('/teacher/:icode', get_teachers);
+router.get('/school/:icode', get_school_profile);
 router.get('/routine/:icode/:class/:sec', get_routine);
 
 module.exports = router;

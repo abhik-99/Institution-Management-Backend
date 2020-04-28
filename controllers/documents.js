@@ -51,6 +51,7 @@ exports.publish_doc = function(req,res){
 
 //GET request
 exports.get_doc = function(req,res){
+    console.log("starting")
     params = req.params;
     query = req.query;
     //URL parameters
@@ -69,14 +70,14 @@ exports.get_doc = function(req,res){
         if( !snap ) { res.send({'status': 'failure', 'message': 'No such match found!'}); }
         docs = [];
         snap.forEach(doc => {
-            if(tcode){
-                info = doc.data();
+            info = doc.data();
+            if(tcode){                
                 if(info.tcode === tcode) docs.push({'docId': doc.id, 'data': info})
             } else docs.push({'docId': doc.id, 'data': info})
         })
         res.send({'status': 'success', 'data': docs});
     })
-    .catch( err => res.send({'status': 'failure', 'error': err}));
+    .catch( err => {res.send({'status': 'failure', 'error': err}); console.log(err)});
 };
 
 exports.doc_download = function(req,res){
@@ -91,12 +92,12 @@ exports.doc_download = function(req,res){
     db.collection('documents').doc(docId)
     .get()
     .then( doc =>{
-        filepath = _.pick(doc.data(),['filePath']);
-        download_link(bucketName,file_path).then((data)=>{
+        filepath = _.pick(doc.data(),['filePath']).filePath;
+        download_link(bucketName,filepath).then((data)=>{
             res.json({'status': 'success', 'download_link': data[0]});
         });
     })
-    .catch( err => res.send({'status': 'failure', 'error': err}));
+    .catch( err => {res.send({'status': 'failure', 'error': err}); console.log(err)});
 }
 
 //needs to be implemented after UI is supplied.

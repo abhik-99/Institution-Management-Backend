@@ -14,28 +14,21 @@ exports.get_announcements = function(req,res){
     section = query.sec;
     cl = query.class;
     author = query.author;
-    gen_announce = query.gen_announce;
 
-    if( gen_announce){
-        if( gen_announce != 'true' && gen_announce != 'false') { res.send({'status':'failure', 'error':'Please enter proper query parameters!'}); }        
-    }
-    gen_announce = (gen_announce === 'true');
     if( !icode ) { res.send({'status':'failure', 'error':'Please enter proper query parameters!'}); }
     db.collection('announcement')
-    .where('school', '==', icode)
-    .where('gen_announce', '==', gen_announce)
+    .where('icode', '==', icode)
     .get()
     .then(snap =>{
         docs = [];
         snap.docs.forEach(doc => {
             docs.push({'id': doc.id, 'data':doc.data()});
         });
-        if( docs.length == 0) { res.send({'status':'failure', 'error':'No school found!'}); }
-        if(!gen_announce){
-            if(cl) { docs = docs.filter(doc => doc.data.class === cl); }
-            if(section) { docs = docs.filter(doc => doc.data.section === section); }
-            if(author) { docs = docs.filter(doc => doc.data.author.name === author); }
-        }
+        if( docs.length == 0) { return res.send({'status':'failure', 'error':'No school found!'}); }
+        
+        if(cl) { docs = docs.filter(doc => doc.data.class === cl); }
+        if(section) { docs = docs.filter(doc => doc.data.section === section); }
+        if(author) { docs = docs.filter(doc => doc.data.author.name === author); }
         res.send({'status': 'success', 'announcements': docs});
     })
     .catch( err => res.send({'status': 'failure', 'error': err.message}));
@@ -44,7 +37,7 @@ exports.get_announcements = function(req,res){
 exports.get_announce_file = function(req,res){
     query = req.query;
     id = query.id; //Doc Id of the Announcement;
-    if(!id) res.send({'status': 'failure', 'message': 'Please send proper data!'})
+    if(!id) return res.send({'status': 'failure', 'message': 'Please send proper data!'})
     db.doc(`announcement/${id}`)
     .get()
     .then( doc =>{
@@ -94,20 +87,19 @@ exports.make_announcement = function(req,res){
     announcement = {};
     
     if(!icode || !tcode || (!announce || typeof announce !== 'string')) {
-        res.send({'status':'failure', 'message': '1Please send proper data!'})
-        return;
+        return res.send({'status':'failure', 'message': '1Please send proper data!'})        
     }
 
 
     if( gen_announce != 'true' && gen_announce != 'false') { 
-        res.send({'status':'failure', 'error':'Please enter proper query parameters!'}); 
-        return;
+        return res.send({'status':'failure', 'error':'Please enter proper query parameters!'}); 
+        
     }
     else {
         announcement.gen_announce = (gen_announce === 'true');
     }
     
-    announcement.school = icode;
+    announcement.icode = icode;
     announcement.class = cl;
     announcement.section = sec;
     announcement.tcode = tcode;

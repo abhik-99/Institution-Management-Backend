@@ -158,7 +158,7 @@ exports.grade_exam = function(req,res){
 
     db.collection('exam').doc(docId)
     .get()
-    .then(doc => {
+    .then(doc => { 
         if(!doc.exists) { 
             res.send({'status': 'failure', 'error': 'No such exam entry found in the system!'}); 
             return
@@ -182,7 +182,8 @@ exports.grade_exam = function(req,res){
             snap.forEach(doc =>{
                 dInfo = doc.data();
                 if( info.section ==='all') {studentList.push({'id': doc.id, 'data': dInfo.examScores}); docList.push(doc.id);}
-                else if(info.section === dInfo.sec) {studentList.push({'id': doc.id, 'data': dInfo.examScores}); docList.push(doc.id);}
+                else if(info.section === dInfo.section) {studentList.push({'id': doc.id, 'data': dInfo.examScores}); docList.push(doc.id); console.log('True')}
+                console.log(info.section, dInfo.section)
             });
 
             if( studentList.length === 0 ){

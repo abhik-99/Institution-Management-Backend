@@ -18,7 +18,7 @@ exports.edit_merit = function(req,res){
     else{
         db.collection(`profiles/students/${icode}`)
         .where('class', '==', cl)
-        .where('sec', '==', sec)
+        .where('section', '==', sec)
         .where('code', '==', scode)
         .get()
         .then( snap =>{
@@ -68,7 +68,7 @@ exports.edit_class_merit = function(req,res){
     merit = merit === 'true';
     db.collection(`profiles/students/${icode}`)
     .where('class', '==', cl)
-    .where('sec', '==', sec)
+    .where('section', '==', sec)
     .get()
     .then(snap =>{
         if(snap.empty){
@@ -113,7 +113,7 @@ exports.get_merit = function(req, res){
     
     db.collection(`profiles/students/${icode}`)
     .where('class', '==', cl)
-    .where('sec', '==', sec)
+    .where('section', '==', sec)
     .get()
     .then(snap =>{
         merits = [];

@@ -8,21 +8,22 @@ var {multer} = require('../middlewares/file_handler');
 const {check_valid, only_teacher} = require('../middlewares/auth');
 
 const {get_students, give_attendance, get_student_attendance, get_class_attendance} = require('../controllers/attendance');
-const {assign_homework,check_homeworks, submit_homework_teacher,check_submissions,get_homework_submission, get_homework_summary} = require('../controllers/homeworks');
+const {assign_homework,check_homeworks, submit_homework_teacher,check_submissions,get_homework_submission, get_homework_file, get_homework_summary} = require('../controllers/homeworks');
 const {get_quiz, get_quiz_file,set_quiz, get_submissions, get_quiz_summary} = require('../controllers/quiz');
 const {set_exam,get_exams, grade_exam, get_exams_summary} = require('../controllers/exam');
 const {get_announcements, make_announcement} = require('../controllers/announcement');
 const {get_subjects, get_chapters, edit_chapter_status, add_chapter, get_doubt_file, get_doubts, resolve_doubt} = require('../controllers/chapters');
 const {get_merit, edit_merit, edit_class_merit, reset_merit} = require('../controllers/merits')
 const {publish_doc, get_doc, doc_download} = require('../controllers/documents');
-const {get_teachers} = require('../controllers/applications');
-const {get_routine,get_student_profile, get_teacher_profile, get_class_stats, get_class_quiz_stats, get_class_homework_stats, get_class_exam_stats} = require('../controllers/performance');
+const {get_teachers, get_parents} = require('../controllers/applications');
+const {get_school_profile,get_routine,get_student_profile, get_teacher_profile, get_class_stats, get_class_quiz_stats, get_class_homework_stats, get_class_exam_stats} = require('../controllers/performance');
 
 router.use(check_valid, only_teacher);
 //replace formidable with multer
 //for homework
 router.post('/homework',multer.single('assignment'),assign_homework);
 router.get('/homework/:icode/:class/:sec',check_homeworks);
+router.get('/homework/download', get_homework_file);
 router.post('/homework/submit/:icode/:class/:sec', submit_homework_teacher);
 router.get('/homework/submissions/:icode/:class/:sec',check_submissions);
 router.get('/homework/submissions/download',get_homework_submission);
@@ -36,7 +37,7 @@ router.get('/attendance/class/:icode/:class/:sec', get_class_attendance);
 
 //for quiz
 router.get('/quiz/:icode/:class/:sec',get_quiz);
-router.get('/quiz/q/:icode/:class', get_quiz_file);
+router.get('/quiz/q', get_quiz_file);
 router.post('/quiz/:icode/:class/:sec',multer.any(),set_quiz);
 router.get('/quiz/submissions/:icode/:class/:sec', get_submissions);
 router.get('/quiz/:icode/:class/:sec/summary', get_quiz_summary)
@@ -84,6 +85,8 @@ router.get('/stats/exam/:icode/:class/:sec', get_class_exam_stats);
 
 //for Profile
 router.get('/teacher/:icode', get_teachers)
+router.get('/parent/:icode', get_parents)
+router.get('/school/:icode', get_school_profile)
 router.get('/profile/:icode', get_teacher_profile)
 
 module.exports = router;

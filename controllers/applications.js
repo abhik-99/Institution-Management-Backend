@@ -27,6 +27,18 @@ exports.get_teachers = function(req,res){
     .catch( err=> res.send({'status': 'failure', 'error': err.message}))
 }
 
+exports.get_parents = function(req,res){
+    icode = req.params.icode;
+    db.collection(`profiles/parents/${icode}`)
+    .get()
+    .then(snap => {
+        if(snap.empty) throw 'No Parents Found!'
+        var data = [];
+        snap.forEach( doc => data.push(doc.data()))
+        res.send({'status': 'success', 'data': data})
+    })
+    .catch( err=>{ res.send({'status': 'failure', 'error': err}); console.log(err)})
+}
 //Make query from parents to teachers
 exports.make_query = function(req,res){
     params = req.params;

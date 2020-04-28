@@ -11,6 +11,7 @@ exports.assign_homework = function(req,res){
     //URL Body
     icode = body.icode;
     author = body.tcode;
+    author_name = (body.tname)? body.tname: "Unnamed!";
     cl = body.class;
     sec = body.sec;
     period = body.period;
@@ -46,6 +47,7 @@ exports.assign_homework = function(req,res){
                 db.collection('homeworks')
                 .add({
                     author: author,
+                    author_name,
                     school_code: icode, 
                     class: cl, 
                     section: sec,
@@ -87,6 +89,7 @@ exports.assign_homework = function(req,res){
             db.collection('homeworks')
             .add({
                 author: author,
+                author_name,
                 school_code: icode, 
                 class: cl, 
                 section: sec,
@@ -135,7 +138,7 @@ exports.check_homeworks = function(req,res){
             }
             list = [];
             snap.forEach(doc => {
-                info = _.pick(doc.data(),['author','title','subject','class','section','chapter','due_date','school_code', 'desc'])
+                info = _.pick(doc.data(),['author', 'author_name','title','subject','class','section','chapter','due_date','school_code', 'desc'])
                 if( typeof author === 'string'){
                     if( typeof sub === 'string'){
                         if(author === info.author && sub === info.subject) list.push({'id': doc.id,'data':info});
