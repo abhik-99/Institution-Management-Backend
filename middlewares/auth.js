@@ -1,6 +1,7 @@
 let {db} = require('../controllers/db');
-let {secret} = require("../config/secrets");
 const jwt = require('jsonwebtoken');
+const {PUB} = require('../config/keys')
+const {firebaseServiceAccount} = require('../config/secrets');
 
 exports.check_valid = function(req,res,next){
     type = req.headers.type;
@@ -9,8 +10,13 @@ exports.check_valid = function(req,res,next){
     if(!token) { res.send({'message': 'No access token detected. Please sign in!'});}
     else if(!type) { res.send({'message': 'Incorrect Headers. Please sign in!'});}
     else{
-        jwt.verify(token,secret,function(err, decoded){
-            if (err) { res.send({"message": "invalid jwt token!"}); }
+        jwt.verify(token,PUB.trim(),{ 
+            algorithms: ['RS256'],
+            issuer: firebaseServiceAccount,
+            subject: firebaseServiceAccount,
+            audience: "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit",
+           },function(err, decoded){
+            if (err) { console.log(err);res.send({"message": "invalid jwt token!"}); }
             else{
                 data = decoded.data;
                 if( JSON.parse(data)[0] != type) { res.send({'message': 'Headers mismatch'}); }
@@ -41,20 +47,29 @@ exports.check_valid = function(req,res,next){
 exports.only_teacher = function(req,res,next){
     type = req.headers.type;
     token = req.headers['x-access-token'];
+
+    paramsIcode = req.params.icode;
+    bodyIcode = req.body.icode;
+    queryIcode = req.query.icode;
+
     if( !type || !token){
         res.send({'message': 'invalid headers!'});
     }else{
-        jwt.verify(token, secret, (err,decoded)=>{
-            if(err){
-                res.send({'message':'invalid token!'});
-            }else{
-                if(JSON.parse(decoded.data)[0] != type){
-                    //console.log(type, decoded.data[0]);
-                    res.send({'message':'header token mismath!'});
-                }else{
-                    if(type === 'teacher') { next(); }
-                    else { res.send({'message': 'Only Teachers allowed at this route!'}); }
-                }
+        jwt.verify(token, PUB.trim(),{ 
+            algorithms: ['RS256'],
+            issuer: firebaseServiceAccount,
+            subject: firebaseServiceAccount,
+            audience: "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit",
+           }, (err,decoded)=>{
+            tokenData = JSON.parse(decoded.data)
+            if(err) { console.log(err); return res.send({'message':'invalid token!'});}
+            else{
+                if(tokenData[0] != type && type !== 'teacher') return res.send({'message':'header token mismath!'});
+                if(paramsIcode && tokenData[1] !== paramsIcode) return res.send({'status': 'failure','message':'Header token mismath!'});
+                if(bodyIcode && tokenData[1] !== bodyIcode) return res.send({'status': 'failure','message':'Header token mismath!'});
+                if(queryIcode && tokenData[1] !== queryIcode) return res.send({'status': 'failure','message':'Header token mismath!'});
+
+                next();
             }
         });
     }
@@ -63,20 +78,29 @@ exports.only_teacher = function(req,res,next){
 exports.only_parent = function(req,res,next){
     type = req.headers.type;
     token = req.headers['x-access-token'];
+
+    paramsIcode = req.params.icode;
+    bodyIcode = req.body.icode;
+    queryIcode = req.query.icode;
+
     if( !type || !token){
         res.send({'message': 'invalid headers!'});
     }else{
-        jwt.verify(token, secret, (err,decoded)=>{
-            if(err){
-                res.send({'message':'invalid token!'});
-            }else{
-                if(JSON.parse(decoded.data)[0] != type){
-                    //console.log(type, decoded.data[0]);
-                    res.send({'message':'header token mismath!'});
-                }else{
-                    if(type === 'parent') { next(); }
-                    else { res.send({'message': 'Only Parents allowed at this route!'}); }
-                }
+        jwt.verify(token, PUB.trim(),{ 
+            algorithms: ['RS256'],
+            issuer: firebaseServiceAccount,
+            subject: firebaseServiceAccount,
+            audience: "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit",
+           }, (err,decoded)=>{
+            tokenData = JSON.parse(decoded.data)
+            if(err) return res.send({'message':'invalid token!'});
+            else{
+                if(tokenData[0] != type && type !== 'parent') return res.send({'message':'header token mismath!'});
+                if(paramsIcode && tokenData[1] !== paramsIcode) return res.send({'status': 'failure','message':'Header token mismath!'});
+                if(bodyIcode && tokenData[1] !== bodyIcode) return res.send({'status': 'failure','message':'Header token mismath!'});
+                if(queryIcode && tokenData[1] !== queryIcode) return res.send({'status': 'failure','message':'Header token mismath!'});
+
+                next();
             }
         });
     }
@@ -85,42 +109,29 @@ exports.only_parent = function(req,res,next){
 exports.only_student = function(req,res,next){
     type = req.headers.type;
     token = req.headers['x-access-token'];
-    if( !type || !token){
-        res.send({'message': 'invalid headers!'});
-    }else{
-        jwt.verify(token, secret, (err,decoded)=>{
-            if(err){
-                res.send({'message':'invalid token!'});
-            }else{
-                if(JSON.parse(decoded.data)[0] != type){
-                    //console.log(type, decoded.data[0]);
-                    res.send({'message':'header token mismath!'});
-                }else{
-                    if(type === 'student') { next(); }
-                    else { res.send({'message': 'Only Students allowed at this route!'}); }
-                }
-            }
-        });
-    }
-}
 
-exports.only_admin = function(req,res,next){
-    type = req.headers.type;
-    token = req.headers['x-access-token'];
+    paramsIcode = req.params.icode;
+    bodyIcode = req.body.icode;
+    queryIcode = req.query.icode;
+
     if( !type || !token){
         res.send({'message': 'invalid headers!'});
     }else{
-        jwt.verify(token, secret, (err,decoded)=>{
-            if(err){
-                res.send({'message':'invalid token!'});
-            }else{
-                if(JSON.parse(decoded.data)[0] != type){
-                    //console.log(type, decoded.data[0]);
-                    res.send({'message':'header token mismath!'});
-                }else{
-                    if(type === 'admin') { next(); }
-                    else { res.send({'message': 'Only Admins allowed at this route!'}); }
-                }
+        jwt.verify(token, PUB.trim(),{ 
+            algorithms: ['RS256'],
+            issuer: firebaseServiceAccount,
+            subject: firebaseServiceAccount,
+            audience: "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit",
+           }, (err,decoded)=>{
+            tokenData = JSON.parse(decoded.data)
+            if(err) {console.log(err); return res.send({'message1':'invalid token!'});}
+            else{
+                if(tokenData[0] != type && type !== 'student') return res.send({'message':'header token mismath!'});
+                if(paramsIcode && tokenData[1] !== paramsIcode) return res.send({'status': 'failure','message':'Header token mismath!'});
+                if(bodyIcode && tokenData[1] !== bodyIcode) return res.send({'status': 'failure','message':'Header token mismath!'});
+                if(queryIcode && tokenData[1] !== queryIcode) return res.send({'status': 'failure','message':'Header token mismath!'});
+
+                next();
             }
         });
     }

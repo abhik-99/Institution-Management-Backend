@@ -305,7 +305,7 @@ exports.get_quiz_summary = function(req,res){
         }
         data = [];
         snap.docs.forEach( doc =>{
-            doc = _.pick(doc, ['author','class','section', 'subject', 'title', 'num_submissions'])
+            doc = _.pick(doc, ['author','class','section', 'full_marks', 'subject', 'title', 'num_submissions'])
             if(subject && doc.subject === subject)  data.push(doc)
             else data.push(doc)
         })

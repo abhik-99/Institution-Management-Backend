@@ -88,8 +88,6 @@ exports.set_exam = function(req,res){
         else { exam_type = t; }
     }
     db.collection(`profiles/students/${icode}`)
-    .where('class', '==',cl)
-    .where('section', '==', section)
     .get()
     .then(snap =>{
         //Pushing in eligible student for the exam
@@ -182,8 +180,8 @@ exports.grade_exam = function(req,res){
             snap.forEach(doc =>{
                 dInfo = doc.data();
                 if( info.section ==='all') {studentList.push({'id': doc.id, 'data': dInfo.examScores}); docList.push(doc.id);}
-                else if(info.section === dInfo.section) {studentList.push({'id': doc.id, 'data': dInfo.examScores}); docList.push(doc.id); console.log('True')}
-                console.log(info.section, dInfo.section)
+                else if(info.section === dInfo.section) {studentList.push({'id': doc.id, 'data': dInfo.examScores}); docList.push(doc.id);}
+                
             });
 
             if( studentList.length === 0 ){
@@ -208,9 +206,11 @@ exports.grade_exam = function(req,res){
                 }
 
                 var docRef = collectionRef.doc(student.docId);
-                if(!fStudent[0].examScores ) fStudent[0].examScores = [];
-                fStudent[0].examScores.push({'tcode': info.author, 'type': info.exam_type, 'score': marks[0].marks, 'avgMarks': avg, 'maxMarks': max})
-                batch.update(docRef,{ 'examScores': fStudent[0].examScores});
+                //checking if the student has given any exams or not (fstudent[x].data contains examScores)
+                if(!fStudent[0].data ) fStudent[0].data = [];
+
+                fStudent[0].data.push({'tcode': info.author, 'type': info.exam_type, 'score': marks[0].marks, 'avgMarks': avg, 'maxMarks': max})
+                batch.update(docRef,{ 'examScores': fStudent[0].data});
             })//completed making changes to received data.
             
             db.collection('exam').doc(docId).update({student_list: info.student_list, 'avgMarks': avg, 'maxMarks': max})

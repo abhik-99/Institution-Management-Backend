@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const FieldValue = require('firebase-admin').firestore.FieldValue;
 const {db} = require('./db');
-const {secret, resetPassSecret} = require('../config/secrets');
+const {resetPassSecret, firebaseServiceAccount} = require('../config/secrets');
+const {PRIV, PUB} = require('../config/keys')
 const bcrypt = require('bcrypt')
 const _ = require('lodash')
 const {transport} = require('../mail/index')
@@ -50,14 +51,21 @@ exports.login = function(req, res) {
           return;
         }
         let token = jwt.sign({
-           exp: Math.floor(Date.now() / 1000) + (60 * 60 * 72), //72 hrs
+           exp: Math.floor(Date.now() / 1000) + (60 * 60 * 2), //72 hrs
+           iat: Date.now(),
            data: JSON.stringify({ 
               0: type,
               1: iCode,
               2: username,
               3: Date.now()
             })},
-           secret);
+           PRIV,
+           { 
+             algorithm: 'RS256',
+             issuer: firebaseServiceAccount,
+             subject: firebaseServiceAccount,
+             audience: "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit",
+            });
         sessions.push(token);
 
         lastSignin = Date.now();
@@ -132,9 +140,14 @@ exports.logout = function(req,res){
     res.send({"message": "No token received!"});
     res.end();
   } else{
-    jwt.verify(token, secret, function(err,decoded){
+    jwt.verify(token, PUB.trim(),{ 
+      algorithms: ['RS256'],
+      issuer: firebaseServiceAccount,
+      subject: firebaseServiceAccount,
+      audience: "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit",
+     },function(err,decoded){
       if(err){
-        console.log("Ivalid token", token);
+        console.log("Invalid token", err);
         res.send({"Message": "Token Invalid"});
       }else{
         tokenData = JSON.parse(decoded.data);
