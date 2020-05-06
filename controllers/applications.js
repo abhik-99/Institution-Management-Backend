@@ -1,6 +1,4 @@
 const {db} = require('./db');
-const {upload_file,get_file_ref} = require('../gcp_buckets/file_handling');
-const {bucketName} = require('../config/secrets');
 const _ = require('lodash')
 
 //get teachers
@@ -91,7 +89,7 @@ exports.leave_application = function(req,res){
         tcode = (typeof body.tcode === 'string')? body.tcode : undefined;
         scode = (typeof body.scode === 'string')? body.scode : undefined;
         pcode = (typeof body.pcode === 'string')? body.pcode : undefined;
-        if( !tname || !tcode || !scode || !reason || !pcode) throw 'Please send proper data!'
+        if( !tname || !tcode || !scode || !reason || !pcode) return res.send({'status': 'failure', 'message': 'Please send proper data!'})
     } catch (error) {
         res.send({'status':'failure', 'error': error.message})
         return;        

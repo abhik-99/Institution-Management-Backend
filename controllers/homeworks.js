@@ -22,15 +22,15 @@ exports.assign_homework = function(req,res){
         homework = JSON.parse(body.homework)
         title = homework.title;
         desc = homework.desc;
-        if( typeof period !== 'string') throw 'Invalid period'
+        if( typeof period !== 'string') return res.send({'status': 'success', 'message': 'Invalid period'})
         date = Date.parse(body.sub_date);
         sub_date = body.sub_date;
     } catch (error) {
-        res.send({'status':'failure', 'error': "Please send the homework in proper format!"})
+        res.send({'status':'failure', 'error': error.message})
         return;
     }
      
-    if( !icode || !cl || !sec || !sub || !chapter || !title || !sub_date ) res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'})
+    if( !icode || !cl || !sec || !sub || !chapter || !title || !sub_date ) return res.send({'status': 'failure', 'message': 'Please enter all the paramters properly!'})
     else{
         if(file){
             filename =`homeworks/${icode}/${cl}/${sec}/${sub}/${chapter}-${title}-${Date.now()}-`+file.originalname;
@@ -103,7 +103,7 @@ exports.assign_homework = function(req,res){
                 num_submissions: 0,
                 submissions:[]
             }).then(ref=>{
-                res.send({'status': 'success', 'message': `Homework ${ref.id} uploaded!`}); 
+                res.send({'status': 'success', 'message': `Homework ${ref} uploaded!`}); 
             })
             .catch(err => res.send({'status': 'failure', 'error': err.message}));
         }
@@ -172,9 +172,9 @@ exports.submit_homework_teacher = function(req,res){
         var id = body.id;
         var studentList = JSON.parse(body.submissions);
         for( var each of studentList){
-            if( typeof each.scode !== 'string' || typeof each.id !== 'string' || typeof each.sname !== 'string') throw 'Please send proper student data!'
+            if( typeof each.scode !== 'string' || typeof each.id !== 'string' || typeof each.sname !== 'string') return res.send({'status': 'failure', 'message': 'Please send proper student data!'})
         }
-        if(typeof id !== 'string' || id.length !== 20) throw 'Please send proper document id!'
+        if(typeof id !== 'string' || id.length !== 20) return res.send({'status': 'failure', 'message': 'Please send proper document id!'})
     } catch (error) {
         res.send({'status': 'failure', 'error': error.message})
         return;
@@ -205,7 +205,7 @@ exports.submit_homework_teacher = function(req,res){
         .where('code', 'in', sIds)
         .get()
         .then( snap =>{
-            if(snap.empty) throw 'No Student Found!'
+            if(snap.empty) return res.send({'status': 'failure', 'message': 'No Student Found!'})
             //insert into the array(batch update)
             snap.forEach( doc=>{
                 homeworkSubmissions = doc.data().homeworkSubmissions;
@@ -227,9 +227,9 @@ exports.submit_homework_teacher = function(req,res){
             .update({submissions: submissions})
             .then( () => res.send({'status':'status', 'message': 'Homeworks Submitted!'}))
             .catch(err => console.log("Error While Update for Homework",id,"\nError:", err ));
-        }).catch(err => res.send({'status': 'failure', 'error': err}))
+        }).catch(err => res.send({'status': 'failure', 'error': err.message}))
     })
-    .catch(err => res.send({'status': 'failure', 'error': err}));
+    .catch(err => res.send({'status': 'failure', 'error': err.message}));
 }
 
 //Not exposed.

@@ -16,12 +16,12 @@ exports.get_student_profile = function(req,res){
     icode = params.icode;
     //URL Query
     scode = query.scode;
-    if( !scode ) { res.send({'status': 'failure', 'error': 'Please provide proper information!'}); return;}
+    if( !scode ) { return res.send({'status': 'failure', 'error': 'Please provide proper information!'}); return;}
     db.collection(`profiles/students/${icode}`)
     .where('code', '==', scode)
     .get()
     .then(snap =>{
-        if(snap.empty) res.send({'status':'failure', 'message':'No match Found!'})
+        if(snap.empty) return res.send({'status':'failure', 'message':'No match Found!'})
 
         var studentData = {};
         snap.forEach(doc => studentData = {'id': doc.id, 'data': doc.data()}) 
@@ -140,12 +140,12 @@ exports.get_school_profile = function(req,res){
     .where('code', '==', icode)
     .get()
     .then( snap =>{
-        if(snap.empty) throw 'School not Found!'
+        if(snap.empty) return res.send({'status':'failure', 'message': 'School not Found!'})
         var data;
         snap.forEach( doc => data = doc.data())
         res.send({'status': 'success', 'data': data})
     })
-    .catch( err=> { res.send({'status': 'failure', 'error': err}); console.log(err)})
+    .catch( err=> { res.send({'status': 'failure', 'error': err.message}); console.log(err)})
 }
 
 exports.get_class_stats = function(req,res){
@@ -210,6 +210,7 @@ exports.get_class_quiz_stats = function(req,res){
 exports.get_class_homework_stats = function(req,res){
     params = req.params;
     query = req.query;
+    
     icode = params.icode;
     cl = params.class;
     sec =  params.sec;

@@ -167,11 +167,11 @@ exports.get_quiz_file = function(req,res){
     //URL query
     docId = query.id;
     q = query.q;
-    console.log("Starting")
+    if( !docId || !q) return res.send({'status': 'failure', 'message': 'Please send proper data!'})
     db.doc(`quizzes/${docId}`)
     .get()
     .then( doc =>{
-        if(!doc) res.send({'status':'failure', 'message':'Please send proper data!'})
+        if(!doc.exists) return res.send({'status':'failure', 'message':'Please send proper data!'})
         data = doc.data();
         question = data.questions[q];
         if(!question.file || !question.fileType) res.send({'status':'failure','message':'Question has no image!'})
@@ -185,6 +185,7 @@ exports.get_quiz_file = function(req,res){
         
             stream.on('error', function (err) {
             console.log('error reading stream', err);
+            return res.send({'status': 'failure', 'error': err.message})
             });
         
             stream.on('end', function () {
@@ -206,19 +207,22 @@ exports.submit_quiz = function(req,res){
     score = body.score;
     cl = body.class;
     var submission = {"quizId": quizId,"student_code": scode,"student_name": sname, "score": score, "timestamp": Date.now()};
-    if( !icode || !cl || !scode || !quizId || !score) { res.send({'status':'failure','message': "Please provide all details!"}); }
+    if( !icode || !cl || !scode || !quizId || !score) { return res.send({'status':'failure','message': "Please provide all details!"}); }
     else {
         //console.log("Body",body);
         db.doc(`quizzes/${quizId}`)
         .get()
         .then(doc =>{
-            if(!doc.exists) throw "Quiz not found!"
+            if(!doc.exists) return res.send({'status': 'failure', 'message': "Quiz not found!"})
+            
             info = doc.data();
             submissions = info.submissions;
             num_submissions = info.num_submissions + 1;
+
             if (!submissions) submissions = [];
             submission.fullMarks = (info.full_marks)? info.full_marks: info.questions.length;
             submissions.push(submission);
+            
             db.doc(`quizzes/${quizId}`).update({submissions: submissions, num_submissions: num_submissions})
             .then( () => {
                 db.collection(`profiles/students/${icode}`)
@@ -228,7 +232,7 @@ exports.submit_quiz = function(req,res){
                     student = [];
                     snap.forEach(each => student.push({"docId": each.id, "data":each.data()}));
                     if(student.length != 1 ) { 
-                        throw "Duplicate or no student found!"                
+                        return res.send({'status': 'failure', 'message':"Duplicate or no student found!"})
                     }else{
                         student = student[0];
                         quizScores = student.data.quizScores;

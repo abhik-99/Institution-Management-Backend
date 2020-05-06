@@ -22,7 +22,7 @@ exports.edit_merit = function(req,res){
         .where('code', '==', scode)
         .get()
         .then( snap =>{
-            if(!snap) { res.send({'status': 'failure', 'message': 'No Students found!'}); }
+            if(snap.empty) { return res.send({'status': 'failure', 'message': 'No Students found!'}); }
             merit = merit === 'true';
             info = {};
             snap.forEach( doc => info = { 'id':doc.id, 'data':doc.data()});
@@ -39,7 +39,7 @@ exports.edit_merit = function(req,res){
                 merits: merits
             })
             .then(() => res.send({'status': 'success', 'message': `Merit of ${info.name} changed!`}))
-            .catch(err => res.send({ 'status': 'failure', 'error':err}));
+            .catch(err => res.send({ 'status': 'failure', 'error':err.message}));
         })
         .catch(err => res.send({ 'status': 'failure', 'error':err.message}));
     }
@@ -109,7 +109,7 @@ exports.get_merit = function(req, res){
     //URL query
     scode = query.scode;
 
-    if(req.headers.type === 'student' && !scode) { req.send({'status': 'failure', 'message': 'Please send proper data!'}); }
+    if(req.headers.type === 'student' && !scode) { return req.send({'status': 'failure', 'message': 'Please send proper data!'}); }
     
     db.collection(`profiles/students/${icode}`)
     .where('class', '==', cl)
@@ -126,7 +126,7 @@ exports.get_merit = function(req, res){
         }
         res.send({'status':'success', 'data':merits});
     })
-    .catch( err => res.send({'status':'failure', 'error':err}));
+    .catch( err => res.send({'status':'failure', 'error':err.message}));
 };
 
 //POST Request.
@@ -139,12 +139,12 @@ exports.reset_merit = function(req, res){
     id = body.id;
     tcode = body.tcode;
 
-    if(!id || !tcode) { res.send({'status':'failure', 'message': 'Please send proper data!'}); }
+    if(!id || !tcode) { return res.send({'status':'failure', 'message': 'Please send proper data!'}); }
     else{
         db.collection(`profiles/students/${icode}`).doc(id)
         .get()
         .then(snap => {
-            if(!snap) { res.send({'status': 'failure', 'message':'No match found!'}); }
+            if(snap.empty) { return res.send({'status': 'failure', 'message':'No match found!'}); }
             data = [];
             snap.forEach( doc => data = doc.data());
             merits = data.merits;
@@ -155,9 +155,9 @@ exports.reset_merit = function(req, res){
                 merits: merits
             })
             .then( () => res.send({'status':'success', 'message': 'Merits Reset.'}) )
-            .catch( err => res.send({'status': 'failure', 'error': err}));
+            .catch( err => res.send({'status': 'failure', 'error': err.message}));
             
         })
-        .catch( err => res.send({'status': 'failure', 'error': err}));
+        .catch( err => res.send({'status': 'failure', 'error': err.message}));
     }
 };

@@ -107,7 +107,7 @@ exports.set_exam = function(req,res){
                 if(section === info.section) { studentList.push({'docId': doc.id, 'scode':info.code, 'sname': info.name}); }
             });
         }
-        if(studentList.length === 0) res.send({'status': 'failure','error': 'No students Found for given school/class/section!'});
+        if(studentList.length === 0) return res.send({'status': 'failure','error': 'No students Found for given school/class/section!'});
 
         //adding exam to the collection
         db.collection('exam')
@@ -147,7 +147,7 @@ exports.grade_exam = function(req,res){
         });
         avg = avg/marksList.length;
 
-        if(!docId) throw 'Please send the doc ID!'
+        if(!docId) return res.send({'status': 'failure', 'message': 'Please send the doc ID!'})
     } catch (error) {
         res.send({'status': 'failure', 'error': error.message})
         return;

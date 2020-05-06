@@ -76,7 +76,7 @@ router.post('/merits/reset/:icode', only_teacher, reset_merit);
 router.post('/docs/:icode/:class/:sec', multer.single('doc'),only_teacher, publish_doc);
 
 //for Performance
-router.get('/performance/student/:icode/:class/:sec', only_teacher, get_student_profile);
+router.get('/performance/:icode', only_teacher, get_student_profile);
 router.get('/routine/:icode/:class/:sec', only_teacher, get_routine);
 router.get('/stats/:icode/:class/:sec', only_teacher, get_class_stats);
 router.get('/stats/quiz/:icode/:class/:sec', only_teacher, get_class_quiz_stats);
