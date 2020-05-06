@@ -28,12 +28,8 @@ router.get('/attendance/student/:icode/:class/:sec', only_parent, get_student_at
 //for getting exams and their scores
 router.get('/exam/:icode/:class/:examType', only_parent, get_exams);
 
-//for getting student
-router.get('/attendance/:icode/:class/:sec',only_parent, get_students); //would help a parent see who else is in his/her child's class.
-router.get('/attendance/student/:icode/:class/:sec', only_parent, get_student_attendance);//send the student's docID
-
 //for Performance
-router.get('/performance/student/:icode/:class/:sec', only_parent, get_student_profile);
+router.get('/performance/:icode/:scode', only_parent, get_student_profile);
 router.get('/routine/:icode/:class/:sec', only_parent, get_routine);
 
 //For getting profile
