@@ -8,13 +8,13 @@ exports.get_students = function(req,res){
     cl = params.class;
     sec = params.sec;
 
-    if( !icode || !cl || !sec) { res.send({'status':'failure', 'error': "Please provide proper parameters"});}
+    if( !icode || !cl || !sec) { return res.send({'status':'failure', 'error': "Please provide proper parameters"});}
     else{
         db.collection(`profiles/students/${icode}`)
         .get()
         .then(snap => {
 
-            if(snap.empty) { res.send({'status':'failure', 'error': 'No such School/Class/Section found!'}); }
+            if(snap.empty) { return res.send({'status':'failure', 'error': 'No such School/Class/Section found!'}); }
             else{
                 list = [];
                 snap.forEach(doc => {
@@ -77,8 +77,8 @@ exports.give_attendance = function(req,res){
         .then(snap =>{
             
             if(snap.empty) { 
-                res.send({'status':'failure', 'error': 'No such School found!'}); 
-                return;
+                return res.send({'status':'failure', 'error': 'No such School found!'}); 
+                
             }
 
             var collectionRef = db.collection(`profiles/students/${icode}`);
@@ -163,14 +163,13 @@ exports.get_student_attendance = function(req,res){
     subject = query.subject;
 
     if( !docId ){ 
-        res.send({'status': 'failure', 'error': 'Please send proper information!'}); 
-        return;
+        return res.send({'status': 'failure', 'error': 'Please send proper information!'}); 
     }
 
     db.collection(`profiles/students/${icode}`).doc(docId)
     .get()
     .then(async (doc) =>{
-        if(!doc) { res.send({'status':'failure', 'error': 'No such student found!'}); }
+        if(!doc) { return res.send({'status':'failure', 'error': 'No such student found!'}); }
         
         student = doc.data();
         absentRecord = student.absentRecord;
@@ -255,7 +254,7 @@ exports.get_student_attendance = function(req,res){
         if(studentAttendance.length === 0) res.send({'status': 'success','message': 'The Student has not been absent yet!'})  
         else res.send({'status': 'success', 'attendance': studentAttendance})     
     })
-    .catch( err => console.log(err));
+    .catch( err => res.send({'status':'failure', 'error': err.message}));
 }
 
 //GET Request

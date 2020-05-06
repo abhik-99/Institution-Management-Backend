@@ -1,9 +1,9 @@
 const {db} = require('./db');
-var {upload_file,download_link, get_file_ref} = require('../gcp_buckets/file_handling');
+var {download_link, get_file_ref} = require('../gcp_buckets/file_handling');
 var {bucketName} = require('../config/secrets');
 var _ = require('lodash')
 
-//POST Request. Uses formidablemiddleware
+//POST Request. 
 exports.publish_doc = function(req,res){
     console.log("Request Received!");
     body = req.body;
@@ -19,7 +19,7 @@ exports.publish_doc = function(req,res){
     des = body.description;
     tcode = body.tcode;
     
-    if( !des || !tcode || !file) res.send({'status': 'failure', 'message': 'Please send proper data!'}); 
+    if( !des || !tcode || !file) return res.send({'status': 'failure', 'message': 'Please send proper data!'}); 
     else{
         pub_date = Date.now()
         filename = `documents/${icode}/${cl}/${sec}/${tcode}-${pub_date}-`+file.originalname;
@@ -67,7 +67,7 @@ exports.get_doc = function(req,res){
     .where('section', '==', sec)
     .get()
     .then(snap =>{
-        if( !snap ) { res.send({'status': 'failure', 'message': 'No such match found!'}); }
+        if( snap.empty ) { return res.send({'status': 'failure', 'message': 'No such match found!'}); }
         docs = [];
         snap.forEach(doc => {
             info = doc.data();
@@ -77,7 +77,7 @@ exports.get_doc = function(req,res){
         })
         res.send({'status': 'success', 'data': docs});
     })
-    .catch( err => {res.send({'status': 'failure', 'error': err}); console.log(err)});
+    .catch( err => {res.send({'status': 'failure', 'error': err.message}); console.log(err)});
 };
 
 exports.doc_download = function(req,res){
@@ -92,12 +92,13 @@ exports.doc_download = function(req,res){
     db.collection('documents').doc(docId)
     .get()
     .then( doc =>{
+        if(!doc.exists) return res.send({'status': 'failure', 'message': 'No matching Document found!'})
         filepath = _.pick(doc.data(),['filePath']).filePath;
         download_link(bucketName,filepath).then((data)=>{
             res.json({'status': 'success', 'download_link': data[0]});
         });
     })
-    .catch( err => {res.send({'status': 'failure', 'error': err}); console.log(err)});
+    .catch( err => {res.send({'status': 'failure', 'error': err.message}); console.log(err)});
 }
 
 //needs to be implemented after UI is supplied.

@@ -122,7 +122,7 @@ exports.make_announcement = function(req,res){
             info = doc.data();
             teacher.push({'name': info.name, 'tcode': info.code});
         });
-        if(teacher.length != 1) res.send({'status':'failure', 'error': 'Duplicate or no profile found!'})
+        if(teacher.length != 1) return res.send({'status':'failure', 'error': 'Duplicate or no profile found!'})
 
         announcement.author = teacher[0];
         announcement.date = date;

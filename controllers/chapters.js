@@ -6,6 +6,7 @@ const _ = require('lodash')
 //POST request
 exports.add_chapter = function(req, res){
     body = req.body;
+
     icode = body.icode;
     cl = body.class;
     sec = body.sec;
@@ -30,16 +31,16 @@ exports.add_chapter = function(req, res){
         .get()
         .then(snap =>{
             if(snap.empty){
-                res.send({'status': 'failure', 'message': 'No Such Subject exists!'})
-                return;
+                return res.send({'status': 'failure', 'message': 'No Such Subject exists!'})
+                
             }else{
                 var subject = {};
                 snap.forEach(doc => subject = {'id': doc.id,'data':doc.data()})
 
                 chapters = subject.data.chapters;
                 if(chapters.filter( eachChapter => eachChapter.name === chapter).length !== 1){
-                    res.send({'status': 'failure', 'message': 'Duplicate or no Chapters found!'})
-                    return;
+                    return res.send({'status': 'failure', 'message': 'Duplicate or no Chapters found!'})
+                    
                 } else {
                     var i = 0;
                     for(; i< chapters.length ; i++){
@@ -75,12 +76,12 @@ exports.edit_chapter_status = function(req, res){
     ongoing = body.ongoing;
     chapterName = body.chapterName;
 
-    if( (ongoing !== 'true' && ongoing !== 'false') || !id) { res.send({'status': 'failure', 'message': 'Please send proper data!'})}
+    if( (ongoing !== 'true' && ongoing !== 'false') || !id) { return res.send({'status': 'failure', 'message': 'Please send proper data!'})}
     else{
         db.collection('chapters').doc(id)
         .get()
         .then( doc =>{
-            if(!doc) { res.send({'status':'failure','message':'No match Found!'}); }
+            if(!doc) { return res.send({'status':'failure','message':'No match Found!'}); }
             else{
                 ongoing = ongoing === 'true';
                 info = doc.data();
@@ -93,8 +94,8 @@ exports.edit_chapter_status = function(req, res){
                             chapters[i].ended_on = Date.now();
                             flag = true;
                         } else {
-                            res.send({'status':'success', 'message': 'No change detected!'});
-                            return;
+                            return res.send({'status':'success', 'message': 'No change detected!'});
+                            
                         }
                     }
                 }
@@ -103,7 +104,7 @@ exports.edit_chapter_status = function(req, res){
                         chapters: chapters
                     })
                     .then(() => res.send({'status': 'success', 'message': 'Status Updated'}))
-                    .catch(err => res.send({'status': 'failure', 'error': err}));
+                    .catch(err => res.send({'status': 'failure', 'error': err.message}));
                 }
             }
         });
@@ -130,8 +131,7 @@ exports.get_chapters = function(req, res){
         .get()
         .then( snap =>{
             if(snap.empty){
-                res.send({'status':'failure','message': 'No Chapters Found!'})
-                return;
+                return res.send({'status':'failure','message': 'No Chapters Found!'})
             }
             chapters = [];
             snap.forEach(doc =>{
@@ -141,7 +141,7 @@ exports.get_chapters = function(req, res){
             if(sub) { chapters= chapters.filter(eachDoc => eachDoc.data.subject_code.toLowerCase() === sub.toLowerCase()); }
             res.send({'status': 'success', 'data': chapters});
         })
-        .catch( err => res.send({'status':'failure', 'error': err}));
+        .catch( err => res.send({'status':'failure', 'error': err.message}));
     }
 };
 
@@ -171,7 +171,7 @@ exports.get_subjects = function(req, res){
         snap.docs.forEach( doc => subjects.push(doc.data().subject_code))
         res.send({'status': 'success', 'data':subjects})
     })
-    .catch( err => res.send({'status':'failure', 'error': err}));
+    .catch( err => res.send({'status':'failure', 'error': err.message}));
 }
 
 //Not Exposed
@@ -314,7 +314,7 @@ exports.get_doubts = function(req,res){
         if(scode) doubts = doubts.filter(doubt => doubt.scode === scode);
         res.send({'status': 'success', 'doubts': doubts});
     })
-    .catch( err => res.send({ 'status': 'failure', 'error': err}));
+    .catch( err => res.send({ 'status': 'failure', 'error': err.message}));
 };
 
 //GET Request for getting the doubt file.
@@ -368,6 +368,7 @@ exports.get_doubt_file = function(req,res){
         
             stream.on('error', function (err) {
             console.log('error reading stream', err);
+            return res.send({'status': 'failure', 'error': err.message})
             });
         
             stream.on('end', function () {
@@ -375,7 +376,7 @@ exports.get_doubt_file = function(req,res){
             });
 
     })
-    .catch( err => res.send({ 'status': 'failure', 'error': err}));
+    .catch( err => res.send({ 'status': 'failure', 'error': err.message}));
 
 }
 
@@ -513,7 +514,7 @@ exports.get_answer_file = function(req,res){
         }
 
         doubts = chapter[index].doubts;
-        if(!doubts || doubts.length === 0) res.send({'status':'failure', 'message': 'No doubts in this Chapter!'})
+        if(!doubts || doubts.length === 0) return res.send({'status':'failure', 'message': 'No doubts in this Chapter!'})
         dI = -1;
         for( i=0; i<doubts.length; i++){
             if( doubts[i].scode === scode && doubts[i].asked === asked){
@@ -529,16 +530,18 @@ exports.get_answer_file = function(req,res){
         var stream = ref.createReadStream();
         res.writeHead(200, {'Content-Type': doubts[dI].answer.fileType});
         stream.on('data', function (data) {
-            res.write(data);
+                res.write(data);
             });
         
             stream.on('error', function (err) {
-            console.log('error reading stream', err);
+                console.log('error reading stream', err);
+                return res.send({'status': 'failure', 'error': err.message})
             });
         
             stream.on('end', function () {
-            res.end();
+                res.end();
             });
-    });
+    })
+    .catch(err => res.send({'status': 'failure', 'error': err.message}))
 
 }

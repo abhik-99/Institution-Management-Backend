@@ -51,20 +51,20 @@ exports.login = function(req, res) {
           return;
         }
         let token = jwt.sign({
-           exp: Math.floor(Date.now() / 1000) + (60 * 60 * 2), //72 hrs
-           iat: Date.now(),
            data: JSON.stringify({ 
               0: type,
               1: iCode,
-              2: username,
-              3: Date.now()
-            })},
+              2: username
+            }),
+           uid: username 
+          },
            PRIV,
            { 
              algorithm: 'RS256',
              issuer: firebaseServiceAccount,
              subject: firebaseServiceAccount,
              audience: "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit",
+             expiresIn: '2h'
             });
         sessions.push(token);
 
