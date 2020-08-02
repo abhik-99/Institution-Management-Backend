@@ -1,2 +1,2 @@
 beta_settings:
-  cloud_sql_instances: project-student-management:asia-south1:dev-studie-server
+  cloud_sql_instances: <<Cloud SQL Instance Name with the project name and region name>>
