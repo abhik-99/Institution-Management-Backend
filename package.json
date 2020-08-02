@@ -177,7 +177,7 @@
     "kind-of": "^6.0.3",
     "latest-version": "^5.1.0",
     "lazy-cache": "^2.0.2",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "lodash.at": "^4.6.0",
     "lodash.camelcase": "^4.3.0",
     "lodash.has": "^4.5.2",
