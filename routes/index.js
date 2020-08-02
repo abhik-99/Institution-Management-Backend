@@ -7,7 +7,7 @@ var {login,logout, recover_password} = require('../controllers/login_out');
 var {set_quiz} = require('../controllers/quiz')
 const {sql_initialize} = require('../controllers/test_controller')
 
-router.get('/',(req,res) => res.redirect('http://www.thestudieapp.com/'));
+router.get('/',(req,res) => res.redirect('http://www.google.com/'));
 router.post('/login',login);
 router.get('/logout',logout);
 //For password recovery.
