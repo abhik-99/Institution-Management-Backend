@@ -1,8 +1,8 @@
 {
   "development": {
     "username": "root",
-    "password": "KaMtilC2L4MxCGFk",
-    "database": "studie",
+    "password": "<<Password>>",
+    "database": "<<Database Name>>",
     "host": "localhost",
     "port": 8080,
     "dialect": "mysql",
@@ -10,9 +10,9 @@
   },
   "test": {
     "username": "root",
-    "password": "KaMtilC2L4MxCGFk",
-    "database": "studie",
-    "host": "/cloudsql/project-student-management:us-east1:test-studie-server",
+    "password": "<<User Password>>",
+    "database": "<<Instance Name>>",
+    "host": "/cloudsql/<<Project Name>>:<<Region>>:<<Instance Name>>",
     "dialect": "mysql"
   }
 }
