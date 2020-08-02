@@ -1,4 +1,4 @@
-service: studie-server
+service: institute-management-server
 runtime: nodejs12
 env_variables:
   NODE_ENV: test
