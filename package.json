@@ -169,7 +169,7 @@
     "isarray": "^2.0.5",
     "isexe": "^2.0.0",
     "jade": "^1.11.0",
-    "json-bigint": "^0.3.0",
+    "json-bigint": "^1.0.0",
     "jsonwebtoken": "^8.5.1",
     "jstransformer": "^1.0.0",
     "jwa": "^2.0.0",
