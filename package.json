@@ -240,7 +240,7 @@
     "prepend-http": "^3.0.1",
     "process-nextick-args": "^2.0.1",
     "promise": "^8.0.3",
-    "protobufjs": "^6.8.8",
+    "protobufjs": "^6.11.3",
     "proxy-addr": "^2.0.6",
     "pseudomap": "^1.0.2",
     "pstree.remy": "^1.1.7",
