@@ -115,7 +115,7 @@
     "google-auth-library": "^5.10.0",
     "google-gax": "^1.14.1",
     "google-p12-pem": "^2.0.4",
-    "got": "^10.6.0",
+    "got": "^11.8.5",
     "graceful-fs": "^4.2.3",
     "graceful-readlink": "^1.0.1",
     "gtoken": "^4.1.4",
