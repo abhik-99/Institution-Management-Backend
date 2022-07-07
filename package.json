@@ -203,7 +203,7 @@
     "minimatch": "^3.0.4",
     "minimist": "^1.2.0",
     "mkdirp": "^1.0.3",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "moment-timezone": "^0.5.28",
     "morgan": "^1.9.1",
     "ms": "^2.1.2",
