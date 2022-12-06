@@ -246,7 +246,7 @@
     "pstree.remy": "^1.1.7",
     "pump": "^3.0.0",
     "pumpify": "^2.0.1",
-    "qs": "^6.9.1",
+    "qs": "^6.9.7",
     "random-bytes": "^1.0.0",
     "range-parser": "^1.2.1",
     "raw-body": "^2.4.1",
