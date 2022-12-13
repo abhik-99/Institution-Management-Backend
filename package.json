@@ -92,7 +92,7 @@
     "etag": "^1.8.1",
     "event-target-shim": "^5.0.1",
     "execa": "^4.0.0",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "express-formidable": "^1.2.0",
     "express-session": "^1.17.0",
     "extend": "^3.0.2",
