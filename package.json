@@ -170,7 +170,7 @@
     "isexe": "^2.0.0",
     "jade": "^1.11.0",
     "json-bigint": "^0.3.0",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "jstransformer": "^1.0.0",
     "jwa": "^2.0.0",
     "jws": "^4.0.0",
